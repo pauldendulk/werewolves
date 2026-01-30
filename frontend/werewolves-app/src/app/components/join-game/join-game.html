@@ -1,0 +1,41 @@
+<div class="join-game-container">
+  <p-toast></p-toast>
+
+  <div class="header">
+    <h1>Werewolves</h1>
+  </div>
+
+  <div class="form-container" *ngIf="!loadingGame">
+    <h2>Join Game</h2>
+
+    <div class="game-info">
+      <p><strong>Game:</strong> {{ gameName }}</p>
+      <p><strong>Created by:</strong> {{ creatorName }}</p>
+    </div>
+
+    <div class="form-field">
+      <label for="playerName">Your Name</label>
+      <input
+        pInputText
+        id="playerName"
+        [(ngModel)]="playerName"
+        placeholder="Enter your name"
+        maxlength="30"
+        [disabled]="loading"
+      />
+    </div>
+
+    <p-button
+      label="Join Game"
+      icon="pi pi-sign-in"
+      (onClick)="joinGame()"
+      [disabled]="playerName.trim().length === 0 || loading"
+      [loading]="loading"
+      styleClass="w-full"
+    ></p-button>
+  </div>
+
+  <div class="loading-container" *ngIf="loadingGame">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+  </div>
+</div>

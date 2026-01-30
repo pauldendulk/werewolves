@@ -1,0 +1,66 @@
+.join-game-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--surface-ground);
+}
+
+.header {
+  padding: 1.5rem;
+  text-align: center;
+  background-color: var(--surface-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.form-container {
+  flex: 1;
+  padding: 2rem 1.5rem;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+
+  h2 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+.game-info {
+  background-color: var(--surface-card);
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+
+  p {
+    margin: 0.5rem 0;
+  }
+}
+
+.form-field {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  input {
+    width: 100%;
+  }
+}
+
+.loading-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}

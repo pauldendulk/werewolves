@@ -1,0 +1,369 @@
+.lobby-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--surface-ground);
+}
+
+.header {
+  padding: 1.5rem;
+  text-align: center;
+  background-color: var(--surface-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+// Main Content Layout
+.grid-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+// Card Utility
+.card-section {
+  background-color: var(--surface-card);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  border: 1px solid var(--surface-border);
+}
+
+// --- CARD 1: INVITE ---
+.invite-card {
+  .game-info-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; // Reduced gap for tighter vertical spacing
+    margin-bottom: 1.25rem; // Reduced from 2rem
+
+    .info-row {
+      display: flex;
+      align-items: baseline; // Align text to baseline
+      gap: 0.75rem;
+
+      .row-label {
+        font-size: 0.85rem; // Slightly larger but not bold caps
+        color: var(--text-color-secondary);
+        width: 120px;
+        flex-shrink: 0;
+        text-align: right;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .row-value-container {
+         display: flex;
+         align-items: center;
+         gap: 0.5rem;
+         flex: 1;
+
+         .compact-input {
+            padding: 0.25rem 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 200px;
+         }
+
+         .action-icon {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            font-size: 1rem;
+
+            &.confirm { color: var(--green-500); &:hover { background-color: var(--green-100); } }
+            &.cancel { color: var(--red-500); &:hover { background-color: var(--red-100); } }
+         }
+      }
+
+      .row-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &.editable {
+          cursor: pointer;
+          border-bottom: 1px dashed transparent;
+
+          &:hover {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+
+            .edit-indicator { opacity: 1; }
+          }
+        }
+
+        .edit-indicator {
+           font-size: 0.8rem;
+           opacity: 0.3;
+           transition: opacity 0.2s;
+        }
+      }
+    }
+  }
+
+  .divider {
+     height: 1px;
+     background: var(--surface-border);
+     margin: 0 -1.5rem 0.5rem -1.5rem; // Further reduced bottom margin
+  }
+
+  .invite-area {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     gap: 0;
+
+     .invite-label {
+        font-size: 0.8rem;
+        color: var(--text-color-secondary);
+        margin-bottom: 0.5rem;
+     }
+
+     .qr-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+
+        .qr-code {
+           width: 220px;
+           height: 220px;
+           border-radius: 4px;
+        }
+
+        .qr-actions {
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+
+           .vertical-sep {
+              width: 1px;
+              height: 20px;
+              background-color: var(--surface-border);
+           }
+
+           .btn-label {
+              margin-left: 0.5rem;
+              font-weight: 400;
+              font-size: 0.875rem;
+           }
+        }
+     }
+  }
+}
+
+// --- CARD 2: PLAYERS ---
+.players-card {
+   .card-header {
+      margin-bottom: 1rem;
+      h3 { margin: 0; font-size: 1.1rem; }
+   }
+
+   .player-list-clean {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 1.5rem;
+
+      .player-row {
+         display: flex;
+         align-items: center;
+         padding: 0.75rem;
+         background-color: var(--surface-ground);
+         border-radius: 8px;
+         transition: background-color 0.2s;
+
+         &.is-me {
+            background-color: var(--primary-50);
+            border: 1px solid var(--primary-200);
+         }
+
+         .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            position: relative;
+
+            .avatar-text { font-weight: 700; color: var(--text-color-secondary); }
+
+            .status-indicator {
+               position: absolute;
+               bottom: 0px;
+               right: 0px;
+               width: 12px;
+               height: 12px;
+               border-radius: 50%;
+               border: 2px solid var(--surface-card); // Use card background to create 'cutout' effect
+               z-index: 2;
+
+               // Default color (visible if status mismatch) for debugging, or generic active
+               background-color: var(--gray-400);
+
+               &.connected { background-color: var(--green-500); }
+               &.disconnected { background-color: var(--red-500); }
+               &.left { background-color: var(--orange-500); }
+            }
+         }
+
+         .player-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+
+            .player-display-name {
+               font-weight: 600;
+               display: flex;
+               align-items: center;
+               gap: 0.5rem;
+
+               .badge-you {
+                  background: var(--primary-500);
+                  color: white;
+                  font-size: 0.6rem;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+               }
+
+               .badge-host {
+                  background: var(--surface-400);
+                  color: white;
+                  font-size: 0.6rem;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+               }
+            }
+
+            .player-subtext {
+               font-size: 0.75rem;
+               color: var(--text-color-secondary);
+            }
+         }
+
+         .player-actions {
+            .action-trigger {
+               padding: 0.5rem;
+               cursor: pointer;
+               color: var(--text-color-secondary);
+               border-radius: 50%;
+               &:hover {
+                  background-color: var(--surface-hover);
+                  color: var(--text-color);
+               }
+            }
+         }
+      }
+   }
+
+   .action-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      .warning-box {
+         background-color: var(--yellow-50);
+         color: var(--yellow-700);
+         padding: 0.75rem;
+         border-radius: 6px;
+         display: flex;
+         align-items: center;
+         gap: 0.5rem;
+         font-size: 0.9rem;
+      }
+   }
+}
+
+// --- CARD 3: SETTINGS ---
+.settings-card {
+   .card-header {
+      margin-bottom: 1.5rem;
+      h3 { margin: 0; font-size: 1.1rem; }
+   }
+
+   .settings-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 0.75rem;
+
+      .setting-item {
+         display: contents;
+
+         label {
+            font-weight: 600;
+            color: var(--text-color-secondary);
+            text-align: right;
+            white-space: nowrap;
+         }
+
+         .setting-input-wrapper {
+             justify-self: end; // Move to the right
+             border: 1px solid var(--surface-border);
+             border-radius: 6px;
+             font-size: 0; // Remove gaps between inline-block children
+             display: inline-flex; // Ensure tightness
+
+             ::ng-deep .p-inputnumber {
+                 width: auto;
+
+                 .p-inputtext {
+                     width: 2.75rem; // Even narrower text field
+                     padding: 0.4rem 0.25rem; // Reduced padding
+                     text-align: center;
+                     border: none;
+                     border-left: 1px solid var(--surface-border);
+                     border-right: 1px solid var(--surface-border);
+                     border-radius: 0;
+                     box-shadow: none !important;
+                 }
+
+                 .p-button {
+                     min-width: 2.5rem; // Slightly wider to accommodate icon margin
+                     padding: 0.4rem;
+                     border: none;
+                     background: transparent;
+                     color: var(--text-color);
+                     display: flex;
+                     align-items: center;
+                     justify-content: center;
+
+                     &:hover {
+                         background: var(--surface-hover);
+                     }
+
+                     &:active {
+                         background: var(--surface-active);
+                     }
+
+                     // Fix rounded corners on ends
+                     &:first-child { border-radius: 6px 0 0 6px; }
+                     &:last-child { border-radius: 0 6px 6px 0; }
+
+                     .p-button-icon {
+                        font-size: 0.7rem; // Smaller icon
+                        margin: 0 0.25rem; // Add margin around icon for spacing from edges
+                     }
+                 }
+             }
+         }
+      }
+   }
+}

@@ -1,0 +1,17 @@
+<div class="create-game-container">
+  <p-toast></p-toast>
+
+  <div class="header">
+    <h1>Werewolves</h1>
+  </div>
+
+  <div class="main-content">
+    <p-button
+      label="Organize Game"
+      icon="pi pi-users"
+      (onClick)="createGame()"
+      [loading]="loading"
+      styleClass="p-button-lg organize-button"
+    ></p-button>
+  </div>
+</div>

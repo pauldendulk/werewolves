@@ -1,0 +1,202 @@
+<div class="lobby-container" *ngIf="!loading && lobbyState">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <p-menu #playerMenu [model]="playerMenuItems" [popup]="true" appendTo="body"></p-menu>
+
+  <div class="header">
+    <h1>Werewolves</h1>
+  </div>
+
+  <div class="content grid-layout">
+
+    <!-- CARD 1: Game Info & Invite -->
+    <div class="card-section invite-card">
+
+      <!-- Compact Game Info Header -->
+      <div class="game-info-compact">
+        <!-- Game Name Row -->
+        <div class="info-row">
+          <span class="row-label">Game Name</span>
+
+          <div class="row-value-container" *ngIf="isCreator && editingGameName">
+             <input pInputText [(ngModel)]="editedGameName" (keydown.enter)="saveGameName()" (keydown.escape)="cancelEditGameName()" class="compact-input" autoFocus />
+             <i class="pi pi-check action-icon confirm" (click)="saveGameName()"></i>
+             <i class="pi pi-times action-icon cancel" (click)="cancelEditGameName()"></i>
+          </div>
+
+          <div class="row-value-container" *ngIf="!editingGameName">
+            <span class="row-value" [class.editable]="isCreator" (click)="isCreator && startEditGameName()">
+              {{ lobbyState.game.gameName }}
+              <i *ngIf="isCreator" class="pi pi-pencil edit-indicator"></i>
+            </span>
+          </div>
+        </div>
+
+        <!-- Creator/You Row -->
+        <div class="info-row">
+          <span class="row-label">{{ isCreator ? 'Created By (You)' : 'Created By' }}</span>
+
+          <ng-container *ngIf="isCreator">
+             <div class="row-value-container" *ngIf="editingPlayerName">
+                <input pInputText [(ngModel)]="editedPlayerName" (keydown.enter)="savePlayerName()" (keydown.escape)="cancelEditPlayerName()" class="compact-input" autoFocus />
+                <i class="pi pi-check action-icon confirm" (click)="savePlayerName()"></i>
+                <i class="pi pi-times action-icon cancel" (click)="cancelEditPlayerName()"></i>
+             </div>
+
+             <div class="row-value-container" *ngIf="!editingPlayerName">
+                <span class="row-value editable" (click)="startEditPlayerName()">
+                   {{ currentPlayer?.displayName }}
+                   <i class="pi pi-pencil edit-indicator"></i>
+                </span>
+             </div>
+          </ng-container>
+
+          <ng-container *ngIf="!isCreator">
+            <span class="row-value">{{ lobbyState.game.creatorName }}</span>
+          </ng-container>
+        </div>
+
+        <!-- Your Name Row (Only if NOT creator) -->
+        <div class="info-row" *ngIf="!isCreator">
+            <span class="row-label">Your Name</span>
+
+            <div class="row-value-container" *ngIf="editingPlayerName">
+               <input pInputText [(ngModel)]="editedPlayerName" (keydown.enter)="savePlayerName()" (keydown.escape)="cancelEditPlayerName()" class="compact-input" autoFocus />
+               <i class="pi pi-check action-icon confirm" (click)="savePlayerName()"></i>
+               <i class="pi pi-times action-icon cancel" (click)="cancelEditPlayerName()"></i>
+            </div>
+
+            <div class="row-value-container" *ngIf="!editingPlayerName">
+               <span class="row-value editable" (click)="startEditPlayerName()">
+                  {{ currentPlayer?.displayName }}
+                  <i class="pi pi-pencil edit-indicator"></i>
+               </span>
+            </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- QR & Invite Area -->
+      <div class="invite-area">
+         <span class="invite-label">Scan to invite more players</span>
+
+         <div class="qr-wrapper">
+            <img [src]="qrCodeImage" alt="QR Code" class="qr-code" />
+
+            <div class="qr-actions">
+              <button pButton class="p-button-rounded p-button-text p-button-secondary" (click)="copyLink()">
+                 <i class="pi pi-link"></i>
+                 <span class="btn-label">Copy Link</span>
+              </button>
+              <div class="vertical-sep"></div>
+              <button pButton class="p-button-rounded p-button-text p-button-secondary" (click)="shareLink()">
+                 <i class="pi pi-share-alt"></i>
+                 <span class="btn-label">Share</span>
+              </button>
+            </div>
+         </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: Players List -->
+    <div class="card-section players-card">
+      <div class="card-header">
+        <h3>Players ({{ activePlayers.length }})</h3>
+      </div>
+
+      <div class="player-list-clean">
+        <div *ngFor="let player of activePlayers" class="player-row" [class.is-me]="player.playerId === playerId">
+           <div class="player-avatar">
+              <span class="status-indicator" [ngClass]="player.status.toLowerCase()"></span>
+              <span class="avatar-text">{{ player.displayName.charAt(0).toUpperCase() }}</span>
+           </div>
+
+           <div class="player-info">
+              <span class="player-display-name">
+                {{ player.displayName }}
+                <span *ngIf="player.playerId === playerId" class="badge-you">YOU</span>
+                <span *ngIf="player.isCreator" class="badge-host">HOST</span>
+              </span>
+              <span class="player-subtext" *ngIf="player.joinedAt">{{ formatJoinTime(player.joinedAt) }}</span>
+           </div>
+
+           <div class="player-actions">
+              <i *ngIf="player.playerId === playerId || isCreator"
+                 class="pi pi-ellipsis-v action-trigger"
+                 (click)="showPlayerMenu($event, player)">
+              </i>
+           </div>
+        </div>
+      </div>
+
+      <div class="action-footer">
+         <p-button
+          *ngIf="isCreator"
+          label="Start Game"
+          styleClass="p-button-lg w-full"
+          [disabled]="lobbyState.hasDuplicateNames || activePlayers.length < 2"
+        ></p-button>
+
+        <div class="warning-box" *ngIf="lobbyState.hasDuplicateNames">
+           <i class="pi pi-exclamation-triangle"></i>
+           <span>Duplicate names detected!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 3: Settings -->
+    <div class="card-section settings-card">
+      <div class="card-header">
+         <h3>Settings</h3>
+      </div>
+
+      <div class="settings-grid">
+         <div class="setting-item">
+            <label for="minPlayers">Min Players</label>
+            <div class="setting-input-wrapper">
+              <p-inputNumber
+                inputId="minPlayers"
+                [ngModel]="lobbyState.game.minPlayers"
+                (ngModelChange)="updateMinPlayers($event)"
+                [min]="2"
+                [max]="20"
+                [showButtons]="true"
+                buttonLayout="horizontal"
+                [disabled]="!isCreator"
+                inputStyleClass="w-4rem text-center"
+                decrementButtonClass="p-button-secondary p-button-outlined"
+                incrementButtonClass="p-button-secondary p-button-outlined"
+                incrementButtonIcon="pi pi-plus"
+                decrementButtonIcon="pi pi-minus">
+              </p-inputNumber>
+            </div>
+         </div>
+
+         <div class="setting-item">
+            <label for="maxPlayers">Max Players</label>
+            <div class="setting-input-wrapper">
+              <p-inputNumber
+                inputId="maxPlayers"
+                [ngModel]="lobbyState.game.maxPlayers"
+                (ngModelChange)="updateMaxPlayers($event)"
+                [min]="4"
+                [max]="20"
+                [showButtons]="true"
+                buttonLayout="horizontal"
+                [disabled]="!isCreator"
+                inputStyleClass="w-4rem text-center"
+                decrementButtonClass="p-button-secondary p-button-outlined"
+                incrementButtonClass="p-button-secondary p-button-outlined"
+                incrementButtonIcon="pi pi-plus"
+                decrementButtonIcon="pi pi-minus">
+              </p-inputNumber>
+            </div>
+         </div>
+      </div>
+    </div>
+
+<div class="loading-container" *ngIf="loading">
+  <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+</div>
