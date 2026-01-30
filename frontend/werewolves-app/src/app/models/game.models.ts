@@ -2,7 +2,6 @@ export interface GameState {
   gameId: string;
   gameName: string;
   creatorId: string;
-  creatorName: string;
   minPlayers: number;
   maxPlayers: number;
   joinLink: string;

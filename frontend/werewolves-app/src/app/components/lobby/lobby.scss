@@ -54,9 +54,6 @@
         color: var(--text-color-secondary);
         width: 120px;
         flex-shrink: 0;
-        text-align: right;
-        display: flex;
-        justify-content: flex-end;
       }
 
       .row-value-container {
@@ -122,12 +119,12 @@
      display: flex;
      flex-direction: column;
      align-items: center;
-     gap: 0;
+     gap: 0.5rem;
 
      .invite-label {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         color: var(--text-color-secondary);
-        margin-bottom: 0.5rem;
+        padding: 0.5rem 0; // Added padding top and bottom
      }
 
      .qr-wrapper {

@@ -75,6 +75,7 @@ public class GameController : ControllerBase
             return NotFound(new { message = "Game not found" });
         }
 
+        var creatorPlayer = game.Players.FirstOrDefault(p => p.PlayerId == game.CreatorId);
         var lobbyState = new LobbyStateDto
         {
             Game = new GameInfoDto
@@ -82,7 +83,7 @@ public class GameController : ControllerBase
                 GameId = game.GameId,
                 GameName = game.GameName,
                 CreatorId = game.CreatorId,
-                CreatorName = game.CreatorName,
+                CreatorName = creatorPlayer?.DisplayName ?? "Unknown",
                 MinPlayers = game.MinPlayers,
                 MaxPlayers = game.MaxPlayers,
                 JoinLink = game.JoinLink,

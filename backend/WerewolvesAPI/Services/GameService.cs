@@ -25,7 +25,6 @@ public class GameService
             GameId = gameId,
             GameName = gameName,
             CreatorId = playerId,
-            CreatorName = creatorName,
             MaxPlayers = maxPlayers,
             JoinLink = joinLink,
             QrCodeUrl = GenerateQrCode(joinLink)

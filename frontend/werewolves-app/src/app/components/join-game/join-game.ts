@@ -7,7 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { GameService } from '../../services/game.service';
-import { JoinGameRequest } from '../../models/game.models';
+import { JoinGameRequest, LobbyState } from '../../models/game.models';
 
 @Component({
   selector: 'app-join-game',
@@ -26,10 +26,10 @@ import { JoinGameRequest } from '../../models/game.models';
 export class JoinGameComponent implements OnInit {
   gameId: string = '';
   gameName: string = '';
-  creatorName: string = '';
   playerName: string = '';
   loading: boolean = false;
   loadingGame: boolean = true;
+  gameState?: LobbyState;
 
   constructor(
     private gameService: GameService,
@@ -37,6 +37,11 @@ export class JoinGameComponent implements OnInit {
     private router: Router,
     private messageService: MessageService
   ) {}
+
+  get creatorName(): string {
+    const creator = this.gameState?.players.find((p) => p.playerId === this.gameState?.game.creatorId);
+    return creator?.displayName || 'Unknown';
+  }
 
   ngOnInit(): void {
     this.gameId = this.route.snapshot.paramMap.get('id') || '';
@@ -46,8 +51,8 @@ export class JoinGameComponent implements OnInit {
   loadGameInfo(): void {
     this.gameService.getGameState(this.gameId).subscribe({
       next: (state) => {
+        this.gameState = state;
         this.gameName = state.game.gameName;
-        this.creatorName = state.game.creatorName;
         this.loadingGame = false;
 
         // Check if player already joined

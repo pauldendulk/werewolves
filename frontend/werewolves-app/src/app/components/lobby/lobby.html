@@ -1,6 +1,16 @@
 <div class="lobby-container" *ngIf="!loading && lobbyState">
   <p-toast></p-toast>
   <p-confirmDialog></p-confirmDialog>
+  <p-dialog header="Rename" [(visible)]="showRenameDialog" [modal]="true" [style]="{width: '400px'}">
+    <div class="p-fluid">
+      <label for="newPlayerName">New Name</label>
+      <input pInputText id="newPlayerName" [(ngModel)]="editedPlayerName" (keydown.enter)="savePlayerName()" autoFocus />
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Cancel" (onClick)="cancelEditPlayerName()" styleClass="p-button-text"></p-button>
+      <p-button label="Save" (onClick)="savePlayerName()"></p-button>
+    </ng-template>
+  </p-dialog>
 
   <p-menu #playerMenu [model]="playerMenuItems" [popup]="true" appendTo="body"></p-menu>
 
@@ -36,43 +46,7 @@
         <!-- Creator/You Row -->
         <div class="info-row">
           <span class="row-label">{{ isCreator ? 'Created By (You)' : 'Created By' }}</span>
-
-          <ng-container *ngIf="isCreator">
-             <div class="row-value-container" *ngIf="editingPlayerName">
-                <input pInputText [(ngModel)]="editedPlayerName" (keydown.enter)="savePlayerName()" (keydown.escape)="cancelEditPlayerName()" class="compact-input" autoFocus />
-                <i class="pi pi-check action-icon confirm" (click)="savePlayerName()"></i>
-                <i class="pi pi-times action-icon cancel" (click)="cancelEditPlayerName()"></i>
-             </div>
-
-             <div class="row-value-container" *ngIf="!editingPlayerName">
-                <span class="row-value editable" (click)="startEditPlayerName()">
-                   {{ currentPlayer?.displayName }}
-                   <i class="pi pi-pencil edit-indicator"></i>
-                </span>
-             </div>
-          </ng-container>
-
-          <ng-container *ngIf="!isCreator">
-            <span class="row-value">{{ lobbyState.game.creatorName }}</span>
-          </ng-container>
-        </div>
-
-        <!-- Your Name Row (Only if NOT creator) -->
-        <div class="info-row" *ngIf="!isCreator">
-            <span class="row-label">Your Name</span>
-
-            <div class="row-value-container" *ngIf="editingPlayerName">
-               <input pInputText [(ngModel)]="editedPlayerName" (keydown.enter)="savePlayerName()" (keydown.escape)="cancelEditPlayerName()" class="compact-input" autoFocus />
-               <i class="pi pi-check action-icon confirm" (click)="savePlayerName()"></i>
-               <i class="pi pi-times action-icon cancel" (click)="cancelEditPlayerName()"></i>
-            </div>
-
-            <div class="row-value-container" *ngIf="!editingPlayerName">
-               <span class="row-value editable" (click)="startEditPlayerName()">
-                  {{ currentPlayer?.displayName }}
-                  <i class="pi pi-pencil edit-indicator"></i>
-               </span>
-            </div>
+          <span class="row-value">{{ creatorName }}</span>
         </div>
       </div>
 
@@ -136,12 +110,17 @@
           *ngIf="isCreator"
           label="Start Game"
           styleClass="p-button-lg w-full"
-          [disabled]="lobbyState.hasDuplicateNames || activePlayers.length < 2"
+          [disabled]="!canStartGame"
         ></p-button>
 
         <div class="warning-box" *ngIf="lobbyState.hasDuplicateNames">
            <i class="pi pi-exclamation-triangle"></i>
            <span>Duplicate names detected!</span>
+        </div>
+
+        <div class="warning-box" *ngIf="!hasEnoughPlayers && !lobbyState.hasDuplicateNames">
+           <i class="pi pi-exclamation-triangle"></i>
+           <span>Need at least {{ lobbyState.game.minPlayers }} players to start ({{ activePlayers.length }}/{{ lobbyState.game.minPlayers }})</span>
         </div>
       </div>
     </div>

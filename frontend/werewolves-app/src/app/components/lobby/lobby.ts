@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { Menu } from 'primeng/menu';
@@ -29,6 +30,7 @@ import { LobbyState, PlayerState } from '../../models/game.models';
     ToastModule,
     ConfirmDialogModule,
     TooltipModule,
+    DialogModule,
     MenuModule
   ],
   providers: [MessageService, ConfirmationService],
@@ -45,7 +47,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   // Editing state
   editingGameName: boolean = false;
   editedGameName: string = '';
-  editingPlayerName: boolean = false;
+  showRenameDialog: boolean = false;
   editedPlayerName: string = '';
 
   playerMenuItems: MenuItem[] = [];
@@ -135,17 +137,33 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   get isCreator(): boolean {
-    return this.lobbyState?.game.creatorId === this.playerId;
+    const playerId = this.playerId || this.gameService.getPlayerId();
+    return this.lobbyState?.game.creatorId === playerId;
   }
 
   get currentPlayer(): PlayerState | undefined {
-    return this.lobbyState?.players.find(p => p.playerId === this.playerId);
+    const playerId = this.playerId || this.gameService.getPlayerId();
+    return this.lobbyState?.players.find(p => p.playerId === playerId);
   }
 
   get activePlayers(): PlayerState[] {
     return this.lobbyState?.players.filter(p =>
       p.status === 'Connected' || p.status === 'Disconnected'
     ) || [];
+  }
+
+  get hasEnoughPlayers(): boolean {
+    const minPlayers = this.lobbyState?.game.minPlayers || 2;
+    return this.activePlayers.length >= minPlayers;
+  }
+
+  get canStartGame(): boolean {
+    return this.hasEnoughPlayers && !this.lobbyState?.hasDuplicateNames;
+  }
+
+  get creatorName(): string {
+    const creator = this.lobbyState?.players.find(p => p.playerId === this.lobbyState?.game.creatorId);
+    return creator?.displayName || 'Unknown';
   }
 
   getPlayerStatusIcon(player: PlayerState): string {
@@ -314,11 +332,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
   // Player name editing
   startEditPlayerName(): void {
     this.editedPlayerName = this.currentPlayer?.displayName || '';
-    this.editingPlayerName = true;
+    this.showRenameDialog = true;
   }
 
   cancelEditPlayerName(): void {
-    this.editingPlayerName = false;
+    this.showRenameDialog = false;
     this.editedPlayerName = '';
   }
 
@@ -327,7 +345,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       return;
     }
     await this.signalRService.updatePlayerName(this.gameId, this.playerId, this.editedPlayerName.trim());
-    this.editingPlayerName = false;
+    this.showRenameDialog = false;
     this.loadLobbyState();
   }
 
@@ -348,8 +366,13 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.selectedPlayer = player;
     this.playerMenuItems = [];
 
-    // Option for ME to leave
+    // Option for ME to rename or leave
     if (player.playerId === this.playerId) {
+      this.playerMenuItems.push({
+        label: 'Rename',
+        icon: 'pi pi-pencil',
+        command: () => this.startEditPlayerName()
+      });
       this.playerMenuItems.push({
         label: 'Leave Game',
         icon: 'pi pi-sign-out',

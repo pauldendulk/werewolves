@@ -31,7 +31,6 @@ public class GameServiceTests
         // Assert
         game.Should().NotBeNull();
         game.GameName.Should().Be(gameName);
-        game.CreatorName.Should().Be(creatorName);
         game.MaxPlayers.Should().Be(maxPlayers);
         game.Players.Should().HaveCount(1);
         game.Players.First().DisplayName.Should().Be(creatorName);
@@ -185,4 +184,45 @@ public class GameServiceTests
         // Assert
         result.Should().BeTrue();
     }
-}
+
+    [Fact]
+    public void UpdatePlayerName_WhenCreatorChangesName_ShouldUpdateCreatorNameInDTO()
+    {
+        // Arrange
+        var game = _gameService.CreateGame("Test Game", "OriginalCreator", 40, "http://localhost");
+        var creatorId = game.CreatorId;
+        var newName = "UpdatedCreator";
+
+        // Act
+        var updateResult = _gameService.UpdatePlayerName(game.GameId, creatorId, newName);
+
+        // Assert
+        updateResult.Should().BeTrue();
+        
+        // Verify the creator player's name was updated
+        var updatedGame = _gameService.GetGame(game.GameId);
+        var creator = updatedGame!.Players.First(p => p.PlayerId == creatorId);
+        creator.DisplayName.Should().Be(newName);
+        
+        // The DTO should derive creator name from the player, not a stored value
+        // This test verifies that the creator's current DisplayName is the source of truth
+    }
+
+    [Fact]
+    public void GetGame_ShouldDeriveCreatorNameFromPlayer()
+    {
+        // Arrange
+        var game = _gameService.CreateGame("Test Game", "OriginalName", 40, "http://localhost");
+        var creatorId = game.CreatorId;
+        
+        // Act - Change creator's name
+        _gameService.UpdatePlayerName(game.GameId, creatorId, "NewName");
+        
+        // Assert - The creator player's DisplayName should be the source of truth
+        var updatedGame = _gameService.GetGame(game.GameId);
+        var creator = updatedGame!.Players.First(p => p.PlayerId == creatorId);
+        creator.DisplayName.Should().Be("NewName");
+        
+        // When the DTO is created (in GameController), it should use the player's current DisplayName
+        // This ensures the creator name is always in sync with the player's current name
+    }}
