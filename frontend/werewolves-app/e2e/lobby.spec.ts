@@ -68,3 +68,44 @@ test.describe('Lobby', () => {
     await expect(page.getByText(/Need at least .* players to start/)).toBeVisible();
   });
 });
+
+test.describe('Multi-player lobby', () => {
+  test('second player joining is visible in creator lobby', async ({ browser }) => {
+    // Create two separate browser contexts (separate localStorage, cookies, etc.)
+    const creatorContext = await browser.newContext();
+    const joinerContext = await browser.newContext();
+
+    const creatorPage = await creatorContext.newPage();
+    const joinerPage = await joinerContext.newPage();
+
+    // Creator starts a new game
+    await creatorPage.goto('/');
+    await creatorPage.getByRole('button', { name: 'Organize Game' }).click();
+    await expect(creatorPage).toHaveURL(/\/game\/.*\/lobby/);
+    await expect(creatorPage.getByText('Players (1)')).toBeVisible();
+
+    // Extract the game ID from the creator's URL
+    const creatorUrl = creatorPage.url();
+    const gameId = creatorUrl.match(/\/game\/([^/]+)\/lobby/)![1];
+
+    // Joiner navigates to the join page
+    await joinerPage.goto(`/game/${gameId}`);
+    await expect(joinerPage.getByRole('heading', { name: 'Join Game' })).toBeVisible();
+
+    // Joiner enters their name and joins
+    await joinerPage.getByLabel('Your Name').fill('Alice');
+    await joinerPage.getByRole('button', { name: 'Join Game' }).click();
+
+    // Joiner should land in the lobby
+    await expect(joinerPage).toHaveURL(/\/game\/.*\/lobby/);
+    await expect(joinerPage.getByText('Players (2)')).toBeVisible();
+
+    // Creator's lobby should update to show 2 players
+    await expect(creatorPage.getByText('Players (2)')).toBeVisible({ timeout: 10000 });
+    await expect(creatorPage.getByText('Alice')).toBeVisible();
+
+    // Clean up
+    await creatorContext.close();
+    await joinerContext.close();
+  });
+});
