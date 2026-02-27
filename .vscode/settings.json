@@ -6,6 +6,10 @@
         },
         "dotnet new": true,
         "dotnet add": true,
-        "dotnet test": true
+        "dotnet test": true,
+        "/^cd c:\\\\code\\\\github\\\\werewolves\\\\frontend\\\\werewolves-app; npm install -D @playwright/test$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }

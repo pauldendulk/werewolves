@@ -1,5 +1,11 @@
 # Development Instructions for GitHub Copilot
 
+## Project Overview
+
+**Werewolves App** is a mobile companion for playing the in-person game of Werewolf without a human moderator. Players join a shared session on their phones, receive secret roles (Werewolves or Civilians), and progress through voting phases to eliminate suspects. The app manages game flow, timing, and voting, and features a **token system** where players can spend tokens for special abilities like extending voting time, peeking hints, or protecting players. Multiple games can be played in one session with leaderboard tracking for meta-game competition.
+
+**Tech Stack**: Angular frontend (port 4200) + .NET backend API (port 5000)
+
 ## Critical: Build and Test After Every Change
 
 **Before stopping work on any task, you MUST:**
