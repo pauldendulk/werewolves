@@ -32,8 +32,16 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/remove`, { playerId: targetPlayerId, moderatorId });
   }
 
-  updateSettings(gameId: string, creatorId: string, maxPlayers: number): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { creatorId, maxPlayers });
+  updateSettings(gameId: string, creatorId: string, minPlayers: number, maxPlayers: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { creatorId, minPlayers, maxPlayers });
+  }
+
+  updateGameName(gameId: string, creatorId: string, gameName: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/name`, { creatorId, gameName });
+  }
+
+  updatePlayerName(gameId: string, playerId: string, displayName: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/player-name`, { playerId, displayName });
   }
 
   getPlayerId(): string | null {

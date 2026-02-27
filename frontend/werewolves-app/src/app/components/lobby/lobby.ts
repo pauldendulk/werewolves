@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { Subscription } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -15,7 +16,7 @@ import { MenuModule } from 'primeng/menu';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { GameService } from '../../services/game.service';
-import { SignalRService } from '../../services/signalr.service';
+import { PollingService } from '../../services/polling.service';
 import { LobbyState, PlayerState } from '../../models/game.models';
 
 @Component({
@@ -43,6 +44,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   lobbyState?: LobbyState;
   loading: boolean = true;
   qrCodeImage: SafeUrl = '';
+  private pollSubscription?: Subscription;
 
   // Editing state
   editingGameName: boolean = false;
@@ -56,7 +58,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
   constructor(
     private gameService: GameService,
-    private signalRService: SignalRService,
+    private pollingService: PollingService,
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
@@ -74,13 +76,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
     }
 
     this.loadLobbyState();
-    this.setupSignalR();
+    this.startPolling();
   }
 
   ngOnDestroy(): void {
-    if (this.playerId && this.gameId) {
-      this.signalRService.stopConnection(this.gameId, this.playerId);
-    }
+    this.pollSubscription?.unsubscribe();
   }
 
   loadLobbyState(): void {
@@ -108,32 +108,32 @@ export class LobbyComponent implements OnInit, OnDestroy {
     });
   }
 
-  async setupSignalR(): Promise<void> {
-    try {
-      await this.signalRService.startConnection(this.gameId, this.playerId);
+  startPolling(): void {
+    this.pollSubscription = this.pollingService.startPolling(this.gameId).subscribe({
+      next: (state) => {
+        const prevPlayerCount = this.lobbyState?.players.length ?? 0;
+        this.lobbyState = state;
+        this.qrCodeImage = this.sanitizer.bypassSecurityTrustUrl(
+          `data:image/png;base64,${state.game.qrCodeBase64}`
+        );
+        this.loading = false;
 
-      this.signalRService.lobbyUpdated$.subscribe((game) => {
-        if (this.lobbyState) {
-          this.lobbyState.game = game;
-          this.loadLobbyState(); // Reload to get latest state
+        // Notify if a new player joined
+        if (state.players.length > prevPlayerCount && prevPlayerCount > 0) {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Player Joined',
+            detail: 'A new player joined the game'
+          });
         }
-      });
-
-      this.signalRService.playerJoined$.subscribe(() => {
-        this.loadLobbyState();
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Player Joined',
-          detail: 'A new player joined the game'
-        });
-      });
-
-      this.signalRService.playerLeft$.subscribe(() => {
-        this.loadLobbyState();
-      });
-    } catch (error) {
-      console.error('SignalR connection error:', error);
-    }
+      },
+      error: (error) => {
+        this.loading = false;
+        if (error.status === 404) {
+          this.router.navigate(['/']);
+        }
+      }
+    });
   }
 
   get isCreator(): boolean {
@@ -226,23 +226,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
     }
   }
 
-  async updateMaxPlayers(value: number): Promise<void> {
+  updateMaxPlayers(value: number): void {
     if (this.isCreator && this.lobbyState) {
-      await this.signalRService.updateMaxPlayers(
-        this.gameId,
-        value,
-        this.playerId
-      );
+      const minPlayers = this.lobbyState.game.minPlayers;
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, value).subscribe();
     }
   }
 
-  async updateMinPlayers(value: number): Promise<void> {
+  updateMinPlayers(value: number): void {
     if (this.isCreator && this.lobbyState) {
-      await this.signalRService.updateMinPlayers(
-        this.gameId,
-        value,
-        this.playerId
-      );
+      const maxPlayers = this.lobbyState.game.maxPlayers;
+      this.gameService.updateSettings(this.gameId, this.playerId, value, maxPlayers).subscribe();
     }
   }
 
@@ -321,11 +315,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.editedGameName = '';
   }
 
-  async saveGameName(): Promise<void> {
+  saveGameName(): void {
     if (this.editedGameName.trim().length === 0) {
       return;
     }
-    await this.signalRService.updateGameName(this.gameId, this.editedGameName.trim(), this.playerId);
+    this.gameService.updateGameName(this.gameId, this.playerId, this.editedGameName.trim()).subscribe();
     this.editingGameName = false;
   }
 
@@ -340,13 +334,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.editedPlayerName = '';
   }
 
-  async savePlayerName(): Promise<void> {
+  savePlayerName(): void {
     if (this.editedPlayerName.trim().length === 0) {
       return;
     }
-    await this.signalRService.updatePlayerName(this.gameId, this.playerId, this.editedPlayerName.trim());
+    this.gameService.updatePlayerName(this.gameId, this.playerId, this.editedPlayerName.trim()).subscribe();
     this.showRenameDialog = false;
-    this.loadLobbyState();
   }
 
   formatJoinTime(joinedAt: string): string {

@@ -232,42 +232,6 @@ public class GameService
         return activePlayerNames.Count != activePlayerNames.Distinct(StringComparer.OrdinalIgnoreCase).Count();
     }
 
-    public bool UpdatePlayerConnection(string gameId, string playerId, string connectionId)
-    {
-        if (!_games.TryGetValue(gameId, out var game))
-        {
-            return false;
-        }
-
-        var player = game.Players.FirstOrDefault(p => p.PlayerId == playerId);
-        if (player != null)
-        {
-            player.ConnectionId = connectionId;
-            player.Status = PlayerStatus.Connected;
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool DisconnectPlayer(string gameId, string connectionId)
-    {
-        if (!_games.TryGetValue(gameId, out var game))
-        {
-            return false;
-        }
-
-        var player = game.Players.FirstOrDefault(p => p.ConnectionId == connectionId);
-        if (player != null && player.Status == PlayerStatus.Connected)
-        {
-            player.Status = PlayerStatus.Disconnected;
-            _logger.LogInformation("Player disconnected: {PlayerId} from game {GameId}", player.PlayerId, gameId);
-            return true;
-        }
-
-        return false;
-    }
-
     private string GenerateQrCode(string text)
     {
         using var qrGenerator = new QRCodeGenerator();

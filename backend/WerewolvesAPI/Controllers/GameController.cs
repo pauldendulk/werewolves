@@ -135,12 +135,37 @@ public class GameController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        if (_gameService.UpdateMaxPlayers(gameId, request.MaxPlayers, request.CreatorId))
+        bool maxUpdated = _gameService.UpdateMaxPlayers(gameId, request.MaxPlayers, request.CreatorId);
+        bool minUpdated = _gameService.UpdateMinPlayers(gameId, request.MinPlayers, request.CreatorId);
+
+        if (maxUpdated || minUpdated)
         {
             return Ok();
         }
 
         return Unauthorized(new { message = "Only the creator can update settings" });
+    }
+
+    [HttpPost("{gameId}/name")]
+    public ActionResult UpdateGameName(string gameId, [FromBody] UpdateGameNameRequest request)
+    {
+        if (_gameService.UpdateGameName(gameId, request.GameName, request.CreatorId))
+        {
+            return Ok();
+        }
+
+        return Unauthorized(new { message = "Only the creator can update the game name" });
+    }
+
+    [HttpPost("{gameId}/player-name")]
+    public ActionResult UpdatePlayerName(string gameId, [FromBody] UpdatePlayerNameRequest request)
+    {
+        if (_gameService.UpdatePlayerName(gameId, request.PlayerId, request.DisplayName))
+        {
+            return Ok();
+        }
+
+        return NotFound(new { message = "Game or player not found" });
     }
 }
 
@@ -158,7 +183,22 @@ public class RemovePlayerRequest
 public class UpdateSettingsRequest
 {
     public string CreatorId { get; set; } = string.Empty;
-    
+
+    [System.ComponentModel.DataAnnotations.Range(2, 40)]
+    public int MinPlayers { get; set; }
+
     [System.ComponentModel.DataAnnotations.Range(2, 40)]
     public int MaxPlayers { get; set; }
+}
+
+public class UpdateGameNameRequest
+{
+    public string CreatorId { get; set; } = string.Empty;
+    public string GameName { get; set; } = string.Empty;
+}
+
+public class UpdatePlayerNameRequest
+{
+    public string PlayerId { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
 }

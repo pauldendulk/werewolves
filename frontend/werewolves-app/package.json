@@ -31,7 +31,6 @@
     "@angular/forms": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
-    "@microsoft/signalr": "^10.0.0",
     "@primeuix/themes": "^2.0.3",
     "primeicons": "^7.0.0",
     "primeng": "^20.4.0",

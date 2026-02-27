@@ -8,7 +8,6 @@ public class PlayerState
     public bool IsModerator { get; set; }
     public PlayerStatus Status { get; set; } = PlayerStatus.Connected;
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
-    public string ConnectionId { get; set; } = string.Empty;
 }
 
 public enum PlayerStatus

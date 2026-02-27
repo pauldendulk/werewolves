@@ -1,11 +1,9 @@
-using WerewolvesAPI.Hubs;
 using WerewolvesAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
-builder.Services.AddSignalR();
 builder.Services.AddSingleton<GameService>();
 
 // Add CORS
@@ -15,8 +13,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:4200", "http://localhost:4201")
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
 });
 
@@ -39,6 +36,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<LobbyHub>("/hub/lobby");
 
 app.Run();
