@@ -60,7 +60,7 @@ export class JoinGameComponent implements OnInit {
         if (playerId) {
           const existingPlayer = state.players.find(p => p.playerId === playerId);
           if (existingPlayer) {
-            this.router.navigate(['/game', this.gameId, 'lobby']);
+            this.router.navigate(['/game', this.gameId, 'lobby'], { replaceUrl: true });
           }
         }
       },
@@ -95,7 +95,7 @@ export class JoinGameComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.gameService.setPlayerId(response.playerId);
-          this.router.navigate(['/game', this.gameId, 'lobby']);
+          this.router.navigate(['/game', this.gameId, 'lobby'], { replaceUrl: true });
         } else {
           this.loading = false;
           this.messageService.add({

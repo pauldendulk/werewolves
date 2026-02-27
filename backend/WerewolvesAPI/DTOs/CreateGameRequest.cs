@@ -14,6 +14,9 @@ public class CreateGameRequest
     
     [Range(2, 40)]
     public int MaxPlayers { get; set; } = 20;
+
+    [Required]
+    public string FrontendBaseUrl { get; set; } = string.Empty;
 }
 
 public class CreateGameResponse

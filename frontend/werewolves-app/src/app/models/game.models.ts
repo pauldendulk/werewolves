@@ -28,6 +28,7 @@ export interface CreateGameRequest {
   gameName: string;
   creatorName: string;
   maxPlayers: number;
+  frontendBaseUrl: string;
 }
 
 export interface CreateGameResponse {

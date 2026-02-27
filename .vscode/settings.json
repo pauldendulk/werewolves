@@ -14,6 +14,34 @@
         "/^npx playwright test --headed --slow-mo=500 --reporter=list$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^Get-ChildItem \"\\$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Packages\\\\Hashicorp\\.Terraform\\*\" -Recurse -Filter \"terraform\\.exe\" \\| ForEach-Object \\{ \\$_\\.FullName \\}$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^gcloud auth configure-docker europe-west4-docker\\.pkg\\.dev --quiet 2>&1$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd c:\\\\code\\\\github\\\\werewolves\\\\backend\\\\WerewolvesAPI; docker build -t europe-west4-docker\\.pkg\\.dev/brutiledemo/werewolves/werewolves-api:latest \\. 2>&1$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^docker push europe-west4-docker\\.pkg\\.dev/brutiledemo/werewolves/werewolves-api:latest 2>&1$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^npm install -g firebase-tools 2>&1 \\| Select-String -Pattern \"added\\|error\\|Error\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd c:\\\\code\\\\github\\\\werewolves\\\\frontend\\\\werewolves-app; npm run build 2>&1 \\| Select-String -Pattern \"complete\\|error\\|Error\\|warning\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^firebase projects:addfirebase brutiledemo 2>&1$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }

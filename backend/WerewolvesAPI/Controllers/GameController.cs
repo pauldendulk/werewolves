@@ -25,8 +25,7 @@ public class GameController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        var game = _gameService.CreateGame(request.GameName, request.CreatorName, request.MaxPlayers, baseUrl);
+        var game = _gameService.CreateGame(request.GameName, request.CreatorName, request.MaxPlayers, request.FrontendBaseUrl);
 
         var response = new CreateGameResponse
         {

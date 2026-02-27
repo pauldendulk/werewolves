@@ -42,13 +42,14 @@ export class CreateGameComponent {
     const request: CreateGameRequest = {
       gameName: this.gameName,
       creatorName: this.creatorName,
-      maxPlayers: this.maxPlayers
+      maxPlayers: this.maxPlayers,
+      frontendBaseUrl: window.location.origin
     };
 
     this.gameService.createGame(request).subscribe({
       next: (response) => {
         this.gameService.setPlayerId(response.playerId);
-        this.router.navigate(['/game', response.gameId, 'lobby']);
+        this.router.navigate(['/game', response.gameId, 'lobby'], { replaceUrl: true });
       },
       error: (error) => {
         this.loading = false;
