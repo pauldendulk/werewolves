@@ -1,0 +1,52 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Backend",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["run"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend/WerewolvesAPI"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Building.*",
+          "endsPattern": ".*Application started.*|.*Now listening on.*"
+        }
+      }
+    },
+    {
+      "label": "Start Angular",
+      "type": "shell",
+      "command": "npm",
+      "args": ["start"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend/werewolves-app"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Initial.*chunk.*files.*",
+          "endsPattern": ".*Compiled.*successfully.*|.*Application bundle generation complete.*"
+        }
+      }
+    },
+    {
+      "label": "Start Backend and Frontend",
+      "dependsOn": ["Start Backend", "Start Angular"],
+      "problemMatcher": []
+    }
+  ]
+}
