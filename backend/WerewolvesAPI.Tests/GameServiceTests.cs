@@ -225,4 +225,91 @@ public class GameServiceTests
         
         // When the DTO is created (in GameController), it should use the player's current DisplayName
         // This ensures the creator name is always in sync with the player's current name
-    }}
+    }
+
+    [Fact]
+    public void CreateGame_ShouldStartAtVersionOne()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        game.Version.Should().Be(1);
+    }
+
+    [Fact]
+    public void JoinGame_ShouldBumpVersion()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var versionBefore = game.Version;
+
+        _gameService.JoinGame(game.GameId, "Alice");
+
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+    }
+
+    [Fact]
+    public void LeaveGame_ShouldBumpVersion()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
+        var versionAfterJoin = _gameService.GetGame(game.GameId)!.Version;
+
+        _gameService.LeaveGame(game.GameId, player!.PlayerId);
+
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionAfterJoin + 1);
+    }
+
+    [Fact]
+    public void RemovePlayer_ShouldBumpVersion()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
+        var versionAfterJoin = _gameService.GetGame(game.GameId)!.Version;
+
+        _gameService.RemovePlayer(game.GameId, player!.PlayerId, game.CreatorId);
+
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionAfterJoin + 1);
+    }
+
+    [Fact]
+    public void UpdateMaxPlayers_ShouldBumpVersion()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var versionBefore = game.Version;
+
+        _gameService.UpdateMaxPlayers(game.GameId, 30, game.CreatorId);
+
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+    }
+
+    [Fact]
+    public void UpdateMinPlayers_ShouldBumpVersion()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var versionBefore = game.Version;
+
+        _gameService.UpdateMinPlayers(game.GameId, 3, game.CreatorId);
+
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+    }
+
+    [Fact]
+    public void UpdateGameName_ShouldBumpVersion()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var versionBefore = game.Version;
+
+        _gameService.UpdateGameName(game.GameId, "New Name", game.CreatorId);
+
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+    }
+
+    [Fact]
+    public void UpdatePlayerName_ShouldBumpVersion()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var versionBefore = game.Version;
+
+        _gameService.UpdatePlayerName(game.GameId, game.CreatorId, "New Name");
+
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+    }
+}

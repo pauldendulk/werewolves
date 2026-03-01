@@ -12,6 +12,7 @@ public class GameState
     public GameStatus Status { get; set; } = GameStatus.Lobby;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public List<PlayerState> Players { get; set; } = new();
+    public int Version { get; set; } = 1;
 }
 
 public enum GameStatus

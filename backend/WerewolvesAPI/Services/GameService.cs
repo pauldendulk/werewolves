@@ -72,6 +72,7 @@ public class GameService
                 }
                 
                 existingPlayer.Status = PlayerStatus.Connected;
+                BumpVersion(game);
                 _logger.LogInformation("Player rejoined: {PlayerId} in game {GameId}", existingPlayerId, gameId);
                 return (true, "Rejoined successfully", existingPlayer);
             }
@@ -96,6 +97,7 @@ public class GameService
         };
 
         game.Players.Add(player);
+        BumpVersion(game);
         _logger.LogInformation("Player joined: {PlayerId} ({DisplayName}) in game {GameId}", playerId, displayName, gameId);
         return (true, null, player);
     }
@@ -111,6 +113,7 @@ public class GameService
         if (player != null)
         {
             player.Status = PlayerStatus.Left;
+            BumpVersion(game);
             _logger.LogInformation("Player left: {PlayerId} from game {GameId}", playerId, gameId);
             return true;
         }
@@ -135,6 +138,7 @@ public class GameService
         if (player != null && !player.IsCreator)
         {
             player.Status = PlayerStatus.Removed;
+            BumpVersion(game);
             _logger.LogInformation("Player removed: {PlayerId} from game {GameId} by {ModeratorId}", playerId, gameId, moderatorId);
             return true;
         }
@@ -155,6 +159,7 @@ public class GameService
         }
 
         game.MaxPlayers = maxPlayers;
+        BumpVersion(game);
         _logger.LogInformation("Max players updated to {MaxPlayers} in game {GameId}", maxPlayers, gameId);
         return true;
     }
@@ -172,6 +177,7 @@ public class GameService
         }
 
         game.MinPlayers = minPlayers;
+        BumpVersion(game);
         _logger.LogInformation("Min players updated to {MinPlayers} in game {GameId}", minPlayers, gameId);
         return true;
     }
@@ -189,6 +195,7 @@ public class GameService
         }
 
         game.GameName = gameName;
+        BumpVersion(game);
         _logger.LogInformation("Game name updated to {GameName} in game {GameId}", gameName, gameId);
         return true;
     }
@@ -210,6 +217,7 @@ public class GameService
         if (player != null)
         {
             player.DisplayName = displayName;
+            BumpVersion(game);
             _logger.LogInformation("Player {PlayerId} name updated to {DisplayName} in game {GameId}", playerId, displayName, gameId);
             return true;
         }
@@ -231,6 +239,8 @@ public class GameService
 
         return activePlayerNames.Count != activePlayerNames.Distinct(StringComparer.OrdinalIgnoreCase).Count();
     }
+
+    private static void BumpVersion(GameState game) => game.Version++;
 
     private string GenerateQrCode(string text)
     {

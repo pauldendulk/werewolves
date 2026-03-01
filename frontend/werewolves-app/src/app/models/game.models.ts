@@ -7,6 +7,7 @@ export interface GameState {
   joinLink: string;
   qrCodeBase64: string;
   status: string;
+  version: number;
 }
 
 export interface PlayerState {

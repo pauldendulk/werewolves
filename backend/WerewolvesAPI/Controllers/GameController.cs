@@ -66,12 +66,17 @@ public class GameController : ControllerBase
     }
 
     [HttpGet("{gameId}")]
-    public ActionResult<LobbyStateDto> GetGameState(string gameId)
+    public ActionResult<LobbyStateDto> GetGameState(string gameId, [FromQuery] int? version = null)
     {
         var game = _gameService.GetGame(gameId);
         if (game == null)
         {
             return NotFound(new { message = "Game not found" });
+        }
+
+        if (version.HasValue && version.Value == game.Version)
+        {
+            return NoContent();
         }
 
         var creatorPlayer = game.Players.FirstOrDefault(p => p.PlayerId == game.CreatorId);
@@ -87,7 +92,8 @@ public class GameController : ControllerBase
                 MaxPlayers = game.MaxPlayers,
                 JoinLink = game.JoinLink,
                 QrCodeBase64 = game.QrCodeUrl,
-                Status = game.Status.ToString()
+                Status = game.Status.ToString(),
+                Version = game.Version
             },
             Players = game.Players.Select(p => new PlayerDto
             {

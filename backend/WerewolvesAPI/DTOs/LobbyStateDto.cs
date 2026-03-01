@@ -18,6 +18,7 @@ public class GameInfoDto
     public string JoinLink { get; set; } = string.Empty;
     public string QrCodeBase64 { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
+    public int Version { get; set; }
 }
 
 public class PlayerDto
