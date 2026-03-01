@@ -6,14 +6,22 @@ public class PlayerState
     public string DisplayName { get; set; } = string.Empty;
     public bool IsCreator { get; set; }
     public bool IsModerator { get; set; }
-    public PlayerStatus Status { get; set; } = PlayerStatus.Connected;
+    public bool IsConnected { get; set; } = true;
+    public ParticipationStatus ParticipationStatus { get; set; } = ParticipationStatus.Participating;
+    public PlayerRole? Role { get; set; }
+    public bool IsEliminated { get; set; }
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 }
 
-public enum PlayerStatus
+public enum ParticipationStatus
 {
-    Connected,
-    Disconnected,
+    Participating,
     Left,
     Removed
+}
+
+public enum PlayerRole
+{
+    Villager,
+    Werewolf
 }

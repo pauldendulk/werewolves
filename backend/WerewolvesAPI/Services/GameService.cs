@@ -36,10 +36,11 @@ public class GameService
             DisplayName = creatorName,
             IsCreator = true,
             IsModerator = true,
-            Status = PlayerStatus.Connected
+            IsConnected = true
         };
 
         game.Players.Add(creator);
+        RecalculateGameState(game);
         _games[gameId] = game;
 
         _logger.LogInformation("Game created: {GameId} by {CreatorName}", gameId, creatorName);
@@ -66,12 +67,14 @@ public class GameService
             if (existingPlayer != null)
             {
                 // Rejoin logic
-                if (existingPlayer.Status == PlayerStatus.Removed)
+                if (existingPlayer.ParticipationStatus == ParticipationStatus.Removed)
                 {
                     return (false, "You were removed from this game", null);
                 }
-                
-                existingPlayer.Status = PlayerStatus.Connected;
+
+                existingPlayer.IsConnected = true;
+                existingPlayer.ParticipationStatus = ParticipationStatus.Participating;
+                RecalculateGameState(game);
                 BumpVersion(game);
                 _logger.LogInformation("Player rejoined: {PlayerId} in game {GameId}", existingPlayerId, gameId);
                 return (true, "Rejoined successfully", existingPlayer);
@@ -79,7 +82,7 @@ public class GameService
         }
 
         // Check if game is full
-        var activePlayers = game.Players.Count(p => p.Status != PlayerStatus.Left && p.Status != PlayerStatus.Removed);
+        var activePlayers = game.Players.Count(p => p.ParticipationStatus == ParticipationStatus.Participating);
         if (activePlayers >= game.MaxPlayers)
         {
             return (false, $"Game is full ({activePlayers}/{game.MaxPlayers})", null);
@@ -93,10 +96,11 @@ public class GameService
             DisplayName = displayName,
             IsCreator = false,
             IsModerator = false,
-            Status = PlayerStatus.Connected
+            IsConnected = true
         };
 
         game.Players.Add(player);
+        RecalculateGameState(game);
         BumpVersion(game);
         _logger.LogInformation("Player joined: {PlayerId} ({DisplayName}) in game {GameId}", playerId, displayName, gameId);
         return (true, null, player);
@@ -112,7 +116,9 @@ public class GameService
         var player = game.Players.FirstOrDefault(p => p.PlayerId == playerId);
         if (player != null)
         {
-            player.Status = PlayerStatus.Left;
+            player.ParticipationStatus = ParticipationStatus.Left;
+            player.IsConnected = false;
+            RecalculateGameState(game);
             BumpVersion(game);
             _logger.LogInformation("Player left: {PlayerId} from game {GameId}", playerId, gameId);
             return true;
@@ -137,7 +143,9 @@ public class GameService
         var player = game.Players.FirstOrDefault(p => p.PlayerId == playerId);
         if (player != null && !player.IsCreator)
         {
-            player.Status = PlayerStatus.Removed;
+            player.ParticipationStatus = ParticipationStatus.Removed;
+            player.IsConnected = false;
+            RecalculateGameState(game);
             BumpVersion(game);
             _logger.LogInformation("Player removed: {PlayerId} from game {GameId} by {ModeratorId}", playerId, gameId, moderatorId);
             return true;
@@ -159,6 +167,7 @@ public class GameService
         }
 
         game.MaxPlayers = maxPlayers;
+        RecalculateGameState(game);
         BumpVersion(game);
         _logger.LogInformation("Max players updated to {MaxPlayers} in game {GameId}", maxPlayers, gameId);
         return true;
@@ -177,6 +186,7 @@ public class GameService
         }
 
         game.MinPlayers = minPlayers;
+        RecalculateGameState(game);
         BumpVersion(game);
         _logger.LogInformation("Min players updated to {MinPlayers} in game {GameId}", minPlayers, gameId);
         return true;
@@ -208,7 +218,7 @@ public class GameService
         }
 
         // Only allow name changes before game starts
-        if (game.Status != GameStatus.Lobby)
+        if (game.Status == GameStatus.InProgress || game.Status == GameStatus.Ended)
         {
             return false;
         }
@@ -233,11 +243,52 @@ public class GameService
         }
 
         var activePlayerNames = game.Players
-            .Where(p => p.Status == PlayerStatus.Connected || p.Status == PlayerStatus.Disconnected)
+            .Where(p => p.ParticipationStatus == ParticipationStatus.Participating)
             .Select(p => p.DisplayName)
             .ToList();
 
         return activePlayerNames.Count != activePlayerNames.Distinct(StringComparer.OrdinalIgnoreCase).Count();
+    }
+
+    public bool UpdateDiscussionDuration(string gameId, int minutes, string creatorId)
+    {
+        if (!_games.TryGetValue(gameId, out var game))
+            return false;
+
+        if (game.CreatorId != creatorId)
+            return false;
+
+        game.DiscussionDurationMinutes = minutes;
+        BumpVersion(game);
+        _logger.LogInformation("Discussion duration updated to {Minutes} in game {GameId}", minutes, gameId);
+        return true;
+    }
+
+    public bool UpdateNumberOfWerewolves(string gameId, int count, string creatorId)
+    {
+        if (!_games.TryGetValue(gameId, out var game))
+            return false;
+
+        if (game.CreatorId != creatorId)
+            return false;
+
+        var activeCount = game.Players.Count(p => p.ParticipationStatus == ParticipationStatus.Participating);
+        if (count < 1 || count >= activeCount)
+            return false;
+
+        game.NumberOfWerewolves = count;
+        BumpVersion(game);
+        _logger.LogInformation("Number of werewolves updated to {Count} in game {GameId}", count, gameId);
+        return true;
+    }
+
+    private static void RecalculateGameState(GameState game)
+    {
+        if (game.Status != GameStatus.WaitingForPlayers && game.Status != GameStatus.ReadyToStart)
+            return;
+
+        var activeCount = game.Players.Count(p => p.ParticipationStatus == ParticipationStatus.Participating);
+        game.Status = activeCount >= game.MinPlayers ? GameStatus.ReadyToStart : GameStatus.WaitingForPlayers;
     }
 
     private static void BumpVersion(GameState game) => game.Version++;

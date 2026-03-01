@@ -148,7 +148,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
   get activePlayers(): PlayerState[] {
     return this.lobbyState?.players.filter(p =>
-      p.status === 'Connected' || p.status === 'Disconnected'
+      p.participationStatus === 'Participating'
     ) || [];
   }
 
@@ -167,13 +167,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   getPlayerStatusIcon(player: PlayerState): string {
-    switch (player.status) {
-      case 'Connected': return '🟢';
-      case 'Disconnected': return '🔴';
-      case 'Left': return '🟡';
-      case 'Removed': return '⛔';
-      default: return '';
-    }
+    if (player.participationStatus === 'Left') return '🟡';
+    if (player.participationStatus === 'Removed') return '⛔';
+    return player.isConnected ? '🟢' : '🔴';
   }
 
   getPlayerLabel(player: PlayerState): string {
@@ -186,8 +182,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
       label += ' (Moderator)';
     }
 
-    if (player.status !== 'Connected') {
-      label += ` (${player.status.toLowerCase()})`;
+    if (!player.isConnected) {
+      label += ' (disconnected)';
     }
 
     return label;
@@ -229,14 +225,36 @@ export class LobbyComponent implements OnInit, OnDestroy {
   updateMaxPlayers(value: number): void {
     if (this.isCreator && this.lobbyState) {
       const minPlayers = this.lobbyState.game.minPlayers;
-      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, value).subscribe();
+      const duration = this.lobbyState.game.discussionDurationMinutes;
+      const werewolves = this.lobbyState.game.numberOfWerewolves;
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, value, duration, werewolves).subscribe();
     }
   }
 
   updateMinPlayers(value: number): void {
     if (this.isCreator && this.lobbyState) {
       const maxPlayers = this.lobbyState.game.maxPlayers;
-      this.gameService.updateSettings(this.gameId, this.playerId, value, maxPlayers).subscribe();
+      const duration = this.lobbyState.game.discussionDurationMinutes;
+      const werewolves = this.lobbyState.game.numberOfWerewolves;
+      this.gameService.updateSettings(this.gameId, this.playerId, value, maxPlayers, duration, werewolves).subscribe();
+    }
+  }
+
+  updateDiscussionDuration(value: number): void {
+    if (this.isCreator && this.lobbyState) {
+      const minPlayers = this.lobbyState.game.minPlayers;
+      const maxPlayers = this.lobbyState.game.maxPlayers;
+      const werewolves = this.lobbyState.game.numberOfWerewolves;
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, value, werewolves).subscribe();
+    }
+  }
+
+  updateNumberOfWerewolves(value: number): void {
+    if (this.isCreator && this.lobbyState) {
+      const minPlayers = this.lobbyState.game.minPlayers;
+      const maxPlayers = this.lobbyState.game.maxPlayers;
+      const duration = this.lobbyState.game.discussionDurationMinutes;
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, duration, value).subscribe();
     }
   }
 

@@ -93,7 +93,9 @@ public class GameController : ControllerBase
                 JoinLink = game.JoinLink,
                 QrCodeBase64 = game.QrCodeUrl,
                 Status = game.Status.ToString(),
-                Version = game.Version
+                Version = game.Version,
+                DiscussionDurationMinutes = game.DiscussionDurationMinutes,
+                NumberOfWerewolves = game.NumberOfWerewolves
             },
             Players = game.Players.Select(p => new PlayerDto
             {
@@ -101,7 +103,10 @@ public class GameController : ControllerBase
                 DisplayName = p.DisplayName,
                 IsCreator = p.IsCreator,
                 IsModerator = p.IsModerator,
-                Status = p.Status.ToString(),
+                IsConnected = p.IsConnected,
+                ParticipationStatus = p.ParticipationStatus.ToString(),
+                Role = p.Role?.ToString(),
+                IsEliminated = p.IsEliminated,
                 JoinedAt = p.JoinedAt
             }).ToList(),
             HasDuplicateNames = _gameService.HasDuplicateNames(gameId)
@@ -142,8 +147,10 @@ public class GameController : ControllerBase
 
         bool maxUpdated = _gameService.UpdateMaxPlayers(gameId, request.MaxPlayers, request.CreatorId);
         bool minUpdated = _gameService.UpdateMinPlayers(gameId, request.MinPlayers, request.CreatorId);
+        bool durationUpdated = _gameService.UpdateDiscussionDuration(gameId, request.DiscussionDurationMinutes, request.CreatorId);
+        bool werewolvesUpdated = _gameService.UpdateNumberOfWerewolves(gameId, request.NumberOfWerewolves, request.CreatorId);
 
-        if (maxUpdated || minUpdated)
+        if (maxUpdated || minUpdated || durationUpdated || werewolvesUpdated)
         {
             return Ok();
         }
@@ -194,6 +201,12 @@ public class UpdateSettingsRequest
 
     [System.ComponentModel.DataAnnotations.Range(2, 40)]
     public int MaxPlayers { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Range(1, 30)]
+    public int DiscussionDurationMinutes { get; set; } = 5;
+
+    [System.ComponentModel.DataAnnotations.Range(1, 40)]
+    public int NumberOfWerewolves { get; set; } = 1;
 }
 
 public class UpdateGameNameRequest

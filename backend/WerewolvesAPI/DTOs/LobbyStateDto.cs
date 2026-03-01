@@ -19,6 +19,8 @@ public class GameInfoDto
     public string QrCodeBase64 { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public int Version { get; set; }
+    public int DiscussionDurationMinutes { get; set; }
+    public int NumberOfWerewolves { get; set; }
 }
 
 public class PlayerDto
@@ -27,6 +29,9 @@ public class PlayerDto
     public string DisplayName { get; set; } = string.Empty;
     public bool IsCreator { get; set; }
     public bool IsModerator { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public bool IsConnected { get; set; }
+    public string ParticipationStatus { get; set; } = string.Empty;
+    public string? Role { get; set; }
+    public bool IsEliminated { get; set; }
     public DateTime JoinedAt { get; set; }
 }

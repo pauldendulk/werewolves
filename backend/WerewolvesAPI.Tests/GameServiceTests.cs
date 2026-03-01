@@ -88,7 +88,8 @@ public class GameServiceTests
         // Assert
         success.Should().BeTrue();
         rejoinedPlayer!.PlayerId.Should().Be(player.PlayerId);
-        rejoinedPlayer.Status.Should().Be(Models.PlayerStatus.Connected);
+        rejoinedPlayer.IsConnected.Should().BeTrue();
+        rejoinedPlayer.ParticipationStatus.Should().Be(Models.ParticipationStatus.Participating);
     }
 
     [Fact]
@@ -105,7 +106,7 @@ public class GameServiceTests
         result.Should().BeTrue();
         var updatedGame = _gameService.GetGame(game.GameId);
         var leftPlayer = updatedGame!.Players.First(p => p.PlayerId == player.PlayerId);
-        leftPlayer.Status.Should().Be(Models.PlayerStatus.Left);
+        leftPlayer.ParticipationStatus.Should().Be(Models.ParticipationStatus.Left);
     }
 
     [Fact]
@@ -122,7 +123,7 @@ public class GameServiceTests
         result.Should().BeTrue();
         var updatedGame = _gameService.GetGame(game.GameId);
         var removedPlayer = updatedGame!.Players.First(p => p.PlayerId == player.PlayerId);
-        removedPlayer.Status.Should().Be(Models.PlayerStatus.Removed);
+        removedPlayer.ParticipationStatus.Should().Be(Models.ParticipationStatus.Removed);
     }
 
     [Fact]
@@ -311,5 +312,46 @@ public class GameServiceTests
         _gameService.UpdatePlayerName(game.GameId, game.CreatorId, "New Name");
 
         _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+    }
+
+    [Fact]
+    public void CreateGame_ShouldStartAtWaitingForPlayers()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        game.Status.Should().Be(Models.GameStatus.WaitingForPlayers);
+    }
+
+    [Fact]
+    public void JoinGame_WhenEnoughPlayers_ShouldTransitionToReadyToStart()
+    {
+        // Arrange - min players is 4, so we need 4 total
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        game.Status.Should().Be(Models.GameStatus.WaitingForPlayers);
+
+        // Act - add 3 more to reach min of 4
+        _gameService.JoinGame(game.GameId, "Alice");
+        _gameService.JoinGame(game.GameId, "Bob");
+        _gameService.JoinGame(game.GameId, "Charlie");
+
+        // Assert
+        var updatedGame = _gameService.GetGame(game.GameId)!;
+        updatedGame.Status.Should().Be(Models.GameStatus.ReadyToStart);
+    }
+
+    [Fact]
+    public void LeaveGame_WhenBelowMinPlayers_ShouldTransitionBackToWaitingForPlayers()
+    {
+        // Arrange - get to ReadyToStart
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var (_, _, alice) = _gameService.JoinGame(game.GameId, "Alice");
+        _gameService.JoinGame(game.GameId, "Bob");
+        _gameService.JoinGame(game.GameId, "Charlie");
+        _gameService.GetGame(game.GameId)!.Status.Should().Be(Models.GameStatus.ReadyToStart);
+
+        // Act - Alice leaves, dropping below min
+        _gameService.LeaveGame(game.GameId, alice!.PlayerId);
+
+        // Assert
+        _gameService.GetGame(game.GameId)!.Status.Should().Be(Models.GameStatus.WaitingForPlayers);
     }
 }

@@ -8,6 +8,8 @@ export interface GameState {
   qrCodeBase64: string;
   status: string;
   version: number;
+  discussionDurationMinutes: number;
+  numberOfWerewolves: number;
 }
 
 export interface PlayerState {
@@ -15,7 +17,10 @@ export interface PlayerState {
   displayName: string;
   isCreator: boolean;
   isModerator: boolean;
-  status: string;
+  isConnected: boolean;
+  participationStatus: string;
+  role: string | null;
+  isEliminated: boolean;
   joinedAt?: string;
 }
 

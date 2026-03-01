@@ -9,15 +9,18 @@ public class GameState
     public int MaxPlayers { get; set; } = 20;
     public string JoinLink { get; set; } = string.Empty;
     public string QrCodeUrl { get; set; } = string.Empty;
-    public GameStatus Status { get; set; } = GameStatus.Lobby;
+    public GameStatus Status { get; set; } = GameStatus.WaitingForPlayers;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public List<PlayerState> Players { get; set; } = new();
     public int Version { get; set; } = 1;
+    public int DiscussionDurationMinutes { get; set; } = 5;
+    public int NumberOfWerewolves { get; set; } = 1;
 }
 
 public enum GameStatus
 {
-    Lobby,
+    WaitingForPlayers,
+    ReadyToStart,
     InProgress,
     Ended
 }
