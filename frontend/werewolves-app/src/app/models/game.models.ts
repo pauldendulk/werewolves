@@ -10,6 +10,16 @@ export interface GameState {
   version: number;
   discussionDurationMinutes: number;
   numberOfWerewolves: number;
+  // Session
+  phase: string;
+  roundNumber: number;
+  phaseEndsAt: string | null;
+  lastEliminatedByNight: string | null;
+  lastEliminatedByNightName: string | null;
+  lastEliminatedByDay: string | null;
+  lastEliminatedByDayName: string | null;
+  winner: string | null;
+  tiebreakCandidates: string[];
 }
 
 export interface PlayerState {
@@ -21,6 +31,7 @@ export interface PlayerState {
   participationStatus: string;
   role: string | null;
   isEliminated: boolean;
+  isDone: boolean;
   joinedAt?: string;
 }
 
@@ -53,4 +64,9 @@ export interface JoinGameResponse {
   playerId: string;
   success: boolean;
   message?: string;
+}
+
+export interface PlayerRoleDto {
+  role: string;
+  fellowWerewolves: string[];
 }

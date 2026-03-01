@@ -1,0 +1,232 @@
+<div class="session-container" *ngIf="lobbyState">
+  <p-toast></p-toast>
+
+  <!-- Header -->
+  <div class="session-header">
+    <span class="game-name">{{ lobbyState.game.gameName }}</span>
+    <span class="round-badge" *ngIf="lobbyState.game.roundNumber > 0">Round {{ lobbyState.game.roundNumber }}</span>
+  </div>
+
+  <!-- Timer bar (shown for timed phases) -->
+  <div class="timer-bar" *ngIf="lobbyState.game.phaseEndsAt">
+    <span class="timer-label" [class.urgent]="secondsRemaining <= 10">{{ timerLabel }}</span>
+    <div class="timer-progress">
+      <div class="timer-fill" [style.width.%]="0"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ROLE REVEAL phase                                        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'RoleReveal'">
+    <h2 class="phase-title">Your Role</h2>
+    <p class="phase-subtitle">Tap the card to reveal your role. Don't let others see!</p>
+
+    <div class="role-card" [class.revealed]="roleRevealed"
+         (mousedown)="revealRole()" (mouseup)="hideRole()" (mouseleave)="hideRole()"
+         (touchstart)="revealRole(); $event.preventDefault()" (touchend)="hideRole()" (touchcancel)="hideRole()">
+      <div class="card-front" *ngIf="!roleRevealed">
+        <span class="card-hint">Press &amp; hold to reveal</span>
+        <i class="pi pi-eye-slash"></i>
+      </div>
+      <div class="card-back" *ngIf="roleRevealed">
+        <span class="role-name">
+          {{ roleDto?.role ?? '...' }}
+        </span>
+        <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
+      </div>
+    </div>
+
+    <div class="ready-section">
+      <div class="done-count">{{ doneCount }} / {{ alivePlayers.length }} ready</div>
+      <p-button
+        *ngIf="showDoneButton"
+        label="I've seen my role"
+        (onClick)="markDone()"
+        styleClass="p-button-lg w-full"
+        [disabled]="!hasSeenRole">
+      </p-button>
+      <div class="done-badge" *ngIf="currentPlayer?.isDone">
+        <i class="pi pi-check-circle"></i> Waiting for others...
+      </div>
+      <p-button
+        *ngIf="isCreator"
+        label="Force start night"
+        (onClick)="forceAdvance()"
+        styleClass="p-button-text p-button-secondary mt-2 w-full">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- NIGHT phase                                              -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'Night'">
+    <h2 class="phase-title night-title">🌙 Night</h2>
+
+    <div class="night-instructions">
+      <p>Close your eyes.</p>
+      <p>The werewolves are choosing their victim.</p>
+    </div>
+
+    <div class="wolf-vote" *ngIf="canVoteNight">
+      <label>Choose your victim:</label>
+      <p-select
+        [options]="voteTargets"
+        [(ngModel)]="selectedVoteTarget"
+        placeholder="Select player"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body">
+      </p-select>
+      <p-button
+        label="Confirm kill"
+        (onClick)="submitVote()"
+        [disabled]="!selectedVoteTarget"
+        styleClass="p-button-danger mt-2">
+      </p-button>
+    </div>
+    <p-button
+      *ngIf="isCreator"
+      label="Skip night"
+      (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full">
+    </p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- NIGHT ELIMINATION phase                                  -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content elimination-phase" *ngIf="phase === 'NightElimination'">
+    <h2 class="phase-title">🌅 Dawn</h2>
+    <div *ngIf="lobbyState.game.lastEliminatedByNightName; else noNightKill">
+      <p class="elimination-text">
+        <strong>{{ lobbyState.game.lastEliminatedByNightName }}</strong> was taken in the night.
+      </p>
+    </div>
+    <ng-template #noNightKill>
+      <p class="elimination-text">The village wakes safe. No one was taken last night.</p>
+    </ng-template>
+    <div class="phase-countdown" *ngIf="secondsRemaining > 0">{{ secondsRemaining }}</div>
+    <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
+      <i class="pi pi-spin pi-spinner"></i> Continuing...
+    </div>
+    <p-button
+      *ngIf="isCreator"
+      label="Continue"
+      (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full">
+    </p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- DISCUSSION phase                                         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'Discussion' || phase === 'TiebreakDiscussion'">
+    <h2 class="phase-title">💬 {{ phase === 'TiebreakDiscussion' ? 'Tiebreak Vote' : 'Discussion' }}</h2>
+    <p class="phase-subtitle" *ngIf="phase === 'TiebreakDiscussion'">
+      Only tied players can be voted for.
+    </p>
+
+    <!-- Player list -->
+    <div class="player-chips">
+      <div *ngFor="let p of participatingPlayers" class="player-chip"
+           [class.me]="p.playerId === playerId"
+           [class.eliminated]="p.isEliminated">
+        <span>{{ p.displayName }}</span>
+        <span class="eliminated-badge" *ngIf="p.isEliminated">💀</span>
+        <span class="done-indicator" *ngIf="p.isDone && !p.isEliminated">✓</span>
+      </div>
+    </div>
+
+    <!-- Vote -->
+    <div class="vote-section" *ngIf="canVoteDay">
+      <label>Your vote:</label>
+      <p-select
+        [options]="voteTargets"
+        [(ngModel)]="selectedVoteTarget"
+        placeholder="Select suspect"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body">
+      </p-select>
+      <p-button
+        label="Cast vote"
+        (onClick)="submitVote()"
+        [disabled]="!selectedVoteTarget"
+        styleClass="mt-2">
+      </p-button>
+    </div>
+
+    <!-- Done / ready -->
+    <div class="ready-section">
+      <div class="done-count">{{ doneCount }} / {{ alivePlayers.length }} done</div>
+      <p-button
+        *ngIf="showDoneButton"
+        label="Done"
+        (onClick)="markDone()"
+        styleClass="p-button-outlined w-full mt-2">
+      </p-button>
+      <div class="done-badge" *ngIf="currentPlayer?.isDone">
+        <i class="pi pi-check-circle"></i> Waiting...
+      </div>
+      <p-button
+        *ngIf="isCreator"
+        label="Force end discussion"
+        (onClick)="forceAdvance()"
+        styleClass="p-button-text p-button-secondary mt-2 w-full">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- DAY ELIMINATION phase                                    -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content elimination-phase" *ngIf="phase === 'DayElimination'">
+    <h2 class="phase-title">⚖️ Village Verdict</h2>
+    <div *ngIf="lobbyState.game.lastEliminatedByDayName; else noKill">
+      <p class="elimination-text">
+        <strong>{{ lobbyState.game.lastEliminatedByDayName }}</strong> was eliminated by the village.
+      </p>
+      <p class="eliminated-role">
+        They were a <strong>{{ getEliminatedRole(lobbyState.game.lastEliminatedByDay) }}</strong>.
+      </p>
+    </div>
+    <ng-template #noKill>
+      <p class="elimination-text">The village could not agree. No one was eliminated.</p>
+    </ng-template>
+    <div class="phase-countdown" *ngIf="secondsRemaining > 0">{{ secondsRemaining }}</div>
+    <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
+      <i class="pi pi-spin pi-spinner"></i> Continuing...
+    </div>
+    <p-button
+      *ngIf="isCreator"
+      label="Continue"
+      (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full">
+    </p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- GAME OVER                                                -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content game-over" *ngIf="phase === 'GameOver'">
+    <h2 class="phase-title">🎉 Game Over</h2>
+    <p class="winner-text" [class.villagers]="lobbyState.game.winner === 'Villagers'" [class.werewolves]="lobbyState.game.winner === 'Werewolves'">
+      {{ lobbyState.game.winner }} Win!
+    </p>
+    <div class="player-roles-summary">
+      <div *ngFor="let p of lobbyState.players" class="role-summary-row" [class.eliminated]="p.isEliminated">
+        <span>{{ p.displayName }}</span>
+        <span class="eliminated-badge" *ngIf="p.isEliminated">💀</span>
+        <span class="role-tag" [class.wolf]="p.role === 'Werewolf'">{{ p.role ?? '?' }}</span>
+      </div>
+    </div>
+    <p-button label="Back to lobby" (onClick)="goHome()" styleClass="mt-4 w-full"></p-button>
+  </div>
+
+</div>
+
+<div class="loading-container" *ngIf="!lobbyState">
+  <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+</div>

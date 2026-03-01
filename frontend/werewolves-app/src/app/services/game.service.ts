@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateGameRequest, CreateGameResponse, JoinGameRequest, JoinGameResponse, LobbyState } from '../models/game.models';
+import { CreateGameRequest, CreateGameResponse, JoinGameRequest, JoinGameResponse, LobbyState, PlayerRoleDto } from '../models/game.models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -42,6 +42,26 @@ export class GameService {
 
   updatePlayerName(gameId: string, playerId: string, displayName: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/player-name`, { playerId, displayName });
+  }
+
+  startGame(gameId: string, creatorId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/start`, { creatorId });
+  }
+
+  markDone(gameId: string, playerId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/done`, { playerId });
+  }
+
+  castVote(gameId: string, voterId: string, targetId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/vote`, { voterId, targetId });
+  }
+
+  forceAdvancePhase(gameId: string, creatorId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/force-advance`, { playerId: creatorId });
+  }
+
+  getRole(gameId: string, playerId: string): Observable<PlayerRoleDto> {
+    return this.http.get<PlayerRoleDto>(`${this.apiUrl}/game/${gameId}/role`, { params: { playerId } });
   }
 
   getPlayerId(): string | null {

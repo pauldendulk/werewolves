@@ -105,6 +105,7 @@
           label="Start Game"
           styleClass="p-button-lg w-full"
           [disabled]="!canStartGame"
+          (onClick)="startGame()"
         ></p-button>
 
         <div class="warning-box" *ngIf="lobbyState.hasDuplicateNames">

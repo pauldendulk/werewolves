@@ -17,17 +17,17 @@ test.describe('Lobby', () => {
 
   test('can adjust min players', async ({ page }) => {
     const minPlayersInput = page.getByRole('spinbutton', { name: 'Min Players' });
-    await expect(minPlayersInput).toHaveValue('4');
+    await expect(minPlayersInput).toHaveValue('3');
 
-    // Increase min players from 4 to 6
+    // Increase min players from 3 to 5
     await minPlayersInput.click();
     await minPlayersInput.press('ArrowUp');
     await minPlayersInput.press('ArrowUp');
-    await expect(minPlayersInput).toHaveValue('6');
-
-    // Decrease back to 5
-    await minPlayersInput.press('ArrowDown');
     await expect(minPlayersInput).toHaveValue('5');
+
+    // Decrease back to 4
+    await minPlayersInput.press('ArrowDown');
+    await expect(minPlayersInput).toHaveValue('4');
   });
 
   test('can adjust max players', async ({ page }) => {

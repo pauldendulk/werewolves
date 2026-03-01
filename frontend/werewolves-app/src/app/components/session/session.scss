@@ -1,0 +1,334 @@
+.session-container {
+  min-height: 100vh;
+  background: #0f1117;
+  color: #e8eaf0;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #2a2d36;
+  margin-bottom: 1rem;
+
+  .game-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #94a3b8;
+  }
+
+  .round-badge {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+}
+
+.timer-bar {
+  text-align: center;
+  margin-bottom: 1.25rem;
+
+  .timer-label {
+    font-size: 2rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #60a5fa;
+    display: block;
+
+    &.urgent {
+      color: #f87171;
+      animation: pulse 1s infinite;
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.phase-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.phase-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+
+  &.night-title {
+    color: #818cf8;
+  }
+}
+
+.phase-subtitle {
+  text-align: center;
+  color: #94a3b8;
+  margin: 0;
+}
+
+// Role reveal card
+.role-card {
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 16px;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s;
+  user-select: none;
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &.revealed {
+    border-color: #4f46e5;
+  }
+
+  .card-front, .card-back {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .card-hint {
+    color: #64748b;
+    font-size: 1.1rem;
+  }
+
+  .pi-eye-slash {
+    font-size: 2.5rem;
+    color: #475569;
+  }
+
+  .role-name {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    color: #ffffff;
+  }
+
+  .role-icon {
+    font-size: 3rem;
+  }
+}
+
+.ready-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  .done-count {
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  .done-badge {
+    color: #22c55e;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+}
+
+// Night
+.night-instructions {
+  text-align: center;
+  background: #111827;
+  border-radius: 12px;
+  padding: 2rem;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  line-height: 1.8;
+
+  p { margin: 0; }
+}
+
+.werewolf-panel {
+  background: #1c1018;
+  border: 1px solid #7f1d1d;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .werewolf-greeting {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ef4444;
+    margin: 0;
+  }
+
+  .fellow-wolves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+
+    .label { color: #94a3b8; font-size: 0.85rem; }
+    .wolf-name {
+      background: #7f1d1d;
+      border-radius: 8px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.9rem;
+      color: #fca5a5;
+    }
+  }
+}
+
+.wolf-vote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label { font-size: 0.9rem; color: #94a3b8; }
+}
+
+// Elimination phase
+.elimination-phase {
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+
+  .elimination-text {
+    font-size: 1.3rem;
+    text-align: center;
+    line-height: 1.6;
+
+    strong { color: #f87171; }
+  }
+
+  .eliminated-role {
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  .phase-countdown {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+    margin-top: 1.5rem;
+  }
+
+  .phase-transitioning {
+    color: #475569;
+    font-size: 0.9rem;
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+// Discussion
+.player-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  .player-chip {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    &.me { border-color: #4f46e5; background: #1e1b4b; }
+
+    &.eliminated {
+      opacity: 0.45;
+      text-decoration: line-through;
+      border-color: #475569;
+    }
+
+    .eliminated-badge { font-size: 0.85rem; }
+
+    .done-indicator { color: #22c55e; font-size: 0.8rem; }
+  }
+}
+
+.vote-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label { font-size: 0.9rem; color: #94a3b8; }
+}
+
+// Game over
+.game-over {
+  align-items: center;
+
+  .winner-text {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0.5rem 0;
+
+    &.villagers { color: #22c55e; }
+    &.werewolves { color: #ef4444; }
+  }
+
+  .player-roles-summary {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 1rem;
+
+    .role-summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background: #1e293b;
+      border-radius: 8px;
+
+      &.eliminated { opacity: 0.5; }
+
+      .eliminated-badge { font-size: 0.85rem; margin-left: -0.25rem; }
+
+      .role-tag {
+        color: #22c55e;
+        font-weight: 600;
+        &.wolf { color: #ef4444; }
+      }
+    }
+  }
+}
+
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.w-full { width: 100%; }
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #64748b;
+}

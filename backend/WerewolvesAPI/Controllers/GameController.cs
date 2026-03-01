@@ -68,6 +68,9 @@ public class GameController : ControllerBase
     [HttpGet("{gameId}")]
     public ActionResult<LobbyStateDto> GetGameState(string gameId, [FromQuery] int? version = null)
     {
+        // Lazy phase advancement on poll
+        _gameService.TryAdvancePhaseIfExpired(gameId);
+
         var game = _gameService.GetGame(gameId);
         if (game == null)
         {
@@ -80,6 +83,8 @@ public class GameController : ControllerBase
         }
 
         var creatorPlayer = game.Players.FirstOrDefault(p => p.PlayerId == game.CreatorId);
+        var playerLookup = game.Players.ToDictionary(p => p.PlayerId, p => p.DisplayName);
+
         var lobbyState = new LobbyStateDto
         {
             Game = new GameInfoDto
@@ -95,7 +100,16 @@ public class GameController : ControllerBase
                 Status = game.Status.ToString(),
                 Version = game.Version,
                 DiscussionDurationMinutes = game.DiscussionDurationMinutes,
-                NumberOfWerewolves = game.NumberOfWerewolves
+                NumberOfWerewolves = game.NumberOfWerewolves,
+                Phase = game.Phase.ToString(),
+                RoundNumber = game.RoundNumber,
+                PhaseEndsAt = game.PhaseEndsAt,
+                LastEliminatedByNight = game.LastEliminatedByNight,
+                LastEliminatedByNightName = game.LastEliminatedByNight != null && playerLookup.TryGetValue(game.LastEliminatedByNight, out var nvName) ? nvName : null,
+                LastEliminatedByDay = game.LastEliminatedByDay,
+                LastEliminatedByDayName = game.LastEliminatedByDay != null && playerLookup.TryGetValue(game.LastEliminatedByDay, out var dvName) ? dvName : null,
+                Winner = game.Winner,
+                TiebreakCandidates = game.TiebreakCandidates
             },
             Players = game.Players.Select(p => new PlayerDto
             {
@@ -107,6 +121,7 @@ public class GameController : ControllerBase
                 ParticipationStatus = p.ParticipationStatus.ToString(),
                 Role = p.Role?.ToString(),
                 IsEliminated = p.IsEliminated,
+                IsDone = p.IsDone,
                 JoinedAt = p.JoinedAt
             }).ToList(),
             HasDuplicateNames = _gameService.HasDuplicateNames(gameId)
@@ -179,6 +194,55 @@ public class GameController : ControllerBase
 
         return NotFound(new { message = "Game or player not found" });
     }
+
+    [HttpPost("{gameId}/start")]
+    public ActionResult StartGame(string gameId, [FromBody] StartGameRequest request)
+    {
+        var (success, error) = _gameService.StartGame(gameId, request.CreatorId);
+        if (!success)
+            return BadRequest(new { message = error });
+        return Ok();
+    }
+
+    [HttpPost("{gameId}/done")]
+    public ActionResult MarkDone(string gameId, [FromBody] PlayerActionRequest request)
+    {
+        var (success, error) = _gameService.MarkDone(gameId, request.PlayerId);
+        if (!success)
+            return BadRequest(new { message = error });
+        return Ok();
+    }
+
+    [HttpPost("{gameId}/vote")]
+    public ActionResult CastVote(string gameId, [FromBody] VoteRequest request)
+    {
+        var (success, error) = _gameService.CastVote(gameId, request.VoterId, request.TargetId);
+        if (!success)
+            return BadRequest(new { message = error });
+        return Ok();
+    }
+
+    [HttpPost("{gameId}/force-advance")]
+    public ActionResult ForceAdvancePhase(string gameId, [FromBody] PlayerActionRequest request)
+    {
+        var (success, error) = _gameService.ForceAdvancePhase(gameId, request.PlayerId);
+        if (!success)
+            return BadRequest(new { message = error });
+        return Ok();
+    }
+
+    [HttpGet("{gameId}/role")]
+    public ActionResult<PlayerRoleDto> GetRole(string gameId, [FromQuery] string playerId)
+    {
+        var game = _gameService.GetGame(gameId);
+        if (game == null)
+            return NotFound(new { message = "Game not found" });
+        if (game.Status != WerewolvesAPI.Models.GameStatus.InProgress && game.Status != WerewolvesAPI.Models.GameStatus.Ended)
+            return BadRequest(new { message = "Game has not started" });
+
+        var (role, fellows) = _gameService.GetPlayerRole(gameId, playerId);
+        return Ok(new PlayerRoleDto { Role = role, FellowWerewolves = fellows });
+    }
 }
 
 public class LeaveGameRequest
@@ -219,4 +283,20 @@ public class UpdatePlayerNameRequest
 {
     public string PlayerId { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+}
+
+public class StartGameRequest
+{
+    public string CreatorId { get; set; } = string.Empty;
+}
+
+public class PlayerActionRequest
+{
+    public string PlayerId { get; set; } = string.Empty;
+}
+
+public class VoteRequest
+{
+    public string VoterId { get; set; } = string.Empty;
+    public string TargetId { get; set; } = string.Empty;
 }

@@ -118,6 +118,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
         );
         this.loading = false;
 
+        // Redirect to session if game has started
+        if (state.game.status === 'InProgress') {
+          this.router.navigate(['/game', this.gameId, 'session'], { replaceUrl: true });
+          return;
+        }
+
         // Notify if a new player joined
         if (state.players.length > prevPlayerCount && prevPlayerCount > 0) {
           this.messageService.add({
@@ -256,6 +262,17 @@ export class LobbyComponent implements OnInit, OnDestroy {
       const duration = this.lobbyState.game.discussionDurationMinutes;
       this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, duration, value).subscribe();
     }
+  }
+
+  startGame(): void {
+    this.gameService.startGame(this.gameId, this.playerId).subscribe({
+      next: () => this.router.navigate(['/game', this.gameId, 'session'], { replaceUrl: true }),
+      error: (err) => this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.error?.message ?? 'Failed to start game'
+      })
+    });
   }
 
   leaveGame(): void {

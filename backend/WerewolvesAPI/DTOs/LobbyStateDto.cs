@@ -21,6 +21,16 @@ public class GameInfoDto
     public int Version { get; set; }
     public int DiscussionDurationMinutes { get; set; }
     public int NumberOfWerewolves { get; set; }
+    // Session state
+    public string Phase { get; set; } = string.Empty;
+    public int RoundNumber { get; set; }
+    public DateTime? PhaseEndsAt { get; set; }
+    public string? LastEliminatedByNight { get; set; }
+    public string? LastEliminatedByNightName { get; set; }
+    public string? LastEliminatedByDay { get; set; }
+    public string? LastEliminatedByDayName { get; set; }
+    public string? Winner { get; set; }
+    public List<string> TiebreakCandidates { get; set; } = new();
 }
 
 public class PlayerDto
@@ -33,5 +43,13 @@ public class PlayerDto
     public string ParticipationStatus { get; set; } = string.Empty;
     public string? Role { get; set; }
     public bool IsEliminated { get; set; }
+    public bool IsDone { get; set; }
     public DateTime JoinedAt { get; set; }
 }
+
+public class PlayerRoleDto
+{
+    public string Role { get; set; } = string.Empty;
+    public List<string> FellowWerewolves { get; set; } = new();
+}
+

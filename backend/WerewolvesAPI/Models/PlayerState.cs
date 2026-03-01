@@ -10,6 +10,7 @@ public class PlayerState
     public ParticipationStatus ParticipationStatus { get; set; } = ParticipationStatus.Participating;
     public PlayerRole? Role { get; set; }
     public bool IsEliminated { get; set; }
+    public bool IsDone { get; set; }
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 }
 
