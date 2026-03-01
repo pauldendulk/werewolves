@@ -1,59 +1,34 @@
-# WerewolvesApp
+# Werewolves App – Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.15.
+Angular 20 single-page application with PrimeNG v18 UI components.
 
-## Development server
-
-To start a local development server, run:
+## Development
 
 ```bash
-ng serve
+npm start          # Dev server at http://localhost:4200
+npm run build      # Production build → dist/
+npm test           # Unit tests (Karma + Jasmine)
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Components
 
-## Code scaffolding
+| Component | Route | Purpose |
+|-----------|-------|---------|
+| `CreateGameComponent` | `/` | Create a new game session |
+| `JoinGameComponent` | `/game/:id` | Join an existing game via link/QR |
+| `LobbyComponent` | `/game/:id/lobby` | Waiting room, settings, player list |
+| `SessionComponent` | `/game/:id/session` | In-game: role reveal, night, discussion, voting, game over |
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Services
 
-```bash
-ng generate component component-name
-```
+- **GameService** – HTTP calls to the backend API
+- **PollingService** – Periodic game state polling (1s interval, version-based)
+- **AudioService** – Text-to-speech narration via Web Speech API
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Environment
 
-```bash
-ng generate --help
-```
+API URL is configured in `src/environments/environment.ts`.
 
-## Building
+## E2E Tests
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Playwright tests are in the `e2e/` directory. See the root README for how to run the full stack.

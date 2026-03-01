@@ -1,15 +1,14 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subscription, interval, switchMap, filter, map, tap, shareReplay } from 'rxjs';
+import { Observable, interval, switchMap, filter, map, tap, shareReplay } from 'rxjs';
 import { LobbyState } from '../models/game.models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
-export class PollingService implements OnDestroy {
+export class PollingService {
   private readonly pollIntervalMs = 1000;
-  private subscription?: Subscription;
   private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
@@ -30,10 +29,6 @@ export class PollingService implements OnDestroy {
       tap(state => lastVersion = state.game.version),
       shareReplay(1)
     );
-  }
-
-  ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
   }
 }
 

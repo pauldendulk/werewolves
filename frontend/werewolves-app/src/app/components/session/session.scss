@@ -164,39 +164,6 @@
   p { margin: 0; }
 }
 
-.werewolf-panel {
-  background: #1c1018;
-  border: 1px solid #7f1d1d;
-  border-radius: 12px;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-
-  .werewolf-greeting {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #ef4444;
-    margin: 0;
-  }
-
-  .fellow-wolves {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    align-items: center;
-
-    .label { color: #94a3b8; font-size: 0.85rem; }
-    .wolf-name {
-      background: #7f1d1d;
-      border-radius: 8px;
-      padding: 0.2rem 0.6rem;
-      font-size: 0.9rem;
-      color: #fca5a5;
-    }
-  }
-}
-
 .wolf-vote {
   display: flex;
   flex-direction: column;
@@ -331,4 +298,76 @@
   align-items: center;
   height: 100vh;
   color: #64748b;
+}
+
+// ─── Day-theme overrides ──────────────────────────────────────
+// Applied to RoleReveal, Discussion, TiebreakDiscussion,
+// DayElimination, and GameOver phases.
+.session-container.day-theme {
+  background: #f8fafc;
+  color: #1e293b;
+
+  .session-header {
+    border-bottom-color: #e2e8f0;
+
+    .game-name { color: #475569; }
+    .round-badge {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      color: #475569;
+    }
+  }
+
+  .timer-bar .timer-label {
+    color: #2563eb;
+    &.urgent { color: #dc2626; }
+  }
+
+  .phase-title { color: #1e293b; }
+  .phase-subtitle { color: #64748b; }
+
+  .role-card {
+    background: #ffffff;
+    border-color: #cbd5e1;
+
+    &.revealed { border-color: #4f46e5; }
+
+    .card-hint { color: #94a3b8; }
+    .pi-eye-slash { color: #94a3b8; }
+    .role-name { color: #1e293b; }
+  }
+
+  .ready-section .done-count { color: #94a3b8; }
+
+  .night-instructions {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .wolf-vote label { color: #475569; }
+
+  .elimination-phase {
+    .elimination-text { color: #1e293b; strong { color: #dc2626; } }
+    .eliminated-role { color: #64748b; }
+    .phase-countdown { color: #94a3b8; }
+    .phase-transitioning { color: #94a3b8; }
+  }
+
+  .player-chips .player-chip {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #1e293b;
+
+    &.me { border-color: #4f46e5; background: #eef2ff; }
+    &.eliminated { opacity: 0.45; border-color: #cbd5e1; }
+  }
+
+  .vote-section label { color: #475569; }
+
+  .game-over {
+    .player-roles-summary .role-summary-row {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+    }
+  }
 }

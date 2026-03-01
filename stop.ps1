@@ -10,7 +10,7 @@ $backendPort = 5000
 $backendProcessName = "dotnet"
 
 # Frontend configuration
-$frontendPort = 4201
+$frontendPort = 4200
 $frontendProcessName = "node"
 
 # Function to kill processes on a specific port

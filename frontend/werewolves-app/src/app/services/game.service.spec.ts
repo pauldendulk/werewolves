@@ -29,7 +29,8 @@ describe('GameService', () => {
     const request: CreateGameRequest = {
       gameName: 'Test Game',
       creatorName: 'John',
-      maxPlayers: 30
+      maxPlayers: 30,
+      frontendBaseUrl: 'http://localhost:4200'
     };
 
     const mockResponse = {

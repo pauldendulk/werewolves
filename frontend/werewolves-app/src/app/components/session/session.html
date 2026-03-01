@@ -1,4 +1,6 @@
-<div class="session-container" *ngIf="lobbyState">
+<div class="session-container" *ngIf="lobbyState"
+     [class.night-theme]="phase === 'Night' || phase === 'NightElimination'"
+     [class.day-theme]="phase !== 'Night' && phase !== 'NightElimination'">
   <p-toast></p-toast>
 
   <!-- Header -->
@@ -10,9 +12,6 @@
   <!-- Timer bar (shown for timed phases) -->
   <div class="timer-bar" *ngIf="lobbyState.game.phaseEndsAt">
     <span class="timer-label" [class.urgent]="secondsRemaining <= 10">{{ timerLabel }}</span>
-    <div class="timer-progress">
-      <div class="timer-fill" [style.width.%]="0"></div>
-    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->

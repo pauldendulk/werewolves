@@ -82,7 +82,6 @@ public class GameController : ControllerBase
             return NoContent();
         }
 
-        var creatorPlayer = game.Players.FirstOrDefault(p => p.PlayerId == game.CreatorId);
         var playerLookup = game.Players.ToDictionary(p => p.PlayerId, p => p.DisplayName);
 
         var lobbyState = new LobbyStateDto
@@ -92,7 +91,6 @@ public class GameController : ControllerBase
                 GameId = game.GameId,
                 GameName = game.GameName,
                 CreatorId = game.CreatorId,
-                CreatorName = creatorPlayer?.DisplayName ?? "Unknown",
                 MinPlayers = game.MinPlayers,
                 MaxPlayers = game.MaxPlayers,
                 JoinLink = game.JoinLink,
@@ -243,60 +241,4 @@ public class GameController : ControllerBase
         var (role, fellows) = _gameService.GetPlayerRole(gameId, playerId);
         return Ok(new PlayerRoleDto { Role = role, FellowWerewolves = fellows });
     }
-}
-
-public class LeaveGameRequest
-{
-    public string PlayerId { get; set; } = string.Empty;
-}
-
-public class RemovePlayerRequest
-{
-    public string PlayerId { get; set; } = string.Empty;
-    public string ModeratorId { get; set; } = string.Empty;
-}
-
-public class UpdateSettingsRequest
-{
-    public string CreatorId { get; set; } = string.Empty;
-
-    [System.ComponentModel.DataAnnotations.Range(2, 40)]
-    public int MinPlayers { get; set; }
-
-    [System.ComponentModel.DataAnnotations.Range(2, 40)]
-    public int MaxPlayers { get; set; }
-
-    [System.ComponentModel.DataAnnotations.Range(1, 30)]
-    public int DiscussionDurationMinutes { get; set; } = 5;
-
-    [System.ComponentModel.DataAnnotations.Range(1, 40)]
-    public int NumberOfWerewolves { get; set; } = 1;
-}
-
-public class UpdateGameNameRequest
-{
-    public string CreatorId { get; set; } = string.Empty;
-    public string GameName { get; set; } = string.Empty;
-}
-
-public class UpdatePlayerNameRequest
-{
-    public string PlayerId { get; set; } = string.Empty;
-    public string DisplayName { get; set; } = string.Empty;
-}
-
-public class StartGameRequest
-{
-    public string CreatorId { get; set; } = string.Empty;
-}
-
-public class PlayerActionRequest
-{
-    public string PlayerId { get; set; } = string.Empty;
-}
-
-public class VoteRequest
-{
-    public string VoterId { get; set; } = string.Empty;
-    public string TargetId { get; set; } = string.Empty;
 }

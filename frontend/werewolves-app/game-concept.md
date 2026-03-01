@@ -1,4 +1,4 @@
-# Werewolves App – Concept Summary
+# Werewolves App - Concept Summary
 
 ## 1. Core Concept
 
@@ -9,78 +9,53 @@ The core purpose is to facilitate and manage a complete Werewolf game without ne
 ### Core gameplay flow
 
 1. **Game setup**
-   - Players join a shared session on their phones
+   - A host creates a game and shares the join link or QR code
+   - Players join the lobby on their phones
    - The app assigns secret roles to each player
-   - Roles are simplified to:
-     - Werewolves
-     - Civilians
+   - Roles:
+     - **Werewolves** - try to eliminate all villagers
+     - **Villagers** - try to identify and eliminate all werewolves
 
-2. **Game phases**
-   - The game progresses through the usual phases (discussion and voting)
-   - The app manages timing and transitions between phases
+2. **Role reveal**
+   - Each player privately views their assigned role (press and hold to peek)
+   - Werewolves also see who the other werewolves are
 
-3. **Voting system**
-   - Players vote on who they suspect is a werewolf
-   - Voting includes:
-     - A countdown timer
-     - The ability to change your vote before the timer ends
-   - When the timer ends:
-     - Votes are finalized
-     - The selected player is eliminated
+3. **Night phase**
+   - The app narrates "close your eyes"
+   - Werewolves silently decide on a victim to eliminate
+   - A countdown timer governs the night duration
 
-4. **Round result**
-   - The app determines the outcome of the round (e.g. werewolves vs civilians)
-   - The game continues until a win condition is reached
+4. **Day phase - Night elimination**
+   - The app announces who was taken in the night (or that no one was)
 
-5. **Session play (multiple rounds)**
-   - Multiple games can be played in one session
-   - The app keeps track of results across games
+5. **Day phase - Discussion and voting**
+   - Players discuss who they suspect is a werewolf
+   - Each player casts a vote within a configurable timer
+   - When the timer ends or all players are done, votes are tallied
+   - The player with the most votes is eliminated (ties result in no elimination or a tiebreak revote)
+
+6. **Day elimination**
+   - The eliminated player's role is revealed
+   - The game checks win conditions
+
+7. **Win conditions**
+   - **Villagers win** when all werewolves have been eliminated
+   - **Werewolves win** when no villagers remain alive
+
+8. **Game over**
+   - All roles are revealed
+   - Players can return to the home screen to start a new game
+
+### Configurable settings
+
+- Minimum / maximum players
+- Number of werewolves
+- Discussion duration (minutes)
 
 ---
 
-## 2. Additional Features
+## 2. Future Feature Ideas
 
-### Token system
-
-Each player has a number of **tokens** that can be spent to perform special actions.  
-This replaces many traditional special roles and gives every player strategic options, even when they are a civilian.
-
-Tokens may be:
-- Given at the start of a session
-- Earned based on performance
-- Potentially traded between players
-
-### Token abilities (examples)
-
-- **Delay Vote**  
-  Spend tokens to extend the voting timer
-
-- **Revote**  
-  Restart the voting phase
-
-- **Peek Hint**  
-  Receive a limited hint from the system  
-  Example: “At least one of your current suspects is innocent” or “Your vote is currently on a civilian”
-
-- **Block Vote**  
-  Prevent a specific player from voting during a round
-
-- **Double Vote**  
-  Your vote counts as two votes for the current round
-
-- **Protect Player**  
-  Prevent a player from being eliminated in the current round
-
-This system allows flexible gameplay where strategic abilities are chosen dynamically rather than assigned as fixed roles.
-
-### Social and meta features
-
-Across multiple games in a session, the app tracks player performance and provides a ranking.
-
-Possible tracked metrics:
-- Number of wins
-- Survival rate
-- Voting accuracy
-- Success when playing as werewolf
-
-This creates a **leaderboard for the evening**, adding a meta-game layer to the experience.
+- **Token system** - Spend tokens for special abilities (delay vote, peek hint, protect player)
+- **Multiple rounds per session** - Track wins across games with a session leaderboard
+- **Additional roles** - Seer, Doctor, Hunter, etc.

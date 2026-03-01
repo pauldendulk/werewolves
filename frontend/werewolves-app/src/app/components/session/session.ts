@@ -258,10 +258,4 @@ export class SessionComponent implements OnInit, OnDestroy {
   goHome(): void {
     this.router.navigate(['/']);
   }
-
-  formatSeconds(s: number): string {
-    const m = Math.floor(s / 60).toString().padStart(2, '0');
-    const sec = (s % 60).toString().padStart(2, '0');
-    return `${m}:${sec}`;
-  }
 }
