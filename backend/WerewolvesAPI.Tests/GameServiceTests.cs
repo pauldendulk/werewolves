@@ -453,7 +453,7 @@ public class GameServiceTests
         var (success, error) = _gameService.CastVote(game.GameId, voter.PlayerId, target.PlayerId);
 
         success.Should().BeTrue();
-        _gameService.GetGame(game.GameId)!.DayVotes.Should().Contain(v => v.VoterId == voter.PlayerId && v.TargetId == target.PlayerId);
+        _gameService.GetGame(game.GameId)!.DayVotes[voter.PlayerId].Should().Be(target.PlayerId);
     }
 
     [Fact]

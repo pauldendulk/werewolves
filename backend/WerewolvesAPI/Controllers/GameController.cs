@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WerewolvesAPI.DTOs;
+using WerewolvesAPI.Models;
 using WerewolvesAPI.Services;
 
 namespace WerewolvesAPI.Controllers;
@@ -8,10 +9,10 @@ namespace WerewolvesAPI.Controllers;
 [Route("api/[controller]")]
 public class GameController : ControllerBase
 {
-    private readonly GameService _gameService;
+    private readonly IGameService _gameService;
     private readonly ILogger<GameController> _logger;
 
-    public GameController(GameService gameService, ILogger<GameController> logger)
+    public GameController(IGameService gameService, ILogger<GameController> logger)
     {
         _gameService = gameService;
         _logger = logger;
@@ -82,9 +83,15 @@ public class GameController : ControllerBase
             return NoContent();
         }
 
+        var hasDuplicateNames = _gameService.HasDuplicateNames(gameId);
+        return Ok(MapToLobbyStateDto(game, hasDuplicateNames));
+    }
+
+    private static LobbyStateDto MapToLobbyStateDto(GameState game, bool hasDuplicateNames)
+    {
         var playerLookup = game.Players.ToDictionary(p => p.PlayerId, p => p.DisplayName);
 
-        var lobbyState = new LobbyStateDto
+        return new LobbyStateDto
         {
             Game = new GameInfoDto
             {
@@ -122,10 +129,8 @@ public class GameController : ControllerBase
                 IsDone = p.IsDone,
                 JoinedAt = p.JoinedAt
             }).ToList(),
-            HasDuplicateNames = _gameService.HasDuplicateNames(gameId)
+            HasDuplicateNames = hasDuplicateNames
         };
-
-        return Ok(lobbyState);
     }
 
     [HttpPost("{gameId}/leave")]
@@ -235,7 +240,7 @@ public class GameController : ControllerBase
         var game = _gameService.GetGame(gameId);
         if (game == null)
             return NotFound(new { message = "Game not found" });
-        if (game.Status != WerewolvesAPI.Models.GameStatus.InProgress && game.Status != WerewolvesAPI.Models.GameStatus.Ended)
+        if (game.Status != GameStatus.InProgress && game.Status != GameStatus.Ended)
             return BadRequest(new { message = "Game has not started" });
 
         var (role, fellows) = _gameService.GetPlayerRole(gameId, playerId);

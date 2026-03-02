@@ -4,7 +4,7 @@ using WerewolvesAPI.Models;
 
 namespace WerewolvesAPI.Services;
 
-public class GameService
+public class GameService : IGameService
 {
     private readonly ConcurrentDictionary<string, GameState> _games = new();
     private readonly ConcurrentDictionary<string, object> _phaseLocks = new();
@@ -376,8 +376,7 @@ public class GameService
             if (game.RoundNumber == 1)
                 return (false, "No kill on the first night");
 
-            game.NightVotes.RemoveAll(v => v.VoterId == voterId);
-            game.NightVotes.Add(new Vote { VoterId = voterId, TargetId = targetId });
+            game.NightVotes[voterId] = targetId;
         }
         else if (game.Phase == GamePhase.Discussion || game.Phase == GamePhase.TiebreakDiscussion)
         {
@@ -387,8 +386,7 @@ public class GameService
             if (game.Phase == GamePhase.TiebreakDiscussion && !game.TiebreakCandidates.Contains(targetId))
                 return (false, "Can only vote for tied candidates in tiebreak");
 
-            game.DayVotes.RemoveAll(v => v.VoterId == voterId);
-            game.DayVotes.Add(new Vote { VoterId = voterId, TargetId = targetId });
+            game.DayVotes[voterId] = targetId;
         }
         else
         {
@@ -490,7 +488,7 @@ public class GameService
                 break;
 
             case GamePhase.Discussion:
-                var (winnerId, isTie, tiedIds) = ResolveDayVote(game, game.DayVotes);
+                var (winnerId, isTie, tiedIds) = ResolveDayVote(game.DayVotes);
                 if (isTie && !game.DayTiebreakUsed)
                 {
                     game.Phase = GamePhase.TiebreakDiscussion;
@@ -508,7 +506,7 @@ public class GameService
                 break;
 
             case GamePhase.TiebreakDiscussion:
-                var (tbWinner, tbIsTie, _) = ResolveDayVote(game, game.DayVotes);
+                var (tbWinner, tbIsTie, _) = ResolveDayVote(game.DayVotes);
                 FinalizeDayElimination(game, tbIsTie ? null : tbWinner);
                 break;
 
@@ -594,7 +592,7 @@ public class GameService
         if (!game.NightVotes.Any()) return null;
 
         var tally = game.NightVotes
-            .GroupBy(v => v.TargetId)
+            .GroupBy(kv => kv.Value)
             .Select(g => (TargetId: g.Key, Count: g.Count()))
             .OrderByDescending(x => x.Count)
             .ToList();
@@ -606,12 +604,12 @@ public class GameService
         return topVoters.Count == 1 ? topVoters[0].TargetId : null;
     }
 
-    private static (string? Winner, bool IsTie, List<string> TiedIds) ResolveDayVote(GameState game, List<Vote> votes)
+    private static (string? Winner, bool IsTie, List<string> TiedIds) ResolveDayVote(ConcurrentDictionary<string, string> votes)
     {
         if (!votes.Any()) return (null, false, new());
 
         var tally = votes
-            .GroupBy(v => v.TargetId)
+            .GroupBy(kv => kv.Value)
             .Select(g => (TargetId: g.Key, Count: g.Count()))
             .OrderByDescending(x => x.Count)
             .ToList();

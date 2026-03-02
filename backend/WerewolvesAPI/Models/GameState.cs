@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace WerewolvesAPI.Models;
 
 public class GameState
@@ -20,8 +22,8 @@ public class GameState
     public GamePhase Phase { get; set; } = GamePhase.RoleReveal;
     public int RoundNumber { get; set; } = 0;
     public DateTime? PhaseEndsAt { get; set; }
-    public List<Vote> NightVotes { get; set; } = new();
-    public List<Vote> DayVotes { get; set; } = new();
+    public ConcurrentDictionary<string, string> NightVotes { get; set; } = new();
+    public ConcurrentDictionary<string, string> DayVotes { get; set; } = new();
     public List<string> TiebreakCandidates { get; set; } = new();
     public bool DayTiebreakUsed { get; set; }
     public string? LastEliminatedByNight { get; set; }
