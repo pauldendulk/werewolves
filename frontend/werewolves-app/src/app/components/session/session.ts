@@ -104,7 +104,7 @@ export class SessionComponent implements OnInit, OnDestroy {
         break;
       case 'Night':
         if (round === 1) {
-          this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and look around. You may communicate silently.');
+          this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and look around. Now you can see who the other werewolves are. On the first night, the werewolves cannot eliminate anyone.');
         } else {
           this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and silently decide who to eliminate.');
         }
@@ -208,12 +208,12 @@ export class SessionComponent implements OnInit, OnDestroy {
     return this.phase === 'Night' &&
       (this.lobbyState?.game.roundNumber ?? 0) > 1 &&
       this.roleDto?.role === 'Werewolf' &&
-      !(this.currentPlayer?.isEliminated ?? true);
+      !(this.currentPlayer?.isEliminated ?? false);
   }
 
   get canVoteDay(): boolean {
     return (this.phase === 'Discussion' || this.phase === 'TiebreakDiscussion')
-      && !(this.currentPlayer?.isEliminated ?? true);
+      && !(this.currentPlayer?.isEliminated ?? false);
   }
 
   get showDoneButton(): boolean {

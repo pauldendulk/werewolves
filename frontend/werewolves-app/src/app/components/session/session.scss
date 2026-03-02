@@ -33,6 +33,29 @@
   }
 }
 
+.eliminated-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #7f1d1d;
+  color: #fca5a5;
+  border: 1px solid #991b1b;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+
+  .pi { font-size: 1.1rem; }
+}
+
+.day-theme .eliminated-banner {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
 .timer-bar {
   text-align: center;
   margin-bottom: 1.25rem;

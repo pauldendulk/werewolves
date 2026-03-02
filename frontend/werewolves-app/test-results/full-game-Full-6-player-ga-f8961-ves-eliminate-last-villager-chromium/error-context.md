@@ -1,0 +1,78 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic:
+    - alertdialog
+  - heading "Werewolves" [level=1] [ref=e6]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: Game Name
+        - generic [ref=e13] [cursor=pointer]:
+          - text: GameName
+          - generic [ref=e14]: 
+      - generic [ref=e16]:
+        - generic [ref=e17]: Scan to invite more players
+        - generic [ref=e18]:
+          - img "QR Code" [ref=e19]
+          - generic [ref=e20]:
+            - button " Copy Link" [ref=e21] [cursor=pointer]:
+              - generic [ref=e22]: 
+              - generic [ref=e23]: Copy Link
+            - button " Share" [ref=e25] [cursor=pointer]:
+              - generic [ref=e26]: 
+              - generic [ref=e27]: Share
+    - generic [ref=e28]:
+      - heading "Players (1)" [level=3] [ref=e30]
+      - generic [ref=e32]:
+        - generic [ref=e35]: P
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - text: PlayerName
+            - generic [ref=e38]: YOU
+            - generic [ref=e39]: HOST
+          - generic [ref=e40]: 1m ago
+        - generic [ref=e42] [cursor=pointer]: 
+      - generic [ref=e43]:
+        - button "Start Game" [disabled] [ref=e45]:
+          - generic [ref=e46]: Start Game
+        - generic [ref=e47]:
+          - generic [ref=e48]: 
+          - generic [ref=e49]: Need at least 6 players to start (1/6)
+    - generic [ref=e50]:
+      - heading "Settings" [level=3] [ref=e52]
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - generic [ref=e55]: Min Players
+          - generic [ref=e57]:
+            - spinbutton "Min Players" [ref=e58]: "6"
+            - button [ref=e59] [cursor=pointer]:
+              - generic [ref=e60]: 
+            - button [ref=e61] [cursor=pointer]:
+              - generic [ref=e62]: 
+        - generic [ref=e63]:
+          - generic [ref=e64]: Max Players
+          - generic [ref=e66]:
+            - spinbutton "Max Players" [active] [ref=e67]: "20"
+            - button [ref=e68] [cursor=pointer]:
+              - generic [ref=e69]: 
+            - button [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: 
+        - generic [ref=e72]:
+          - generic [ref=e73]: Discussion (min)
+          - generic [ref=e75]:
+            - spinbutton "Discussion (min)" [ref=e76]: "5"
+            - button [ref=e77] [cursor=pointer]:
+              - generic [ref=e78]: 
+            - button [ref=e79] [cursor=pointer]:
+              - generic [ref=e80]: 
+        - generic [ref=e81]:
+          - generic [ref=e82]: Werewolves
+          - generic [ref=e84]:
+            - spinbutton "Werewolves" [ref=e85]: "1"
+            - button [ref=e86] [cursor=pointer]:
+              - generic [ref=e87]: 
+            - button [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]: 
+```
