@@ -95,6 +95,34 @@ Ensure all tests pass before completing the task.
 - **Namespace errors**: Verify using statements
 - **Type mismatches**: Check method signatures and return types
 - **NuGet issues**: Run `dotnet restore` if packages are missing
+- **Locked binary** (`error MSB3027`): The backend process is still running and has locked the `.exe`. Stop it first (see below), then rebuild.
+
+## Port / Process Management
+
+If port 5000 or 4200 is already in use, assume the app is already running. **Stop the process first**, then rebuild or restart.
+
+### Stop the backend (port 5000)
+```powershell
+$conn = Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
+if ($conn) { $conn | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } }
+Start-Sleep 2
+```
+
+### Stop the frontend (port 4200)
+```powershell
+$conn = Get-NetTCPConnection -LocalPort 4200 -ErrorAction SilentlyContinue
+if ($conn) { $conn | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } }
+Start-Sleep 2
+```
+
+### Stop both at once
+```powershell
+.\stop.ps1
+```
+
+**Important**: Always stop the backend before running `dotnet build` if the backend is currently running. The .NET build cannot overwrite the locked `.exe` while the process is alive.
+
+The VS Code **Start Backend** and **Start Angular** tasks automatically stop any existing process on the port before starting, so running them is always safe.
 
 ## Starting the Application
 

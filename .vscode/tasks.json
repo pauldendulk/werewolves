@@ -4,8 +4,12 @@
     {
       "label": "Start Backend",
       "type": "shell",
-      "command": "dotnet",
-      "args": ["run"],
+      "command": "pwsh",
+      "args": [
+        "-NoExit",
+        "-Command",
+        "$conn = Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue; if ($conn) { Write-Host 'Stopping existing process on port 5000...' -ForegroundColor Yellow; $conn | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }; Start-Sleep 2 }; cd '${workspaceFolder}/backend/WerewolvesAPI'; dotnet run"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/backend/WerewolvesAPI"
       },
@@ -17,7 +21,7 @@
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": ".*Building.*",
+          "beginsPattern": ".*Building.*|.*Stopping existing.*",
           "endsPattern": ".*Application started.*|.*Now listening on.*"
         }
       }
@@ -25,8 +29,12 @@
     {
       "label": "Start Angular",
       "type": "shell",
-      "command": "npm",
-      "args": ["start"],
+      "command": "pwsh",
+      "args": [
+        "-NoExit",
+        "-Command",
+        "$conn = Get-NetTCPConnection -LocalPort 4200 -ErrorAction SilentlyContinue; if ($conn) { Write-Host 'Stopping existing process on port 4200...' -ForegroundColor Yellow; $conn | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }; Start-Sleep 2 }; cd '${workspaceFolder}/frontend/werewolves-app'; npm start"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/frontend/werewolves-app"
       },
@@ -38,7 +46,7 @@
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": ".*Initial.*chunk.*files.*",
+          "beginsPattern": ".*Initial.*chunk.*files.*|.*Stopping existing.*",
           "endsPattern": ".*Compiled.*successfully.*|.*Application bundle generation complete.*"
         }
       }
