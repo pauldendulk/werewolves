@@ -37,7 +37,7 @@ npm run build -- --configuration production
 if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Host "[Frontend] Build failed." -ForegroundColor Red; exit 1 }
 
 Write-Host "[Frontend] Deploying to Firebase Hosting..." -ForegroundColor Yellow
-firebase deploy --only hosting
+firebase deploy --only hosting --project $PROJECT_ID
 if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Host "[Frontend] Firebase deploy failed." -ForegroundColor Red; exit 1 }
 Pop-Location
 
