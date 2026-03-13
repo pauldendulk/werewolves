@@ -10,7 +10,7 @@ import { MessageService } from 'primeng/api';
 import { GameService } from '../../services/game.service';
 import { PollingService } from '../../services/polling.service';
 import { AudioService } from '../../services/audio.service';
-import { LobbyState, PlayerState, PlayerRoleDto } from '../../models/game.models';
+import { LobbyState, PlayerState, PlayerRoleDto, SeerActionResponse } from '../../models/game.models';
 
 @Component({
   selector: 'app-session',
@@ -28,6 +28,13 @@ export class SessionComponent implements OnInit, OnDestroy {
   roleRevealed = false;
   hasSeenRole = false;
   selectedVoteTarget: string | null = null;
+  // Skill action state
+  cupidLover1: string | null = null;
+  cupidLover2: string | null = null;
+  seerTarget: string | null = null;
+  seerResult?: SeerActionResponse;
+  witchPoisonTarget: string | null = null;
+  hunterTarget: string | null = null;
   private pollSubscription?: Subscription;
   private lastPhase = '';
   private lastRound = 0;
@@ -84,8 +91,9 @@ export class SessionComponent implements OnInit, OnDestroy {
       this.selectedVoteTarget = null;
       this.onPhaseEntered(state.game.phase, state.game.roundNumber);
 
-      // Refresh role to get updated fellow werewolves on Night phase
-      if (state.game.phase === 'Night') {
+      // Refresh role on any night-skill phase so loverName, nightKillTargetName, etc. stay current
+      const skillPhases = ['WerewolvesMeeting', 'WerewolvesTurn', 'LoverReveal', 'SeerTurn', 'WitchTurn', 'HunterTurn'];
+      if (skillPhases.includes(state.game.phase)) {
         this.gameService.getRole(this.gameId, this.playerId).subscribe({
           next: dto => this.roleDto = dto,
           error: () => {}
@@ -102,37 +110,60 @@ export class SessionComponent implements OnInit, OnDestroy {
       case 'RoleReveal':
         this.audioService.speak('Everyone may now look at their role cards. Press and hold your card to reveal your role. Press done when you have seen it.');
         break;
-      case 'Night':
-        if (round === 1) {
-          this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and look around. Now you can see who the other werewolves are. On the first night, the werewolves cannot eliminate anyone.');
+      case 'WerewolvesMeeting':
+        this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and look around. Now you can see who the other werewolves are. On the first night, the werewolves cannot eliminate anyone.');
+        break;
+      case 'WerewolvesTurn':
+        this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and silently decide who to eliminate.');
+        break;
+      case 'CupidTurn':
+        this.audioService.speak('Cupid, wake up. Point to two players to link as lovers.');
+        break;
+      case 'LoverReveal':
+        this.audioService.speak('Lovers, open your eyes and see who your partner is.');
+        break;
+      case 'SeerTurn':
+        this.audioService.speak('Seer, wake up. Point to a player to reveal their role.');
+        break;
+      case 'WitchTurn':
+        this.audioService.speak('Witch, wake up. You may use your potions.');
+        break;
+      case 'HunterTurn':
+        this.audioService.speak('Hunter, you have been eliminated. But before you go, you may take one player with you.');
+        break;
+      case 'NightElimination': {
+        const deaths = this.lobbyState?.game.nightDeaths ?? [];
+        if (deaths.length === 0) {
+          this.audioService.speak('The night has ended. No one was taken.');
         } else {
-          this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and silently decide who to eliminate.');
+          const names = deaths.map(d => d.playerName).join(' and ');
+          this.audioService.speak(`The night has ended. ${names} ${deaths.length === 1 ? 'was' : 'were'} taken in the night.`);
         }
         break;
-      case 'NightElimination':
-        const nightName = this.lobbyState?.game.lastEliminatedByNightName;
-        this.audioService.speak(nightName
-          ? `The night has ended. ${nightName} was taken in the night.`
-          : 'The night has ended. No one was taken.');
-        break;
+      }
       case 'Discussion':
         this.audioService.speak('The village wakes up. Discuss who you believe is a werewolf. Vote before time runs out.');
         break;
       case 'TiebreakDiscussion':
         this.audioService.speak('There is a tie! One more minute to revote between the tied players.');
         break;
-      case 'DayElimination':
-        const dayName = this.lobbyState?.game.lastEliminatedByDayName;
-        this.audioService.speak(dayName
-          ? `The village has decided. ${dayName} has been eliminated.`
-          : 'The votes are tied. No one was eliminated.');
+      case 'DayElimination': {
+        const dayDeaths = this.lobbyState?.game.dayDeaths ?? [];
+        if (dayDeaths.length === 0) {
+          this.audioService.speak('The votes are tied. No one was eliminated.');
+        } else {
+          const name = dayDeaths[0].playerName;
+          this.audioService.speak(`The village has decided. ${name} has been eliminated.`);
+        }
         break;
-      case 'GameOver':
+      }
+      case 'GameOver': {
         const winner = this.lobbyState?.game.winner;
         this.audioService.speak(winner === 'Villagers'
           ? 'The werewolves have been found! The villagers win!'
           : 'The werewolves have taken over the village! The werewolves win! Game over.');
         break;
+      }
     }
   }
 
@@ -145,7 +176,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       this.secondsRemaining = Math.max(0, Math.ceil(diff / 1000));
 
       // 3-second warning before night ends
-      if (!this.nightWarningSpoken && this.phase === 'Night' && this.secondsRemaining <= 3 && this.secondsRemaining > 0) {
+      if (!this.nightWarningSpoken && (this.phase === 'WerewolvesMeeting' || this.phase === 'WerewolvesTurn') && this.secondsRemaining <= 3 && this.secondsRemaining > 0) {
         this.nightWarningSpoken = true;
         this.audioService.speak('Werewolves, close your eyes. Everyone has closed their eyes. It is now morning and everyone can open their eyes.');
       }
@@ -183,7 +214,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       ? (this.lobbyState?.game.tiebreakCandidates ?? [])
       : null;
 
-    if (this.phase === 'Night') {
+    if (this.phase === 'WerewolvesTurn') {
       return this.alivePlayers
         .filter(p => p.playerId !== this.playerId)
         .map(p => ({ label: p.displayName, value: p.playerId }));
@@ -205,8 +236,7 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   get canVoteNight(): boolean {
-    return this.phase === 'Night' &&
-      (this.lobbyState?.game.roundNumber ?? 0) > 1 &&
+    return this.phase === 'WerewolvesTurn' &&
       this.roleDto?.role === 'Werewolf' &&
       !(this.currentPlayer?.isEliminated ?? false);
   }
@@ -217,8 +247,61 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   get showDoneButton(): boolean {
-    return (this.phase === 'RoleReveal' || this.phase === 'Discussion' || this.phase === 'TiebreakDiscussion')
+    return (this.phase === 'RoleReveal' || this.phase === 'WerewolvesMeeting' || this.phase === 'Discussion' || this.phase === 'TiebreakDiscussion')
       && !(this.currentPlayer?.isDone ?? false);
+  }
+
+  get allPlayers(): { label: string; value: string }[] {
+    return this.alivePlayers
+      .filter(p => p.playerId !== this.playerId)
+      .map(p => ({ label: p.displayName, value: p.playerId }));
+  }
+
+  get canActAsCupid(): boolean {
+    return this.phase === 'CupidTurn' && this.roleDto?.skill === 'Cupid' && !(this.currentPlayer?.isEliminated ?? false);
+  }
+
+  get canActAsSeer(): boolean {
+    return this.phase === 'SeerTurn' && this.roleDto?.skill === 'Seer' && !(this.currentPlayer?.isEliminated ?? false);
+  }
+
+  get canActAsWitch(): boolean {
+    return this.phase === 'WitchTurn' && this.roleDto?.skill === 'Witch' && !(this.currentPlayer?.isEliminated ?? false);
+  }
+
+  get canActAsHunter(): boolean {
+    return this.phase === 'HunterTurn' && this.roleDto?.skill === 'Hunter';
+  }
+
+  submitCupidAction(): void {
+    if (!this.cupidLover1 || !this.cupidLover2) return;
+    this.gameService.cupidAction(this.gameId, this.playerId, this.cupidLover1, this.cupidLover2).subscribe({
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'Failed to submit Cupid action' })
+    });
+  }
+
+  submitSeerAction(): void {
+    if (!this.seerTarget) return;
+    this.gameService.seerAction(this.gameId, this.playerId, this.seerTarget).subscribe({
+      next: result => {
+        this.seerResult = result;
+        this.messageService.add({ severity: 'info', summary: 'Seer result received', detail: '' });
+      },
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'Failed to submit Seer action' })
+    });
+  }
+
+  submitWitchAction(choice: string): void {
+    this.gameService.witchAction(this.gameId, this.playerId, choice, this.witchPoisonTarget ?? undefined).subscribe({
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'Failed to submit Witch action' })
+    });
+  }
+
+  submitHunterAction(): void {
+    if (!this.hunterTarget) return;
+    this.gameService.hunterAction(this.gameId, this.playerId, this.hunterTarget).subscribe({
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'Failed to submit Hunter action' })
+    });
   }
 
   revealRole(): void {

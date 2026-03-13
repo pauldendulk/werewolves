@@ -19,21 +19,13 @@ public class GameServiceTests
     [Fact]
     public void CreateGame_ShouldCreateGameWithCreator()
     {
-        // Arrange
-        var gameName = "Test Game";
-        var creatorName = "John";
-        var maxPlayers = 30;
-        var baseUrl = "http://localhost:4200";
+        var game = _gameService.CreateGame("Test Game", "John", 30, "http://localhost:4200");
 
-        // Act
-        var game = _gameService.CreateGame(gameName, creatorName, maxPlayers, baseUrl);
-
-        // Assert
         game.Should().NotBeNull();
-        game.GameName.Should().Be(gameName);
-        game.MaxPlayers.Should().Be(maxPlayers);
+        game.GameName.Should().Be("Test Game");
+        game.MaxPlayers.Should().Be(30);
         game.Players.Should().HaveCount(1);
-        game.Players.First().DisplayName.Should().Be(creatorName);
+        game.Players.First().DisplayName.Should().Be("John");
         game.Players.First().IsCreator.Should().BeTrue();
         game.Players.First().IsModerator.Should().BeTrue();
     }
@@ -41,34 +33,25 @@ public class GameServiceTests
     [Fact]
     public void JoinGame_ShouldAddPlayerToGame()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        var playerName = "Alice";
 
-        // Act
-        var (success, message, player) = _gameService.JoinGame(game.GameId, playerName);
+        var (success, message, player) = _gameService.JoinGame(game.GameId, "Alice");
 
-        // Assert
         success.Should().BeTrue();
         player.Should().NotBeNull();
-        player!.DisplayName.Should().Be(playerName);
+        player!.DisplayName.Should().Be("Alice");
         player.IsCreator.Should().BeFalse();
-        
-        var updatedGame = _gameService.GetGame(game.GameId);
-        updatedGame!.Players.Should().HaveCount(2);
+        _gameService.GetGame(game.GameId)!.Players.Should().HaveCount(2);
     }
 
     [Fact]
     public void JoinGame_WhenGameFull_ShouldReturnFailure()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 2, "http://localhost");
         _gameService.JoinGame(game.GameId, "Player1");
 
-        // Act
         var (success, message, player) = _gameService.JoinGame(game.GameId, "Player2");
 
-        // Assert
         success.Should().BeFalse();
         message.Should().Contain("full");
         player.Should().BeNull();
@@ -77,15 +60,12 @@ public class GameServiceTests
     [Fact]
     public void JoinGame_WhenPlayerRejoins_ShouldUpdateStatus()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
         _gameService.LeaveGame(game.GameId, player!.PlayerId);
 
-        // Act
-        var (success, message, rejoinedPlayer) = _gameService.JoinGame(game.GameId, "Alice", player.PlayerId);
+        var (success, _, rejoinedPlayer) = _gameService.JoinGame(game.GameId, "Alice", player.PlayerId);
 
-        // Assert
         success.Should().BeTrue();
         rejoinedPlayer!.PlayerId.Should().Be(player.PlayerId);
         rejoinedPlayer.IsConnected.Should().BeTrue();
@@ -95,155 +75,112 @@ public class GameServiceTests
     [Fact]
     public void LeaveGame_ShouldUpdatePlayerStatus()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
 
-        // Act
-        var result = _gameService.LeaveGame(game.GameId, player!.PlayerId);
+        _gameService.LeaveGame(game.GameId, player!.PlayerId);
 
-        // Assert
-        result.Should().BeTrue();
-        var updatedGame = _gameService.GetGame(game.GameId);
-        var leftPlayer = updatedGame!.Players.First(p => p.PlayerId == player.PlayerId);
+        var leftPlayer = _gameService.GetGame(game.GameId)!.Players.First(p => p.PlayerId == player.PlayerId);
         leftPlayer.ParticipationStatus.Should().Be(Models.ParticipationStatus.Left);
     }
 
     [Fact]
     public void RemovePlayer_ByModerator_ShouldUpdatePlayerStatus()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
 
-        // Act
-        var result = _gameService.RemovePlayer(game.GameId, player!.PlayerId, game.CreatorId);
+        _gameService.RemovePlayer(game.GameId, player!.PlayerId, game.CreatorId);
 
-        // Assert
-        result.Should().BeTrue();
-        var updatedGame = _gameService.GetGame(game.GameId);
-        var removedPlayer = updatedGame!.Players.First(p => p.PlayerId == player.PlayerId);
-        removedPlayer.ParticipationStatus.Should().Be(Models.ParticipationStatus.Removed);
+        _gameService.GetGame(game.GameId)!.Players.First(p => p.PlayerId == player.PlayerId)
+            .ParticipationStatus.Should().Be(Models.ParticipationStatus.Removed);
     }
 
     [Fact]
     public void UpdateMaxPlayers_ByCreator_ShouldUpdateSettings()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        var newMaxPlayers = 30;
 
-        // Act
-        var result = _gameService.UpdateMaxPlayers(game.GameId, newMaxPlayers, game.CreatorId);
-
-        // Assert
-        result.Should().BeTrue();
-        var updatedGame = _gameService.GetGame(game.GameId);
-        updatedGame!.MaxPlayers.Should().Be(newMaxPlayers);
+        _gameService.UpdateMaxPlayers(game.GameId, 30, game.CreatorId).Should().BeTrue();
+        _gameService.GetGame(game.GameId)!.MaxPlayers.Should().Be(30);
     }
 
     [Fact]
     public void UpdateMaxPlayers_ByNonCreator_ShouldFail()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
 
-        // Act
-        var result = _gameService.UpdateMaxPlayers(game.GameId, 30, player!.PlayerId);
+        _gameService.UpdateMaxPlayers(game.GameId, 30, player!.PlayerId).Should().BeFalse();
+    }
 
-        // Assert
-        result.Should().BeFalse();
+    [Fact]
+    public void UpdateEnabledSkills_ByCreator_ShouldUpdateSkills()
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+
+        _gameService.UpdateEnabledSkills(game.GameId, new List<string> { "Seer", "Witch" }, game.CreatorId).Should().BeTrue();
+
+        var updated = _gameService.GetGame(game.GameId)!;
+        updated.EnabledSkills.Should().HaveCount(2);
+        updated.EnabledSkills.Should().Contain(Models.PlayerSkill.Seer);
+        updated.EnabledSkills.Should().Contain(Models.PlayerSkill.Witch);
     }
 
     [Fact]
     public void HasDuplicateNames_WhenNoDuplicates_ShouldReturnFalse()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         _gameService.JoinGame(game.GameId, "Alice");
         _gameService.JoinGame(game.GameId, "Bob");
 
-        // Act
-        var result = _gameService.HasDuplicateNames(game.GameId);
-
-        // Assert
-        result.Should().BeFalse();
+        _gameService.HasDuplicateNames(game.GameId).Should().BeFalse();
     }
 
     [Fact]
     public void HasDuplicateNames_WhenDuplicates_ShouldReturnTrue()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         _gameService.JoinGame(game.GameId, "Alice");
         _gameService.JoinGame(game.GameId, "Alice");
 
-        // Act
-        var result = _gameService.HasDuplicateNames(game.GameId);
-
-        // Assert
-        result.Should().BeTrue();
+        _gameService.HasDuplicateNames(game.GameId).Should().BeTrue();
     }
 
     [Fact]
     public void UpdatePlayerName_WhenCreatorChangesName_ShouldUpdateCreatorNameInDTO()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "OriginalCreator", 40, "http://localhost");
-        var creatorId = game.CreatorId;
-        var newName = "UpdatedCreator";
 
-        // Act
-        var updateResult = _gameService.UpdatePlayerName(game.GameId, creatorId, newName);
+        _gameService.UpdatePlayerName(game.GameId, game.CreatorId, "UpdatedCreator").Should().BeTrue();
 
-        // Assert
-        updateResult.Should().BeTrue();
-        
-        // Verify the creator player's name was updated
-        var updatedGame = _gameService.GetGame(game.GameId);
-        var creator = updatedGame!.Players.First(p => p.PlayerId == creatorId);
-        creator.DisplayName.Should().Be(newName);
-        
-        // The DTO should derive creator name from the player, not a stored value
-        // This test verifies that the creator's current DisplayName is the source of truth
+        _gameService.GetGame(game.GameId)!.Players.First(p => p.PlayerId == game.CreatorId)
+            .DisplayName.Should().Be("UpdatedCreator");
     }
 
     [Fact]
     public void GetGame_ShouldDeriveCreatorNameFromPlayer()
     {
-        // Arrange
         var game = _gameService.CreateGame("Test Game", "OriginalName", 40, "http://localhost");
-        var creatorId = game.CreatorId;
-        
-        // Act - Change creator's name
-        _gameService.UpdatePlayerName(game.GameId, creatorId, "NewName");
-        
-        // Assert - The creator player's DisplayName should be the source of truth
-        var updatedGame = _gameService.GetGame(game.GameId);
-        var creator = updatedGame!.Players.First(p => p.PlayerId == creatorId);
-        creator.DisplayName.Should().Be("NewName");
-        
-        // When the DTO is created (in GameController), it should use the player's current DisplayName
-        // This ensures the creator name is always in sync with the player's current name
+        _gameService.UpdatePlayerName(game.GameId, game.CreatorId, "NewName");
+
+        _gameService.GetGame(game.GameId)!.Players.First(p => p.PlayerId == game.CreatorId)
+            .DisplayName.Should().Be("NewName");
     }
 
     [Fact]
     public void CreateGame_ShouldStartAtVersionOne()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        game.Version.Should().Be(1);
+        _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost").Version.Should().Be(1);
     }
 
     [Fact]
     public void JoinGame_ShouldBumpVersion()
     {
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        var versionBefore = game.Version;
-
+        var before = game.Version;
         _gameService.JoinGame(game.GameId, "Alice");
-
-        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
     }
 
     [Fact]
@@ -251,11 +188,9 @@ public class GameServiceTests
     {
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
-        var versionAfterJoin = _gameService.GetGame(game.GameId)!.Version;
-
+        var after = _gameService.GetGame(game.GameId)!.Version;
         _gameService.LeaveGame(game.GameId, player!.PlayerId);
-
-        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionAfterJoin + 1);
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(after + 1);
     }
 
     [Fact]
@@ -263,104 +198,91 @@ public class GameServiceTests
     {
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
-        var versionAfterJoin = _gameService.GetGame(game.GameId)!.Version;
-
+        var after = _gameService.GetGame(game.GameId)!.Version;
         _gameService.RemovePlayer(game.GameId, player!.PlayerId, game.CreatorId);
-
-        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionAfterJoin + 1);
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(after + 1);
     }
 
     [Fact]
     public void UpdateMaxPlayers_ShouldBumpVersion()
     {
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        var versionBefore = game.Version;
-
+        var before = game.Version;
         _gameService.UpdateMaxPlayers(game.GameId, 30, game.CreatorId);
-
-        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
     }
 
     [Fact]
     public void UpdateMinPlayers_ShouldBumpVersion()
     {
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        var versionBefore = game.Version;
-
+        var before = game.Version;
         _gameService.UpdateMinPlayers(game.GameId, 3, game.CreatorId);
-
-        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
     }
 
     [Fact]
     public void UpdateGameName_ShouldBumpVersion()
     {
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        var versionBefore = game.Version;
-
+        var before = game.Version;
         _gameService.UpdateGameName(game.GameId, "New Name", game.CreatorId);
-
-        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
     }
 
     [Fact]
     public void UpdatePlayerName_ShouldBumpVersion()
     {
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        var versionBefore = game.Version;
-
+        var before = game.Version;
         _gameService.UpdatePlayerName(game.GameId, game.CreatorId, "New Name");
-
-        _gameService.GetGame(game.GameId)!.Version.Should().Be(versionBefore + 1);
+        _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
     }
 
     [Fact]
     public void CreateGame_ShouldStartAtWaitingForPlayers()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        game.Status.Should().Be(Models.GameStatus.WaitingForPlayers);
+        _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost")
+            .Status.Should().Be(Models.GameStatus.WaitingForPlayers);
     }
 
     [Fact]
     public void JoinGame_WhenEnoughPlayers_ShouldTransitionToReadyToStart()
     {
-        // Arrange - min players is 4, so we need 4 total
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        game.Status.Should().Be(Models.GameStatus.WaitingForPlayers);
-
-        // Act - add 3 more to reach min of 4
         _gameService.JoinGame(game.GameId, "Alice");
         _gameService.JoinGame(game.GameId, "Bob");
         _gameService.JoinGame(game.GameId, "Charlie");
 
-        // Assert
-        var updatedGame = _gameService.GetGame(game.GameId)!;
-        updatedGame.Status.Should().Be(Models.GameStatus.ReadyToStart);
+        _gameService.GetGame(game.GameId)!.Status.Should().Be(Models.GameStatus.ReadyToStart);
     }
 
     [Fact]
     public void LeaveGame_WhenBelowMinPlayers_ShouldTransitionBackToWaitingForPlayers()
     {
-        // Arrange - get to ReadyToStart with exactly MinPlayers (3: Creator + Alice + Bob)
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         var (_, _, alice) = _gameService.JoinGame(game.GameId, "Alice");
         _gameService.JoinGame(game.GameId, "Bob");
         _gameService.GetGame(game.GameId)!.Status.Should().Be(Models.GameStatus.ReadyToStart);
 
-        // Act - Alice leaves, dropping below min (2 < 3)
         _gameService.LeaveGame(game.GameId, alice!.PlayerId);
 
-        // Assert
         _gameService.GetGame(game.GameId)!.Status.Should().Be(Models.GameStatus.WaitingForPlayers);
     }
 
-    // ── Session / phase tests ──────────────────────────────────────────────
+    // ── Session / phase tests (no skills) ─────────────────────────────────
+    //
+    // CreateReadyGame disables all skills so the night flow is:
+    //   Round 1 : RoleReveal → WerewolvesMeeting → Discussion
+    //   Round 2+: DayElimination → WerewolvesTurn → NightElimination → Discussion
 
     private Models.GameState CreateReadyGame(int extraPlayers = 3)
     {
         var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
         for (int i = 0; i < extraPlayers; i++)
             _gameService.JoinGame(game.GameId, $"Player{i + 1}");
+        // Disable all skills so phase transitions stay simple
+        _gameService.UpdateEnabledSkills(game.GameId, new List<string>(), game.CreatorId);
         return _gameService.GetGame(game.GameId)!;
     }
 
@@ -368,10 +290,8 @@ public class GameServiceTests
     public void StartGame_ShouldAssignRoles()
     {
         var game = CreateReadyGame();
+        _gameService.StartGame(game.GameId, game.CreatorId);
 
-        var (success, error) = _gameService.StartGame(game.GameId, game.CreatorId);
-
-        success.Should().BeTrue();
         var updated = _gameService.GetGame(game.GameId)!;
         updated.Players.Should().OnlyContain(p => p.Role != null);
         updated.Players.Count(p => p.Role == Models.PlayerRole.Werewolf).Should().Be(game.NumberOfWerewolves);
@@ -382,7 +302,6 @@ public class GameServiceTests
     public void StartGame_ShouldSetPhaseToRoleReveal()
     {
         var game = CreateReadyGame();
-
         _gameService.StartGame(game.GameId, game.CreatorId);
 
         var updated = _gameService.GetGame(game.GameId)!;
@@ -408,33 +327,32 @@ public class GameServiceTests
     public void StartGame_WhenNotReadyToStart_ShouldFail()
     {
         var game = _gameService.CreateGame("Test", "Creator", 40, "http://localhost");
-        // Only creator, not enough players
 
-        var (success, error) = _gameService.StartGame(game.GameId, game.CreatorId);
+        var (success, _) = _gameService.StartGame(game.GameId, game.CreatorId);
 
         success.Should().BeFalse();
     }
 
     [Fact]
-    public void ForceAdvancePhase_FromRoleReveal_ShouldTransitionToNight()
+    public void ForceAdvancePhase_FromRoleReveal_ShouldTransitionToWerewolvesMeeting()
     {
         var game = CreateReadyGame();
         _gameService.StartGame(game.GameId, game.CreatorId);
 
-        var (success, error) = _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
 
-        success.Should().BeTrue();
-        _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.Night);
+        // No skills → round 1 goes directly to WerewolvesMeeting
+        _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.WerewolvesMeeting);
     }
 
     [Fact]
-    public void ForceAdvancePhase_FromNight_Round1_ShouldSkipNightEliminationAndGoToDiscussion()
+    public void ForceAdvancePhase_FromWerewolvesMeeting_Round1_ShouldGoToDiscussion()
     {
         var game = CreateReadyGame();
         _gameService.StartGame(game.GameId, game.CreatorId);
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
 
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → should skip NightElimination
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
         _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.Discussion);
     }
@@ -444,28 +362,42 @@ public class GameServiceTests
     {
         var game = CreateReadyGame();
         _gameService.StartGame(game.GameId, game.CreatorId);
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
-        var voter = game.Players.First(p => p.PlayerId != game.CreatorId);
+        var voter  = game.Players.First(p => p.PlayerId != game.CreatorId);
         var target = game.Players.First(p => p.PlayerId != voter.PlayerId);
 
-        var (success, error) = _gameService.CastVote(game.GameId, voter.PlayerId, target.PlayerId);
+        var (success, _) = _gameService.CastVote(game.GameId, voter.PlayerId, target.PlayerId);
 
         success.Should().BeTrue();
         _gameService.GetGame(game.GameId)!.DayVotes[voter.PlayerId].Should().Be(target.PlayerId);
     }
 
     [Fact]
-    public void CastVote_DuringNight_ByVillager_ShouldFail()
+    public void CastVote_DuringWerewolvesTurn_ByVillager_ShouldFail()
     {
+        // WerewolvesTurn only happens from round 2 onwards
         var game = CreateReadyGame();
         _gameService.StartGame(game.GameId, game.CreatorId);
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
         var updated = _gameService.GetGame(game.GameId)!;
-        var villager = updated.Players.First(p => p.Role == Models.PlayerRole.Villager);
-        var target = updated.Players.First(p => p.PlayerId != villager.PlayerId);
+        var werewolf = updated.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var sacrificeVillager = updated.Players.First(p => p.Role == Models.PlayerRole.Villager && !p.IsEliminated);
+        // Vote out a villager (not the werewolf) to reach Night round 2 with wolf still alive
+        foreach (var voter in updated.Players.Where(p => p.PlayerId != sacrificeVillager.PlayerId))
+            _gameService.CastVote(game.GameId, voter.PlayerId, sacrificeVillager.PlayerId);
+        // All votes go to one player — no tiebreak — advance
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn (round 2)
+
+        var state = _gameService.GetGame(game.GameId)!;
+        state.Phase.Should().Be(Models.GamePhase.WerewolvesTurn);
+
+        var villager = state.Players.First(p => p.Role == Models.PlayerRole.Villager && !p.IsEliminated);
+        var target   = state.Players.First(p => p.PlayerId != villager.PlayerId && !p.IsEliminated);
 
         var (success, error) = _gameService.CastVote(game.GameId, villager.PlayerId, target.PlayerId);
 
@@ -478,11 +410,11 @@ public class GameServiceTests
         var game = CreateReadyGame();
         _gameService.StartGame(game.GameId, game.CreatorId);
 
-        var updated = _gameService.GetGame(game.GameId)!;
-        foreach (var player in updated.Players)
+        foreach (var player in _gameService.GetGame(game.GameId)!.Players)
             _gameService.MarkDone(game.GameId, player.PlayerId);
 
-        _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.Night);
+        // No skills → advances to WerewolvesMeeting
+        _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.WerewolvesMeeting);
     }
 
     [Fact]
@@ -490,60 +422,52 @@ public class GameServiceTests
     {
         var game = CreateReadyGame();
         _gameService.StartGame(game.GameId, game.CreatorId);
-        // Force through to Discussion
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion (round 1 skip)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
-        var updated = _gameService.GetGame(game.GameId)!;
-        // Everyone votes for the werewolf
+        var updated  = _gameService.GetGame(game.GameId)!;
         var werewolf = updated.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
         foreach (var voter in updated.Players.Where(p => p.PlayerId != werewolf.PlayerId))
             _gameService.CastVote(game.GameId, voter.PlayerId, werewolf.PlayerId);
 
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination → GameOver
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
 
         var final = _gameService.GetGame(game.GameId)!;
-        final.Phase.Should().Be(Models.GamePhase.DayElimination); // 10s screen first
-        final.LastEliminatedByDay.Should().Be(werewolf.PlayerId);
+        final.Phase.Should().Be(Models.GamePhase.DayElimination);
+        final.DayDeaths.Should().ContainSingle(e => e.PlayerId == werewolf.PlayerId);
         final.Winner.Should().Be("Villagers");
     }
 
     [Fact]
     public void WerewolvesWin_WhenAllVillagersAreEliminated()
     {
-        // Old rule (>= villagers) is removed — game only ends when 0 villagers remain.
-        // Use 3 players (1W + 2V) so we can eliminate all villagers clearly.
-        var game = CreateReadyGame(2); // Creator + 2 players = 3 total
+        var game = CreateReadyGame(2); // 3 total: 1W + 2V
         _gameService.StartGame(game.GameId, game.CreatorId);
 
-        var started = _gameService.GetGame(game.GameId)!;
+        var started  = _gameService.GetGame(game.GameId)!;
         var werewolf = started.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
         var villagers = started.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
 
-        // RoleReveal → Night (round 1, no kill)
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
-        // Night → Discussion
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
-        // Day 1: eliminate V[0] (wolf + V[1] vote against V[0])
+        // Day 1: vote out V[0]
         _gameService.CastVote(game.GameId, werewolf.PlayerId, villagers[0].PlayerId);
         _gameService.CastVote(game.GameId, villagers[1].PlayerId, villagers[0].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
 
-        // 1W + 1V remaining: NOT a win with new rule (need 0 villagers)
-        _gameService.GetGame(game.GameId)!.Winner.Should().BeNull(
-            "game only ends when all villagers are eliminated, not when werewolves outnumber them");
+        _gameService.GetGame(game.GameId)!.Winner.Should().BeNull("1W + 1V is not a win yet");
 
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night round 2
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 2
 
-        // Night 2: werewolf kills the last villager
+        // Night 2: wolf kills last villager
         _gameService.CastVote(game.GameId, werewolf.PlayerId, villagers[1].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination
 
         var afterNight = _gameService.GetGame(game.GameId)!;
         afterNight.Phase.Should().Be(Models.GamePhase.NightElimination);
-        afterNight.Winner.Should().Be("Werewolves", "0 villagers remain");
-        afterNight.LastEliminatedByNight.Should().Be(villagers[1].PlayerId);
+        afterNight.NightDeaths.Should().ContainSingle(e => e.PlayerId == villagers[1].PlayerId);
+        afterNight.Winner.Should().Be("Werewolves");
 
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → GameOver
         _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.GameOver);
@@ -555,32 +479,25 @@ public class GameServiceTests
         var game = CreateReadyGame();
         _gameService.StartGame(game.GameId, game.CreatorId);
 
-        var started = _gameService.GetGame(game.GameId)!;
+        var started  = _gameService.GetGame(game.GameId)!;
         var villagers = started.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
-        var werewolf = started.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var werewolf  = started.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
 
-        // RoleReveal → Night (round 1)
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
-        // Night (round 1) → Discussion directly
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
-        // Vote out a villager
-        var toEliminate = villagers[0];
-        foreach (var voter in started.Players.Where(p => p.PlayerId != toEliminate.PlayerId))
-            _gameService.CastVote(game.GameId, voter.PlayerId, toEliminate.PlayerId);
-        // Discussion → DayElimination
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
-        // DayElimination → Night (round 2)
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
-        // Night (round 2, no votes) → NightElimination
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
-        // NightElimination → Discussion
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
+        // Vote out V[0]
+        foreach (var voter in started.Players.Where(p => p.PlayerId != villagers[0].PlayerId))
+            _gameService.CastVote(game.GameId, voter.PlayerId, villagers[0].PlayerId);
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination (no wolf vote)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
         _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.Discussion);
 
-        // Eliminated player tries to vote
-        var (success, error) = _gameService.CastVote(game.GameId, toEliminate.PlayerId, werewolf.PlayerId);
+        var (success, error) = _gameService.CastVote(game.GameId, villagers[0].PlayerId, werewolf.PlayerId);
         success.Should().BeFalse();
         error.Should().Contain("Eliminated");
     }
@@ -588,47 +505,38 @@ public class GameServiceTests
     [Fact]
     public void GameOver_VersionIsBumped_SoPollingClientsReceiveTheTransition()
     {
-        // Regression: TransitionToGameOverIfWon must call BumpVersion, otherwise
-        // clients polling with ?version=N always get 204 and never see the GameOver state.
-        // Use 3 players so we can eliminate all villagers in 2 rounds.
-        var game = CreateReadyGame(2); // Creator + 2 = 3 total: 1W + 2V
+        var game = CreateReadyGame(2); // 3 total: 1W + 2V
         _gameService.StartGame(game.GameId, game.CreatorId);
 
-        var started = _gameService.GetGame(game.GameId)!;
+        var started  = _gameService.GetGame(game.GameId)!;
         var werewolf = started.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
         var villagers = started.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
 
-        // RoleReveal → Night → Discussion (round 1, no kill)
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
-        // Day 1: vote out V[0]
         _gameService.CastVote(game.GameId, werewolf.PlayerId, villagers[0].PlayerId);
         _gameService.CastVote(game.GameId, villagers[1].PlayerId, villagers[0].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night round 2
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 2
 
-        // Night 2: wolf kills last villager → 0 villagers → Winner set
         _gameService.CastVote(game.GameId, werewolf.PlayerId, villagers[1].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination
 
-        var versionAtNightElimination = _gameService.GetGame(game.GameId)!.Version;
+        var vAtNightElim = _gameService.GetGame(game.GameId)!.Version;
 
-        // NightElimination → GameOver (version must bump!)
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → GameOver
         var afterGameOver = _gameService.GetGame(game.GameId)!;
 
         afterGameOver.Phase.Should().Be(Models.GamePhase.GameOver);
         afterGameOver.Winner.Should().Be("Werewolves");
-        // Critical: version MUST increase so polling clients get the new state instead of 204.
-        afterGameOver.Version.Should().BeGreaterThan(versionAtNightElimination);
+        afterGameOver.Version.Should().BeGreaterThan(vAtNightElim);
     }
 
     [Fact]
     public void FullGameScenario_SixPlayers_TwoWerewolves_WerewolvesWinAfterFourRounds()
     {
-        // Setup: 6 players (creator + 5 joiners), 2 werewolves
-        var game = CreateReadyGame(5); // creator + 5 = 6 total
+        var game = CreateReadyGame(5); // 6 total
         _gameService.UpdateNumberOfWerewolves(game.GameId, 2, game.CreatorId);
         _gameService.StartGame(game.GameId, game.CreatorId);
 
@@ -639,80 +547,396 @@ public class GameServiceTests
         V.Should().HaveCount(4);
 
         // ── Round 1 ──────────────────────────────────────────────────────────
-        // RoleReveal → Night (no kills) → Discussion
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // RoleReveal → Night
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // Night → Discussion (no vote)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
-        // Day 1: everyone votes V[0] → V[0] eliminated, state: 2W + 3V
+        // Day 1: eliminate V[0]
         foreach (var p in state.Players.Where(p => p.PlayerId != V[0].PlayerId))
             _gameService.CastVote(game.GameId, p.PlayerId, V[0].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
+
         state = _gameService.GetGame(game.GameId)!;
-        state.LastEliminatedByDay.Should().Be(V[0].PlayerId, "V[0] had all votes");
-        state.Winner.Should().BeNull("2W + 3V is not a werewolf win");
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night round 2
+        state.DayDeaths.Should().ContainSingle(e => e.PlayerId == V[0].PlayerId);
+        state.Winner.Should().BeNull();
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 2
 
         // ── Round 2 ──────────────────────────────────────────────────────────
-        // Night 2: both werewolves agree on V[1] → V[1] eliminated, state: 2W + 2V
         _gameService.CastVote(game.GameId, W[0].PlayerId, V[1].PlayerId);
         _gameService.CastVote(game.GameId, W[1].PlayerId, V[1].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination
+
         state = _gameService.GetGame(game.GameId)!;
-        state.LastEliminatedByNight.Should().Be(V[1].PlayerId, "both werewolves voted V[1]");
-        state.Winner.Should().BeNull("2W + 2V is NOT a win under aliveVillagers == 0 rule");
+        state.NightDeaths.Should().ContainSingle(e => e.PlayerId == V[1].PlayerId);
+        state.Winner.Should().BeNull();
+
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
-        // Day 2: wolves split (W[0]→V[2], W[1]→V[3]), surviving villagers agree on W[0]
-        //        V[2] and V[3] are alive; V[0], V[1] eliminated
+        // Day 2: V[2] and V[3] vote W[0]; wolves split
         _gameService.CastVote(game.GameId, W[0].PlayerId, V[2].PlayerId);
         _gameService.CastVote(game.GameId, W[1].PlayerId, V[3].PlayerId);
         _gameService.CastVote(game.GameId, V[2].PlayerId, W[0].PlayerId);
         _gameService.CastVote(game.GameId, V[3].PlayerId, W[0].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
+
         state = _gameService.GetGame(game.GameId)!;
-        state.LastEliminatedByDay.Should().Be(W[0].PlayerId, "W[0] had 2 votes vs 1 each");
-        state.Winner.Should().BeNull("1W + 2V is not a win");
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night round 3
+        state.DayDeaths.Should().ContainSingle(e => e.PlayerId == W[0].PlayerId);
+        state.Winner.Should().BeNull();
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 3
 
         // ── Round 3 ──────────────────────────────────────────────────────────
-        // Night 3: W[1] kills V[2] → state: 1W + 1V
         _gameService.CastVote(game.GameId, W[1].PlayerId, V[2].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination
+
         state = _gameService.GetGame(game.GameId)!;
-        state.LastEliminatedByNight.Should().Be(V[2].PlayerId);
-        state.Winner.Should().BeNull("1W + 1V is NOT a win under aliveVillagers == 0 rule");
+        state.NightDeaths.Should().ContainSingle(e => e.PlayerId == V[2].PlayerId);
+        state.Winner.Should().BeNull();
+
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
 
-        // Day 3: W[1] votes V[3], V[3] votes W[1] → perfect tie → TiebreakDiscussion
+        // Day 3: W[1] ↔ V[3] tie → TiebreakDiscussion
         _gameService.CastVote(game.GameId, W[1].PlayerId, V[3].PlayerId);
         _gameService.CastVote(game.GameId, V[3].PlayerId, W[1].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → TiebreakDiscussion
+
         _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.TiebreakDiscussion);
 
-        // Tiebreak vote: same result → another tie → no elimination
+        // Tiebreak: tie again → no elimination
         _gameService.CastVote(game.GameId, W[1].PlayerId, V[3].PlayerId);
         _gameService.CastVote(game.GameId, V[3].PlayerId, W[1].PlayerId);
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination (no kill)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
+
         state = _gameService.GetGame(game.GameId)!;
-        state.LastEliminatedByDay.Should().BeNull("two tied draws = no elimination");
+        state.DayDeaths.Should().BeEmpty("double tie = no elimination");
         state.Winner.Should().BeNull();
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Night round 4
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 4
 
         // ── Round 4 ──────────────────────────────────────────────────────────
-        // Night 4: W[1] kills V[3] → 0 villagers remaining → WEREWOLVES WIN
         _gameService.CastVote(game.GameId, W[1].PlayerId, V[3].PlayerId);
         _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination
+
         state = _gameService.GetGame(game.GameId)!;
         state.Phase.Should().Be(Models.GamePhase.NightElimination);
-        state.LastEliminatedByNight.Should().Be(V[3].PlayerId);
-        state.Winner.Should().Be("Werewolves", "0 villagers remain");
+        state.NightDeaths.Should().ContainSingle(e => e.PlayerId == V[3].PlayerId);
+        state.Winner.Should().Be("Werewolves");
 
-        var versionAtFinalNightElim = state.Version;
-        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // NightElimination → GameOver
+        var vAtFinalNight = state.Version;
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → GameOver
+
         var final = _gameService.GetGame(game.GameId)!;
         final.Phase.Should().Be(Models.GamePhase.GameOver);
         final.Status.Should().Be(Models.GameStatus.Ended);
         final.Winner.Should().Be("Werewolves");
-        final.Version.Should().BeGreaterThan(versionAtFinalNightElim, "version must bump so polling clients receive GameOver");
+        final.Version.Should().BeGreaterThan(vAtFinalNight);
+    }
+
+    // ── Skill mechanics tests ──────────────────────────────────────────────
+
+    private Models.GameState CreateReadyGameWithSkills(int extraPlayers, List<string> skills)
+    {
+        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        for (int i = 0; i < extraPlayers; i++)
+            _gameService.JoinGame(game.GameId, $"Player{i + 1}");
+        _gameService.UpdateEnabledSkills(game.GameId, skills, game.CreatorId);
+        return _gameService.GetGame(game.GameId)!;
+    }
+
+    [Fact]
+    public void StartGame_ShouldAssignSkillsToVillagers()
+    {
+        var game = CreateReadyGameWithSkills(4, new List<string> { "Seer", "Witch" }); // 5 players: 1W + 4V
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var updated  = _gameService.GetGame(game.GameId)!;
+        var villagers = updated.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        villagers.Count(p => p.Skill == Models.PlayerSkill.Seer).Should().Be(1);
+        villagers.Count(p => p.Skill == Models.PlayerSkill.Witch).Should().Be(1);
+        updated.Players.Where(p => p.Role == Models.PlayerRole.Werewolf)
+            .Should().OnlyContain(p => p.Skill == Models.PlayerSkill.None,
+            "werewolves never get skills");
+    }
+
+    [Fact]
+    public void CupidAction_SetsLoversAndAdvancesToLoverReveal()
+    {
+        var game = CreateReadyGameWithSkills(4, new List<string> { "Cupid" });
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var state = _gameService.GetGame(game.GameId)!;
+        state.Phase.Should().Be(Models.GamePhase.RoleReveal);
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → CupidTurn
+        state = _gameService.GetGame(game.GameId)!;
+        state.Phase.Should().Be(Models.GamePhase.CupidTurn);
+
+        var cupid = state.Players.First(p => p.Skill == Models.PlayerSkill.Cupid);
+        var others = state.Players.Where(p => p.PlayerId != cupid.PlayerId).Take(2).ToList();
+
+        var (success, error) = _gameService.CupidAction(game.GameId, cupid.PlayerId, others[0].PlayerId, others[1].PlayerId);
+
+        success.Should().BeTrue();
+        var updated = _gameService.GetGame(game.GameId)!;
+        updated.Phase.Should().Be(Models.GamePhase.LoverReveal);
+        updated.Lover1Id.Should().Be(others[0].PlayerId);
+        updated.Lover2Id.Should().Be(others[1].PlayerId);
+    }
+
+    [Fact]
+    public void CupidAction_SameLover_ShouldFail()
+    {
+        var game = CreateReadyGameWithSkills(4, new List<string> { "Cupid" });
+        _gameService.StartGame(game.GameId, game.CreatorId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → CupidTurn
+
+        var state = _gameService.GetGame(game.GameId)!;
+        var cupid = state.Players.First(p => p.Skill == Models.PlayerSkill.Cupid);
+
+        var (success, error) = _gameService.CupidAction(game.GameId, cupid.PlayerId, cupid.PlayerId, cupid.PlayerId);
+
+        success.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CupidSkip_WhenCupidDoesNotAct_SkipsLoverReveal()
+    {
+        var game = CreateReadyGameWithSkills(4, new List<string> { "Cupid" });
+        _gameService.StartGame(game.GameId, game.CreatorId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → CupidTurn
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // skip CupidTurn without action
+
+        // No lovers chosen → should skip LoverReveal and go to WerewolvesMeeting
+        _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.WerewolvesMeeting);
+    }
+
+    [Fact]
+    public void SeerAction_ReturnsTrueRevealingTargetRoleAndSkill()
+    {
+        var game = CreateReadyGameWithSkills(4, new List<string> { "Seer" }); // 5 players, 1W, 4V (Seer + 3 plain)
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var state = _gameService.GetGame(game.GameId)!;
+        // Get to WerewolvesTurn round 2
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
+
+        // Eliminate a villager to reach round 2
+        var wolf    = state.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var villagers = state.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+        var seer    = state.Players.First(p => p.Skill == Models.PlayerSkill.Seer);
+        var toElim  = villagers.First(p => p.Skill == Models.PlayerSkill.None && p.PlayerId != seer.PlayerId);
+
+        foreach (var v in state.Players.Where(p => p.PlayerId != toElim.PlayerId))
+            _gameService.CastVote(game.GameId, v.PlayerId, toElim.PlayerId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 2
+
+        // Wolf votes
+        _gameService.CastVote(game.GameId, wolf.PlayerId, villagers.First(p => p.PlayerId != toElim.PlayerId && p.PlayerId != seer.PlayerId).PlayerId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → SeerTurn
+
+        _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.SeerTurn);
+
+        // Seer inspects the wolf
+        var (success, error, result) = _gameService.SeerAction(game.GameId, seer.PlayerId, wolf.PlayerId);
+
+        success.Should().BeTrue();
+        result.Should().NotBeNull();
+        result!.IsWerewolf.Should().BeTrue();
+        result.Skill.Should().BeNull(); // wolf has no special skill
+    }
+
+    [Fact]
+    public void WitchAction_SavesNightKillTarget()
+    {
+        var game = CreateReadyGameWithSkills(4, new List<string> { "Witch" });
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var state = _gameService.GetGame(game.GameId)!;
+        var wolf  = state.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var witch = state.Players.First(p => p.Skill == Models.PlayerSkill.Witch);
+        var victim = state.Players.First(p => p.Role == Models.PlayerRole.Villager && p.PlayerId != witch.PlayerId);
+
+        // Get to WerewolvesTurn round 2
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
+
+        // Survive round 1 discussion without elimination (force advance)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination (no votes)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 2
+
+        // Wolf votes for victim
+        _gameService.CastVote(game.GameId, wolf.PlayerId, victim.PlayerId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WitchTurn (no Seer)
+
+        _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.WitchTurn);
+        _gameService.GetGame(game.GameId)!.NightKillTargetId.Should().Be(victim.PlayerId);
+
+        // Witch saves the victim
+        var (success, error) = _gameService.WitchAction(game.GameId, witch.PlayerId, "save", null);
+
+        success.Should().BeTrue();
+        var updated = _gameService.GetGame(game.GameId)!;
+        updated.Phase.Should().Be(Models.GamePhase.NightElimination);
+        updated.NightDeaths.Should().BeEmpty("witch saved the victim");
+        updated.WitchHealUsed.Should().BeTrue();
+
+        // Victim should NOT be eliminated
+        updated.Players.First(p => p.PlayerId == victim.PlayerId).IsEliminated.Should().BeFalse();
+    }
+
+    [Fact]
+    public void WitchAction_PoisonKillsTarget()
+    {
+        var game = CreateReadyGameWithSkills(4, new List<string> { "Witch" });
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var state = _gameService.GetGame(game.GameId)!;
+        var wolf  = state.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var witch = state.Players.First(p => p.Skill == Models.PlayerSkill.Witch);
+        var villagers = state.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+        var poisonTarget = villagers.First(p => p.PlayerId != witch.PlayerId);
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination (no kill)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 2
+
+        // Wolf votes anyone else
+        var wolfVictim = villagers.First(p => p.PlayerId != witch.PlayerId && p.PlayerId != poisonTarget.PlayerId);
+        _gameService.CastVote(game.GameId, wolf.PlayerId, wolfVictim.PlayerId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WitchTurn
+
+        // Witch poisons a different target
+        var (success, _) = _gameService.WitchAction(game.GameId, witch.PlayerId, "poison", poisonTarget.PlayerId);
+
+        success.Should().BeTrue();
+        var updated = _gameService.GetGame(game.GameId)!;
+        updated.NightDeaths.Should().Contain(e => e.PlayerId == poisonTarget.PlayerId &&
+            e.Cause == Models.EliminationCause.WitchPoison);
+        updated.Players.First(p => p.PlayerId == poisonTarget.PlayerId).IsEliminated.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HunterAction_ShootsTargetWhenEliminated()
+    {
+        var game = CreateReadyGameWithSkills(4, new List<string> { "Hunter" });
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var state  = _gameService.GetGame(game.GameId)!;
+        var wolf   = state.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var hunter = state.Players.First(p => p.Skill == Models.PlayerSkill.Hunter);
+        var bystander = state.Players.First(p => p.Role == Models.PlayerRole.Villager && p.Skill == Models.PlayerSkill.None);
+
+        // Get to WerewolvesTurn round 2
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination (no kill)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 2
+
+        // Wolf kills the Hunter
+        _gameService.CastVote(game.GameId, wolf.PlayerId, hunter.PlayerId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination
+
+        var afterNight = _gameService.GetGame(game.GameId)!;
+        afterNight.Phase.Should().Be(Models.GamePhase.NightElimination);
+        afterNight.HunterMustShoot.Should().BeTrue();
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → HunterTurn
+
+        var inHunterTurn = _gameService.GetGame(game.GameId)!;
+        inHunterTurn.Phase.Should().Be(Models.GamePhase.HunterTurn);
+
+        // Hunter shoots the bystander
+        var (success, error) = _gameService.HunterAction(game.GameId, hunter.PlayerId, bystander.PlayerId);
+
+        success.Should().BeTrue();
+        var final = _gameService.GetGame(game.GameId)!;
+        final.Phase.Should().Be(Models.GamePhase.Discussion);
+        final.NightDeaths.Should().Contain(e => e.PlayerId == bystander.PlayerId &&
+            e.Cause == Models.EliminationCause.HunterShot);
+        final.Players.First(p => p.PlayerId == bystander.PlayerId).IsEliminated.Should().BeTrue();
+    }
+
+    [Fact]
+    public void LoversWin_WhenOnlyTwoLoversRemain()
+    {
+        // 4 players: Creator (wolf), Player1 (villager/cupid), Player2 (villager), Player3 (villager)
+        var game = CreateReadyGameWithSkills(3, new List<string> { "Cupid" });
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var state = _gameService.GetGame(game.GameId)!;
+        var wolf  = state.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var cupid = state.Players.First(p => p.Skill == Models.PlayerSkill.Cupid);
+        var others = state.Players.Where(p => p.PlayerId != cupid.PlayerId).ToList();
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → CupidTurn
+
+        // Cupid links wolf and one villager as lovers
+        var lover1 = wolf;
+        var lover2 = others.First(p => p.Role == Models.PlayerRole.Villager);
+        _gameService.CupidAction(game.GameId, cupid.PlayerId, lover1.PlayerId, lover2.PlayerId);
+
+        // → LoverReveal → WerewolvesMeeting → Discussion
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // LoverReveal → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
+
+        // Eliminate everyone except the 2 lovers
+        var toElims = state.Players.Where(p => p.PlayerId != lover1.PlayerId && p.PlayerId != lover2.PlayerId).ToList();
+        foreach (var target in toElims)
+        {
+            // vote out each non-lover one by one (force advance after each round)
+            var alive = _gameService.GetGame(game.GameId)!.Players.Where(p => !p.IsEliminated && p.ParticipationStatus == Models.ParticipationStatus.Participating).ToList();
+            if (alive.Count <= 2) break;
+            foreach (var voter in alive.Where(p => p.PlayerId != target.PlayerId))
+                _gameService.CastVote(game.GameId, voter.PlayerId, target.PlayerId);
+            _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination
+            _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn or Discussion
+            // If we hit WerewolvesTurn, advance past it
+            var g2 = _gameService.GetGame(game.GameId)!;
+            if (g2.Phase == Models.GamePhase.WerewolvesTurn)
+            {
+                _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination (no kill)
+                _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
+            }
+        }
+
+        var finalState = _gameService.GetGame(game.GameId)!;
+        finalState.Winner.Should().Be("Lovers");
+    }
+
+    [Fact]
+    public void LoverCascade_KillingOneLoverAlsoKillsOther()
+    {
+        var game = CreateReadyGameWithSkills(3, new List<string> { "Cupid" }); // 4 players: 1W + 3V
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var state = _gameService.GetGame(game.GameId)!;
+        var wolf  = state.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var cupid = state.Players.First(p => p.Skill == Models.PlayerSkill.Cupid);
+        var villagers = state.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+        var loverVillager1 = villagers[0];
+        var loverVillager2 = villagers[1];
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → CupidTurn
+        // Link two villagers as lovers
+        _gameService.CupidAction(game.GameId, cupid.PlayerId, loverVillager1.PlayerId, loverVillager2.PlayerId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // LoverReveal → WerewolvesMeeting
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → DayElimination (no kill)
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn round 2
+
+        // Wolf kills loverVillager1 — loverVillager2 should die in cascade
+        _gameService.CastVote(game.GameId, wolf.PlayerId, loverVillager1.PlayerId);
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination
+
+        var final = _gameService.GetGame(game.GameId)!;
+        final.NightDeaths.Should().Contain(e => e.PlayerId == loverVillager1.PlayerId);
+        final.NightDeaths.Should().Contain(e => e.PlayerId == loverVillager2.PlayerId &&
+            e.Cause == Models.EliminationCause.LoverDeath);
+        final.Players.First(p => p.PlayerId == loverVillager2.PlayerId).IsEliminated.Should().BeTrue();
     }
 }
+

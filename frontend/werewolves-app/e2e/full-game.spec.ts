@@ -65,22 +65,15 @@ test.describe('Full 6-player game – werewolves win', () => {
     '4-round scenario: no-kill night, wolves agree, tiebreak, wolves eliminate last villager',
     { tag: '@full-game' },
     async ({ browser }) => {
+      test.setTimeout(180_000); // 6-player, 4-round game needs more than 30 s
 
       // ── 1. Create game ────────────────────────────────────────────────────
       const creator = await newPlayer(browser);
       await creator.page.goto('/');
+      await creator.page.getByLabel('Your Name').fill('PlayerName');
       await creator.page.getByRole('button', { name: 'Organize Game' }).click();
       await expect(creator.page).toHaveURL(/\/game\/([^/]+)\/lobby/, { timeout: 10_000 });
       const gameId = creator.page.url().match(/\/game\/([^/]+)\/lobby/)![1];
-
-      // Set min players to 6
-      const minInput = creator.page.getByRole('spinbutton', { name: 'Min Players' });
-      await minInput.fill('6');
-      await minInput.press('Tab');
-
-      // Set number of werewolves to 2 (click the + button in the Werewolves setting)
-      const werewolvesRow = creator.page.locator('.setting-item').filter({ hasText: 'Werewolves' });
-      await werewolvesRow.getByRole('button').last().click(); // increment +
 
       // ── 2. Five players join ──────────────────────────────────────────────
       const alice   = await newPlayer(browser);
@@ -95,8 +88,23 @@ test.describe('Full 6-player game – werewolves win', () => {
       await joinGame(dave.page,    gameId, 'Dave');
       await joinGame(eve.page,     gameId, 'Eve');
 
-      // ── 3. Wait for all 6 players in lobby, then start ───────────────────
+      // ── 3. Wait for all 6 players, configure settings, then start ────────
       await expect(creator.page.getByText('Players (6)')).toBeVisible({ timeout: 15_000 });
+
+      // Set wolves=2 and disable skills via direct API call.
+      // PrimeNG spinbutton buttons are aria-hidden so getByRole won't find them;
+      // fill/keyboard don't reliably trigger ngModelChange.
+      // UpdateNumberOfWerewolves validates count < activeCount, so all 6 players
+      // must be present before this call.
+      const creatorId = await creator.page.evaluate(() => localStorage.getItem('playerId'));
+      const settingsResp = await creator.page.request.post(
+        `http://localhost:5000/api/game/${gameId}/settings`,
+        { data: { creatorId, minPlayers: 3, maxPlayers: 20, discussionDurationMinutes: 5, numberOfWerewolves: 2, enabledSkills: [] } },
+      );
+      expect(settingsResp.ok()).toBeTruthy();
+      // Wait for lobby poll to reflect the change before starting
+      await expect(creator.page.getByRole('spinbutton', { name: 'Werewolves' })).toHaveValue('2', { timeout: 10_000 });
+
       await expect(creator.page.getByRole('button', { name: 'Start Game' })).toBeEnabled({ timeout: 10_000 });
       await creator.page.getByRole('button', { name: 'Start Game' }).click();
 

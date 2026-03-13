@@ -4,6 +4,7 @@ test.describe('Lobby', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to home and create a new game
     await page.goto('/');
+    await page.getByLabel('Your Name').fill('PlayerName');
     await page.getByRole('button', { name: 'Organize Game' }).click();
     await expect(page).toHaveURL(/\/game\/.*\/lobby/);
   });
@@ -80,6 +81,7 @@ test.describe('Multi-player lobby', () => {
 
     // Creator starts a new game
     await creatorPage.goto('/');
+    await creatorPage.getByLabel('Your Name').fill('PlayerName');
     await creatorPage.getByRole('button', { name: 'Organize Game' }).click();
     await expect(creatorPage).toHaveURL(/\/game\/.*\/lobby/);
     await expect(creatorPage.getByText('Players (1)')).toBeVisible();

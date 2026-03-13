@@ -20,14 +20,14 @@ public class GameInfoDto
     public int Version { get; set; }
     public int DiscussionDurationMinutes { get; set; }
     public int NumberOfWerewolves { get; set; }
+    public List<string> EnabledSkills { get; set; } = new();
     // Session state
     public string Phase { get; set; } = string.Empty;
     public int RoundNumber { get; set; }
     public DateTime? PhaseEndsAt { get; set; }
-    public string? LastEliminatedByNight { get; set; }
-    public string? LastEliminatedByNightName { get; set; }
-    public string? LastEliminatedByDay { get; set; }
-    public string? LastEliminatedByDayName { get; set; }
+    public DateTime? PhaseStartedAt { get; set; }
+    public List<EliminationEntryDto> NightDeaths { get; set; } = new();
+    public List<EliminationEntryDto> DayDeaths { get; set; } = new();
     public string? Winner { get; set; }
     public List<string> TiebreakCandidates { get; set; } = new();
 }
@@ -41,6 +41,7 @@ public class PlayerDto
     public bool IsConnected { get; set; }
     public string ParticipationStatus { get; set; } = string.Empty;
     public string? Role { get; set; }
+    public string? Skill { get; set; }
     public bool IsEliminated { get; set; }
     public bool IsDone { get; set; }
     public DateTime JoinedAt { get; set; }
@@ -49,6 +50,11 @@ public class PlayerDto
 public class PlayerRoleDto
 {
     public string Role { get; set; } = string.Empty;
+    public string? Skill { get; set; }
     public List<string> FellowWerewolves { get; set; } = new();
+    public string? LoverName { get; set; }
+    public string? NightKillTargetName { get; set; }
+    public bool WitchHealUsed { get; set; }
+    public bool WitchPoisonUsed { get; set; }
 }
 

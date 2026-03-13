@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateGameRequest, CreateGameResponse, JoinGameRequest, JoinGameResponse, LobbyState, PlayerRoleDto } from '../models/game.models';
+import { CreateGameRequest, CreateGameResponse, JoinGameRequest, JoinGameResponse, LobbyState, PlayerRoleDto, SeerActionResponse } from '../models/game.models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -32,8 +32,8 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/remove`, { playerId: targetPlayerId, moderatorId });
   }
 
-  updateSettings(gameId: string, creatorId: string, minPlayers: number, maxPlayers: number, discussionDurationMinutes: number, numberOfWerewolves: number): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { creatorId, minPlayers, maxPlayers, discussionDurationMinutes, numberOfWerewolves });
+  updateSettings(gameId: string, creatorId: string, minPlayers: number, maxPlayers: number, discussionDurationMinutes: number, numberOfWerewolves: number, enabledSkills?: string[]): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { creatorId, minPlayers, maxPlayers, discussionDurationMinutes, numberOfWerewolves, enabledSkills });
   }
 
   updateGameName(gameId: string, creatorId: string, gameName: string): Observable<void> {
@@ -62,6 +62,22 @@ export class GameService {
 
   getRole(gameId: string, playerId: string): Observable<PlayerRoleDto> {
     return this.http.get<PlayerRoleDto>(`${this.apiUrl}/game/${gameId}/role`, { params: { playerId } });
+  }
+
+  cupidAction(gameId: string, playerId: string, lover1Id: string, lover2Id: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/cupid-action`, { playerId, lover1Id, lover2Id });
+  }
+
+  seerAction(gameId: string, seerId: string, targetId: string): Observable<SeerActionResponse> {
+    return this.http.get<SeerActionResponse>(`${this.apiUrl}/game/${gameId}/seer-action`, { params: { seerId, targetId } });
+  }
+
+  witchAction(gameId: string, playerId: string, choice: string, poisonTargetId?: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/witch-action`, { playerId, choice, poisonTargetId });
+  }
+
+  hunterAction(gameId: string, playerId: string, targetId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/hunter-action`, { playerId, targetId });
   }
 
   getPlayerId(): string | null {

@@ -1,6 +1,6 @@
 <div class="session-container" *ngIf="lobbyState"
-     [class.night-theme]="phase === 'Night' || phase === 'NightElimination'"
-     [class.day-theme]="phase !== 'Night' && phase !== 'NightElimination'">
+     [class.night-theme]="phase === 'WerewolvesMeeting' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'LoverReveal' || phase === 'SeerTurn' || phase === 'WitchTurn' || phase === 'HunterTurn' || phase === 'NightElimination'"
+     [class.day-theme]="phase !== 'WerewolvesMeeting' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'LoverReveal' && phase !== 'SeerTurn' && phase !== 'WitchTurn' && phase !== 'HunterTurn' && phase !== 'NightElimination'">
   <p-toast></p-toast>
 
   <!-- Header -->
@@ -37,6 +37,7 @@
         <span class="role-name">
           {{ roleDto?.role ?? '...' }}
         </span>
+        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
         <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
       </div>
     </div>
@@ -63,9 +64,43 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- NIGHT phase                                              -->
+  <!-- WEREWOLVES MEETING phase (round 1 – wolves look, no kill) -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content" *ngIf="phase === 'Night'">
+  <div class="phase-content" *ngIf="phase === 'WerewolvesMeeting'">
+    <h2 class="phase-title night-title">🌙 Night</h2>
+
+    <div class="night-instructions">
+      <p>Werewolves, open your eyes and look around.</p>
+      <p *ngIf="roleDto?.role === 'Werewolf' && roleDto?.fellowWerewolves?.length">
+        Your fellow werewolves: <strong>{{ roleDto!.fellowWerewolves.join(', ') }}</strong>
+      </p>
+    </div>
+
+    <div class="ready-section" *ngIf="roleDto?.role === 'Werewolf'">
+      <div class="done-count">{{ doneCount }} wolves ready</div>
+      <p-button
+        *ngIf="showDoneButton"
+        label="I'm ready"
+        (onClick)="markDone()"
+        styleClass="p-button-outlined w-full mt-2">
+      </p-button>
+      <div class="done-badge" *ngIf="currentPlayer?.isDone">
+        <i class="pi pi-check-circle"></i> Waiting for other wolves...
+      </div>
+    </div>
+
+    <p-button
+      *ngIf="isCreator"
+      label="Skip night"
+      (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full">
+    </p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- WEREWOLVES TURN phase (round 2+ – wolves choose victim)  -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'WerewolvesTurn'">
     <h2 class="phase-title night-title">🌙 Night</h2>
 
     <div class="night-instructions">
@@ -99,15 +134,130 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- CUPID TURN phase                                         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'CupidTurn'">
+    <h2 class="phase-title night-title">💘 Cupid</h2>
+    <p class="phase-subtitle">Cupid, wake up and choose two players to link as lovers.</p>
+
+    <div class="skill-action" *ngIf="canActAsCupid">
+      <div class="action-row">
+        <label>Lover 1:</label>
+        <p-select [options]="allPlayers" [(ngModel)]="cupidLover1" placeholder="Select player"
+          optionLabel="label" optionValue="value" appendTo="body"></p-select>
+      </div>
+      <div class="action-row">
+        <label>Lover 2:</label>
+        <p-select [options]="allPlayers" [(ngModel)]="cupidLover2" placeholder="Select player"
+          optionLabel="label" optionValue="value" appendTo="body"></p-select>
+      </div>
+      <p-button label="Link lovers" (onClick)="submitCupidAction()"
+        [disabled]="!cupidLover1 || !cupidLover2" styleClass="mt-2 w-full"></p-button>
+    </div>
+    <p class="no-action-text" *ngIf="!canActAsCupid && !currentPlayer?.isEliminated">Cupid is choosing the lovers...</p>
+    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LOVER REVEAL phase                                       -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'LoverReveal'">
+    <h2 class="phase-title night-title">💞 The Lovers</h2>
+    <p class="phase-subtitle" *ngIf="roleDto?.loverName">Your lover is <strong>{{ roleDto!.loverName }}</strong>. You must protect each other.</p>
+    <p class="phase-subtitle" *ngIf="!roleDto?.loverName">The lovers are looking at each other...</p>
+    <p-button *ngIf="isCreator" label="Continue" (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SEER TURN phase                                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'SeerTurn'">
+    <h2 class="phase-title night-title">🔮 The Seer</h2>
+    <p class="phase-subtitle">Seer, wake up and choose a player to reveal their true nature.</p>
+
+    <div class="skill-action" *ngIf="canActAsSeer && !seerResult">
+      <div class="action-row">
+        <label>Inspect:</label>
+        <p-select [options]="allPlayers" [(ngModel)]="seerTarget" placeholder="Select player"
+          optionLabel="label" optionValue="value" appendTo="body"></p-select>
+      </div>
+      <p-button label="Reveal" (onClick)="submitSeerAction()" [disabled]="!seerTarget" styleClass="mt-2 w-full"></p-button>
+    </div>
+
+    <div class="seer-result" *ngIf="seerResult">
+      <p class="seer-verdict" [class.wolf]="seerResult.isWerewolf" [class.villager]="!seerResult.isWerewolf">
+        {{ seerResult.isWerewolf ? '🐺 Werewolf!' : '🧑‍🌾 Villager' }}
+        <span *ngIf="seerResult.skill"> ({{ seerResult.skill }})</span>
+      </p>
+      <p-button label="Done" (onClick)="markDone()" [disabled]="currentPlayer?.isDone" styleClass="mt-2 w-full"></p-button>
+    </div>
+
+    <p class="no-action-text" *ngIf="!canActAsSeer && !currentPlayer?.isEliminated">The Seer is looking...</p>
+    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- WITCH TURN phase                                         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'WitchTurn'">
+    <h2 class="phase-title night-title">🧪 The Witch</h2>
+    <p class="phase-subtitle">Witch, wake up. You may use a potion.</p>
+
+    <div class="skill-action" *ngIf="canActAsWitch">
+      <p *ngIf="roleDto?.nightKillTargetName && !roleDto?.witchHealUsed" class="elimination-text">
+        Tonight's victim: <strong>{{ roleDto!.nightKillTargetName }}</strong>
+      </p>
+      <div class="witch-buttons">
+        <p-button *ngIf="!roleDto?.witchHealUsed" label="🧴 Save victim" (onClick)="submitWitchAction('save')"
+          styleClass="p-button-success mt-2 w-full"></p-button>
+        <div class="action-row" *ngIf="!roleDto?.witchPoisonUsed">
+          <p-select [options]="allPlayers" [(ngModel)]="witchPoisonTarget" placeholder="Choose poison target"
+            optionLabel="label" optionValue="value" appendTo="body"></p-select>
+          <p-button label="☠️ Poison" (onClick)="submitWitchAction('poison')"
+            [disabled]="!witchPoisonTarget" styleClass="p-button-danger mt-2 w-full"></p-button>
+        </div>
+        <p-button label="Do nothing" (onClick)="submitWitchAction('skip')" styleClass="p-button-text mt-2 w-full"></p-button>
+      </div>
+    </div>
+
+    <p class="no-action-text" *ngIf="!canActAsWitch && !currentPlayer?.isEliminated">The Witch is deciding...</p>
+    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- HUNTER TURN phase                                        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content" *ngIf="phase === 'HunterTurn'">
+    <h2 class="phase-title night-title">🏹 The Hunter</h2>
+    <p class="phase-subtitle">Hunter, you have been eliminated. Choose one player to take with you.</p>
+
+    <div class="skill-action" *ngIf="canActAsHunter">
+      <div class="action-row">
+        <label>Shoot:</label>
+        <p-select [options]="allPlayers" [(ngModel)]="hunterTarget" placeholder="Select target"
+          optionLabel="label" optionValue="value" appendTo="body"></p-select>
+      </div>
+      <p-button label="🏹 Shoot" (onClick)="submitHunterAction()" [disabled]="!hunterTarget" styleClass="p-button-danger mt-2 w-full"></p-button>
+    </div>
+    <p class="no-action-text" *ngIf="!canActAsHunter">The Hunter is taking their final shot...</p>
+    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
   <!-- NIGHT ELIMINATION phase                                  -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content elimination-phase" *ngIf="phase === 'NightElimination'">
     <h2 class="phase-title">🌅 Dawn</h2>
-    <div *ngIf="lobbyState.game.lastEliminatedByNightName; else noNightKill">
-      <p class="elimination-text">
-        <strong>{{ lobbyState.game.lastEliminatedByNightName }}</strong> was taken in the night.
+    <ng-container *ngIf="lobbyState.game.nightDeaths.length > 0; else noNightKill">
+      <p class="elimination-text" *ngFor="let d of lobbyState.game.nightDeaths">
+        <strong>{{ d.playerName }}</strong> was taken in the night.
       </p>
-    </div>
+    </ng-container>
     <ng-template #noNightKill>
       <p class="elimination-text">The village wakes safe. No one was taken last night.</p>
     </ng-template>
@@ -188,14 +338,14 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content elimination-phase" *ngIf="phase === 'DayElimination'">
     <h2 class="phase-title">⚖️ Village Verdict</h2>
-    <div *ngIf="lobbyState.game.lastEliminatedByDayName; else noKill">
+    <ng-container *ngIf="lobbyState.game.dayDeaths.length > 0; else noKill">
       <p class="elimination-text">
-        <strong>{{ lobbyState.game.lastEliminatedByDayName }}</strong> was eliminated by the village.
+        <strong>{{ lobbyState.game.dayDeaths[0].playerName }}</strong> was eliminated by the village.
       </p>
       <p class="eliminated-role">
-        They were a <strong>{{ getEliminatedRole(lobbyState.game.lastEliminatedByDay) }}</strong>.
+        They were a <strong>{{ getEliminatedRole(lobbyState.game.dayDeaths[0].playerId) }}</strong>.
       </p>
-    </div>
+    </ng-container>
     <ng-template #noKill>
       <p class="elimination-text">The village could not agree. No one was eliminated.</p>
     </ng-template>

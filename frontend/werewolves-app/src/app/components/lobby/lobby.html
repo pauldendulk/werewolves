@@ -210,6 +210,21 @@
               </p-inputNumber>
             </div>
          </div>
+
+         <!-- Special Roles / Skills -->
+         <div class="setting-item setting-item-full">
+            <label>Special Roles</label>
+            <div class="skills-grid">
+              <div class="skill-toggle" *ngFor="let skill of ['Seer','Cupid','Witch','Hunter']">
+                <p-toggleswitch
+                  [ngModel]="isSkillEnabled(skill)"
+                  (ngModelChange)="toggleSkill(skill)"
+                  [disabled]="!isCreator">
+                </p-toggleswitch>
+                <span class="skill-label">{{ skill }}</span>
+              </div>
+            </div>
+         </div>
       </div>
     </div>
 

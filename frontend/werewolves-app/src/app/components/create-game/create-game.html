@@ -5,13 +5,30 @@
     <h1>Werewolves</h1>
   </div>
 
-  <div class="main-content">
+  <div class="form-container">
+    <h2>Organize Game</h2>
+
+    <div class="form-field">
+      <label for="creatorName">Your Name</label>
+      <input
+        pInputText
+        id="creatorName"
+        [(ngModel)]="creatorName"
+        placeholder="Enter your name"
+        maxlength="30"
+        [disabled]="loading"
+        (keydown.enter)="createGame()"
+        autofocus
+      />
+    </div>
+
     <p-button
       label="Organize Game"
       icon="pi pi-users"
       (onClick)="createGame()"
+      [disabled]="creatorName.trim().length === 0 || loading"
       [loading]="loading"
-      styleClass="p-button-lg organize-button"
+      styleClass="w-full"
     ></p-button>
   </div>
 </div>

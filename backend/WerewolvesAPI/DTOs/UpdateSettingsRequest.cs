@@ -17,4 +17,6 @@ public class UpdateSettingsRequest
 
     [Range(1, 40)]
     public int NumberOfWerewolves { get; set; } = 1;
+
+    public List<string>? EnabledSkills { get; set; }
 }

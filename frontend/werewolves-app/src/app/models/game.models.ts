@@ -1,3 +1,9 @@
+export interface EliminationEntryDto {
+  playerId: string;
+  playerName: string;
+  cause: string;
+}
+
 export interface GameState {
   gameId: string;
   gameName: string;
@@ -10,14 +16,14 @@ export interface GameState {
   version: number;
   discussionDurationMinutes: number;
   numberOfWerewolves: number;
+  enabledSkills: string[];
+  phaseStartedAt: string | null;
   // Session
   phase: string;
   roundNumber: number;
   phaseEndsAt: string | null;
-  lastEliminatedByNight: string | null;
-  lastEliminatedByNightName: string | null;
-  lastEliminatedByDay: string | null;
-  lastEliminatedByDayName: string | null;
+  nightDeaths: EliminationEntryDto[];
+  dayDeaths: EliminationEntryDto[];
   winner: string | null;
   tiebreakCandidates: string[];
 }
@@ -30,6 +36,7 @@ export interface PlayerState {
   isConnected: boolean;
   participationStatus: string;
   role: string | null;
+  skill: string | null;
   isEliminated: boolean;
   isDone: boolean;
   joinedAt?: string;
@@ -68,5 +75,15 @@ export interface JoinGameResponse {
 
 export interface PlayerRoleDto {
   role: string;
+  skill: string | null;
   fellowWerewolves: string[];
+  loverName: string | null;
+  nightKillTargetName: string | null;
+  witchHealUsed: boolean;
+  witchPoisonUsed: boolean;
+}
+
+export interface SeerActionResponse {
+  isWerewolf: boolean;
+  skill: string | null;
 }

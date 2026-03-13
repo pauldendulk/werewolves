@@ -30,13 +30,13 @@ describe('SessionComponent', () => {
       version: 1,
       discussionDurationMinutes: 5,
       numberOfWerewolves: 1,
+      enabledSkills: [],
+      phaseStartedAt: null,
       phase: 'RoleReveal',
       roundNumber: 1,
       phaseEndsAt: null,
-      lastEliminatedByNight: null,
-      lastEliminatedByNightName: null,
-      lastEliminatedByDay: null,
-      lastEliminatedByDayName: null,
+      nightDeaths: [],
+      dayDeaths: [],
       winner: null,
       tiebreakCandidates: [],
       ...overrides
@@ -50,6 +50,7 @@ describe('SessionComponent', () => {
         isConnected: true,
         participationStatus: 'Participating',
         role: null,
+        skill: null,
         isEliminated: false,
         isDone: false
       },
@@ -61,6 +62,7 @@ describe('SessionComponent', () => {
         isConnected: true,
         participationStatus: 'Participating',
         role: null,
+        skill: null,
         isEliminated: false,
         isDone: false
       }
@@ -73,7 +75,7 @@ describe('SessionComponent', () => {
       'getPlayerId', 'getRole', 'markDone', 'castVote', 'forceAdvancePhase', 'getGameState'
     ]);
     gameServiceSpy.getPlayerId.and.returnValue('player1');
-    gameServiceSpy.getRole.and.returnValue(of({ role: 'Villager', fellowWerewolves: [] }));
+    gameServiceSpy.getRole.and.returnValue(of({ role: 'Villager', skill: null, fellowWerewolves: [], loverName: null, nightKillTargetName: null, witchHealUsed: false, witchPoisonUsed: false }));
 
     pollingServiceSpy = jasmine.createSpyObj('PollingService', ['startPolling']);
     pollingServiceSpy.startPolling.and.returnValue(of(makeLobbyState()));

@@ -26,6 +26,7 @@ test.describe('Game session – role reveal', () => {
     // ── 1. Creator creates a game ───────────────────────────────────────────
     const creator = await newPlayer(browser);
     await creator.page.goto('/');
+    await creator.page.getByLabel('Your Name').fill('PlayerName');
     await creator.page.getByRole('button', { name: 'Organize Game' }).click();
     await expect(creator.page).toHaveURL(/\/game\/([^/]+)\/lobby/, { timeout: 10_000 });
 
@@ -91,6 +92,7 @@ test.describe('Game session – role reveal', () => {
     // ── Setup: create game and get 3 players in ────────────────────────────
     const creator = await newPlayer(browser);
     await creator.page.goto('/');
+    await creator.page.getByLabel('Your Name').fill('PlayerName');
     await creator.page.getByRole('button', { name: 'Organize Game' }).click();
     await expect(creator.page).toHaveURL(/\/game\/([^/]+)\/lobby/, { timeout: 10_000 });
 
@@ -103,10 +105,13 @@ test.describe('Game session – role reveal', () => {
 
     await expect(creator.page.getByText('Players (3)')).toBeVisible({ timeout: 10_000 });
 
-    // Explicitly set min players to 3
-    const minInput = creator.page.getByRole('spinbutton', { name: 'Min Players' });
-    await minInput.fill('3');
-    await minInput.press('Tab');
+    // Disable skills via direct API call. Default skills include Cupid, which adds a
+    // CupidTurn phase between RoleReveal and Night — breaking the test's Night assertion.
+    const creatorId = await creator.page.evaluate(() => localStorage.getItem('playerId'));
+    await creator.page.request.post(
+      `http://localhost:5000/api/game/${gameId}/settings`,
+      { data: { creatorId, minPlayers: 3, maxPlayers: 20, discussionDurationMinutes: 5, numberOfWerewolves: 1, enabledSkills: [] } },
+    );
 
     await creator.page.getByRole('button', { name: 'Start Game' }).click();
 

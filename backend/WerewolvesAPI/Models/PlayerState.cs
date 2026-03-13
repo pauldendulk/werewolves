@@ -9,6 +9,7 @@ public class PlayerState
     public bool IsConnected { get; set; } = true;
     public ParticipationStatus ParticipationStatus { get; set; } = ParticipationStatus.Participating;
     public PlayerRole? Role { get; set; }
+    public PlayerSkill Skill { get; set; } = PlayerSkill.None;
     public bool IsEliminated { get; set; }
     public bool IsDone { get; set; }
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;

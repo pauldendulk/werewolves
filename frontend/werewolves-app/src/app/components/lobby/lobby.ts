@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { Menu } from 'primeng/menu';
@@ -32,7 +33,8 @@ import { LobbyState, PlayerState } from '../../models/game.models';
     ConfirmDialogModule,
     TooltipModule,
     DialogModule,
-    MenuModule
+    MenuModule,
+    ToggleSwitchModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './lobby.html',
@@ -44,6 +46,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   lobbyState?: LobbyState;
   loading: boolean = true;
   qrCodeImage: SafeUrl = '';
+  enabledSkills: string[] = [];
   private pollSubscription?: Subscription;
 
   // Editing state
@@ -113,6 +116,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       next: (state) => {
         const prevPlayerCount = this.lobbyState?.players.length ?? 0;
         this.lobbyState = state;
+        this.enabledSkills = state.game.enabledSkills ?? [];
         this.qrCodeImage = this.sanitizer.bypassSecurityTrustUrl(
           `data:image/png;base64,${state.game.qrCodeBase64}`
         );
@@ -233,7 +237,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       const minPlayers = this.lobbyState.game.minPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
       const werewolves = this.lobbyState.game.numberOfWerewolves;
-      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, value, duration, werewolves).subscribe();
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, value, duration, werewolves, this.enabledSkills).subscribe();
     }
   }
 
@@ -242,7 +246,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
       const werewolves = this.lobbyState.game.numberOfWerewolves;
-      this.gameService.updateSettings(this.gameId, this.playerId, value, maxPlayers, duration, werewolves).subscribe();
+      this.gameService.updateSettings(this.gameId, this.playerId, value, maxPlayers, duration, werewolves, this.enabledSkills).subscribe();
     }
   }
 
@@ -251,7 +255,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       const minPlayers = this.lobbyState.game.minPlayers;
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const werewolves = this.lobbyState.game.numberOfWerewolves;
-      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, value, werewolves).subscribe();
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, value, werewolves, this.enabledSkills).subscribe();
     }
   }
 
@@ -260,8 +264,23 @@ export class LobbyComponent implements OnInit, OnDestroy {
       const minPlayers = this.lobbyState.game.minPlayers;
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
-      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, duration, value).subscribe();
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, duration, value, this.enabledSkills).subscribe();
     }
+  }
+
+  isSkillEnabled(skill: string): boolean {
+    return this.enabledSkills.includes(skill);
+  }
+
+  toggleSkill(skill: string): void {
+    if (!this.isCreator || !this.lobbyState) return;
+    const skills = [...this.enabledSkills];
+    const idx = skills.indexOf(skill);
+    if (idx >= 0) skills.splice(idx, 1);
+    else skills.push(skill);
+    this.enabledSkills = skills;
+    const g = this.lobbyState.game;
+    this.gameService.updateSettings(this.gameId, this.playerId, g.minPlayers, g.maxPlayers, g.discussionDurationMinutes, g.numberOfWerewolves, this.enabledSkills).subscribe();
   }
 
   startGame(): void {

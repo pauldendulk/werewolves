@@ -25,13 +25,13 @@ describe('JoinGameComponent', () => {
       version: 1,
       discussionDurationMinutes: 5,
       numberOfWerewolves: 1,
+      enabledSkills: [],
+      phaseStartedAt: null,
       phase: 'Lobby',
       roundNumber: 0,
       phaseEndsAt: null,
-      lastEliminatedByNight: null,
-      lastEliminatedByNightName: null,
-      lastEliminatedByDay: null,
-      lastEliminatedByDayName: null,
+      nightDeaths: [],
+      dayDeaths: [],
       winner: null,
       tiebreakCandidates: []
     },
@@ -44,6 +44,7 @@ describe('JoinGameComponent', () => {
         isConnected: true,
         participationStatus: 'Participating',
         role: null,
+        skill: null,
         isEliminated: false,
         isDone: false
       }

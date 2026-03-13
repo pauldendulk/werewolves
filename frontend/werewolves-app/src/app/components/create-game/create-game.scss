@@ -17,16 +17,33 @@
   }
 }
 
-.main-content {
+.form-container {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   padding: 2rem 1.5rem;
   max-width: 480px;
   width: 100%;
   margin: 0 auto;
+
+  h2 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+.form-field {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  input {
+    width: 100%;
+  }
 }
 
 ::ng-deep .organize-button {

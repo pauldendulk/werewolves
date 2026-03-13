@@ -35,7 +35,7 @@ describe('CreateGameComponent', () => {
 
   it('should have default values', () => {
     expect(component.gameName).toBe('GameName');
-    expect(component.creatorName).toBe('PlayerName');
+    expect(component.creatorName).toBe('');
     expect(component.maxPlayers).toBe(20);
     expect(component.loading).toBeFalse();
   });

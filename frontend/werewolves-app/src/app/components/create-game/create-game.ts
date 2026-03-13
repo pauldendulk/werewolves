@@ -27,7 +27,7 @@ import { CreateGameRequest } from '../../models/game.models';
 })
 export class CreateGameComponent {
   gameName: string = 'GameName';
-  creatorName: string = 'PlayerName';
+  creatorName: string = '';
   maxPlayers: number = 20;
   loading: boolean = false;
 
