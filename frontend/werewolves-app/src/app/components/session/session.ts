@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { GameService } from '../../services/game.service';
 import { PollingService } from '../../services/polling.service';
 import { AudioService } from '../../services/audio.service';
+import { ClockSyncService } from '../../services/clock-sync.service';
 import { AudioKey } from '../../models/audio-keys';
 import { LobbyState, PlayerState, PlayerRoleDto, SeerActionResponse } from '../../models/game.models';
 
@@ -47,6 +48,7 @@ export class SessionComponent implements OnInit, OnDestroy {
     private gameService: GameService,
     private pollingService: PollingService,
     private audioService: AudioService,
+    private clockSyncService: ClockSyncService,
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService
@@ -60,6 +62,8 @@ export class SessionComponent implements OnInit, OnDestroy {
       this.router.navigate(['/game', this.gameId], { replaceUrl: true });
       return;
     }
+
+    this.clockSyncService.start();
 
     this.gameService.getRole(this.gameId, this.playerId).subscribe({
       next: dto => this.roleDto = dto,
@@ -76,6 +80,7 @@ export class SessionComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pollSubscription?.unsubscribe();
+    this.clockSyncService.stop();
     clearInterval(this.timerHandle);
   }
 
@@ -90,7 +95,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       this.lastRound = state.game.roundNumber;
       this.roleRevealed = false;
       this.selectedVoteTarget = null;
-      this.onPhaseEntered(state.game.phase, state.game.roundNumber);
+      this.onPhaseEntered(state.game.phase, state.game.roundNumber, state.game.audioPlayAt);
 
       // Refresh role on any night-skill phase so loverName, nightKillTargetName, etc. stay current
       const skillPhases = ['WerewolvesMeeting', 'WerewolvesTurn', 'LoverReveal', 'SeerTurn', 'WitchTurn', 'HunterTurn'];
@@ -105,60 +110,61 @@ export class SessionComponent implements OnInit, OnDestroy {
     this.updateTimer(state.game.phaseEndsAt);
   }
 
-  private onPhaseEntered(phase: string, round: number): void {
+  private onPhaseEntered(phase: string, round: number, audioPlayAt: string | null): void {
     this.nightWarningSpoken = false;
+    const playAt = audioPlayAt ? this.clockSyncService.serverIsoToLocal(audioPlayAt) : new Date();
     switch (phase) {
       case 'RoleReveal':
-        this.audioService.play(AudioKey.RoleReveal);
+        this.audioService.schedulePlay(AudioKey.RoleReveal, playAt);
         break;
       case 'WerewolvesMeeting':
-        this.audioService.play(AudioKey.WerewolvesMeeting);
+        this.audioService.schedulePlay(AudioKey.WerewolvesMeeting, playAt);
         break;
       case 'WerewolvesTurn':
-        this.audioService.play(AudioKey.WerewolvesTurn);
+        this.audioService.schedulePlay(AudioKey.WerewolvesTurn, playAt);
         break;
       case 'CupidTurn':
-        this.audioService.play(AudioKey.CupidTurn);
+        this.audioService.schedulePlay(AudioKey.CupidTurn, playAt);
         break;
       case 'LoverReveal':
-        this.audioService.play(AudioKey.LoverReveal);
+        this.audioService.schedulePlay(AudioKey.LoverReveal, playAt);
         break;
       case 'SeerTurn':
-        this.audioService.play(AudioKey.SeerTurn);
+        this.audioService.schedulePlay(AudioKey.SeerTurn, playAt);
         break;
       case 'WitchTurn':
-        this.audioService.play(AudioKey.WitchTurn);
+        this.audioService.schedulePlay(AudioKey.WitchTurn, playAt);
         break;
       case 'HunterTurn':
-        this.audioService.play(AudioKey.HunterTurn);
+        this.audioService.schedulePlay(AudioKey.HunterTurn, playAt);
         break;
       case 'NightElimination': {
         const deaths = this.lobbyState?.game.nightDeaths ?? [];
         if (deaths.length === 0) {
-          this.audioService.play(AudioKey.NightEndNoDeaths);
+          this.audioService.schedulePlay(AudioKey.NightEndNoDeaths, playAt);
         } else {
-          this.audioService.play(deaths.length === 1 ? AudioKey.NightEndOneDeath : AudioKey.NightEndManyDeaths);
+          this.audioService.schedulePlay(deaths.length === 1 ? AudioKey.NightEndOneDeath : AudioKey.NightEndManyDeaths, playAt);
         }
         break;
       }
       case 'Discussion':
-        this.audioService.play(AudioKey.Discussion);
+        this.audioService.schedulePlay(AudioKey.Discussion, playAt);
         break;
       case 'TiebreakDiscussion':
-        this.audioService.play(AudioKey.TiebreakDiscussion);
+        this.audioService.schedulePlay(AudioKey.TiebreakDiscussion, playAt);
         break;
       case 'DayElimination': {
         const dayDeaths = this.lobbyState?.game.dayDeaths ?? [];
         if (dayDeaths.length === 0) {
-          this.audioService.play(AudioKey.DayEliminationTie);
+          this.audioService.schedulePlay(AudioKey.DayEliminationTie, playAt);
         } else {
-          this.audioService.play(AudioKey.DayElimination);
+          this.audioService.schedulePlay(AudioKey.DayElimination, playAt);
         }
         break;
       }
       case 'GameOver': {
         const winner = this.lobbyState?.game.winner;
-        this.audioService.play(winner === 'Villagers' ? AudioKey.GameOverVillagers : AudioKey.GameOverWerewolves);
+        this.audioService.schedulePlay(winner === 'Villagers' ? AudioKey.GameOverVillagers : AudioKey.GameOverWerewolves, playAt);
         break;
       }
     }

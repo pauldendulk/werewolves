@@ -22,6 +22,7 @@ export interface GameState {
   phase: string;
   roundNumber: number;
   phaseEndsAt: string | null;
+  audioPlayAt: string | null;
   nightDeaths: EliminationEntryDto[];
   dayDeaths: EliminationEntryDto[];
   winner: string | null;

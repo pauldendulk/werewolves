@@ -236,6 +236,7 @@ public class GameService : IGameService
         game.RoundNumber = 1;
         game.PhaseEndsAt = null;
         game.PhaseStartedAt = DateTime.UtcNow;
+        game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(2000);
         game.NightVotes.Clear();
         game.DayVotes.Clear();
         game.TiebreakCandidates.Clear();
@@ -571,6 +572,7 @@ public class GameService : IGameService
                     game.DayVotes.Clear();
                     game.PhaseEndsAt = DateTime.UtcNow.AddSeconds(60);
                     game.PhaseStartedAt = DateTime.UtcNow;
+                    game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(2000);
                     ResetDone(game);
                     BumpVersion(game);
                 }
@@ -836,6 +838,7 @@ public class GameService : IGameService
         game.Phase = phase;
         game.PhaseStartedAt = DateTime.UtcNow;
         game.PhaseEndsAt = duration.HasValue ? DateTime.UtcNow.Add(duration.Value) : null;
+        game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(2000);
         ResetDone(game);
         BumpVersion(game);
     }

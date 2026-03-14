@@ -47,6 +47,12 @@ public class GameController : ControllerBase
         return Ok(new JoinGameResponse { PlayerId = player!.PlayerId, Success = true, Message = message });
     }
 
+    [HttpGet("time")]
+    public ActionResult GetServerTime()
+    {
+        return Ok(new { serverTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+    }
+
     [HttpGet("{gameId}")]
     public ActionResult<LobbyStateDto> GetGameState(string gameId, [FromQuery] int? version = null)
     {
@@ -84,6 +90,7 @@ public class GameController : ControllerBase
                 RoundNumber = game.RoundNumber,
                 PhaseEndsAt = game.PhaseEndsAt,
                 PhaseStartedAt = game.PhaseStartedAt,
+                AudioPlayAt = game.AudioPlayAt,
                 NightDeaths = game.NightDeaths.Select(e => new EliminationEntryDto
                 {
                     PlayerId = e.PlayerId,

@@ -26,6 +26,7 @@ public class GameInfoDto
     public int RoundNumber { get; set; }
     public DateTime? PhaseEndsAt { get; set; }
     public DateTime? PhaseStartedAt { get; set; }
+    public DateTime? AudioPlayAt { get; set; }
     public List<EliminationEntryDto> NightDeaths { get; set; } = new();
     public List<EliminationEntryDto> DayDeaths { get; set; } = new();
     public string? Winner { get; set; }

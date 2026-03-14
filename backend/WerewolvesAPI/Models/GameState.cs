@@ -24,6 +24,7 @@ public class GameState
     public int RoundNumber { get; set; } = 0;
     public DateTime? PhaseEndsAt { get; set; }
     public DateTime? PhaseStartedAt { get; set; }
+    public DateTime? AudioPlayAt { get; set; }
     public ConcurrentDictionary<string, string> NightVotes { get; set; } = new();
     public ConcurrentDictionary<string, string> DayVotes { get; set; } = new();
     public List<string> TiebreakCandidates { get; set; } = new();

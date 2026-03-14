@@ -23,4 +23,17 @@ export class AudioService {
       audio.play().catch(() => resolve());
     });
   }
+
+  /**
+   * Schedule audio to play at a specific local Date.
+   * If the date is in the past (e.g. late poll), plays immediately.
+   */
+  schedulePlay(key: AudioKey, playAt: Date): void {
+    const delayMs = playAt.getTime() - Date.now();
+    if (delayMs <= 0) {
+      this.play(key);
+    } else {
+      setTimeout(() => this.play(key), delayMs);
+    }
+  }
 }
