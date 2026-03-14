@@ -18,6 +18,7 @@ import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { GameService } from '../../services/game.service';
 import { PollingService } from '../../services/polling.service';
+import { AudioService } from '../../services/audio.service';
 import { LobbyState, PlayerState } from '../../models/game.models';
 
 @Component({
@@ -66,7 +67,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
     private router: Router,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private audioService: AudioService
   ) {}
 
   ngOnInit(): void {
@@ -284,6 +286,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   startGame(): void {
+    this.audioService.unlock();
     this.gameService.startGame(this.gameId, this.playerId).subscribe({
       next: () => this.router.navigate(['/game', this.gameId, 'session'], { replaceUrl: true }),
       error: (err) => this.messageService.add({

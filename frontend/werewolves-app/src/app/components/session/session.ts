@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { GameService } from '../../services/game.service';
 import { PollingService } from '../../services/polling.service';
 import { AudioService } from '../../services/audio.service';
+import { AudioKey } from '../../models/audio-keys';
 import { LobbyState, PlayerState, PlayerRoleDto, SeerActionResponse } from '../../models/game.models';
 
 @Component({
@@ -108,60 +109,56 @@ export class SessionComponent implements OnInit, OnDestroy {
     this.nightWarningSpoken = false;
     switch (phase) {
       case 'RoleReveal':
-        this.audioService.speak('Everyone may now look at their role cards. Press and hold your card to reveal your role. Press done when you have seen it.');
+        this.audioService.play(AudioKey.RoleReveal);
         break;
       case 'WerewolvesMeeting':
-        this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and look around. Now you can see who the other werewolves are. On the first night, the werewolves cannot eliminate anyone.');
+        this.audioService.play(AudioKey.WerewolvesMeeting);
         break;
       case 'WerewolvesTurn':
-        this.audioService.speak('Close your eyes. The night begins. Werewolves, open your eyes and silently decide who to eliminate.');
+        this.audioService.play(AudioKey.WerewolvesTurn);
         break;
       case 'CupidTurn':
-        this.audioService.speak('Cupid, wake up. Point to two players to link as lovers.');
+        this.audioService.play(AudioKey.CupidTurn);
         break;
       case 'LoverReveal':
-        this.audioService.speak('Lovers, open your eyes and see who your partner is.');
+        this.audioService.play(AudioKey.LoverReveal);
         break;
       case 'SeerTurn':
-        this.audioService.speak('Seer, wake up. Point to a player to reveal their role.');
+        this.audioService.play(AudioKey.SeerTurn);
         break;
       case 'WitchTurn':
-        this.audioService.speak('Witch, wake up. You may use your potions.');
+        this.audioService.play(AudioKey.WitchTurn);
         break;
       case 'HunterTurn':
-        this.audioService.speak('Hunter, you have been eliminated. But before you go, you may take one player with you.');
+        this.audioService.play(AudioKey.HunterTurn);
         break;
       case 'NightElimination': {
         const deaths = this.lobbyState?.game.nightDeaths ?? [];
         if (deaths.length === 0) {
-          this.audioService.speak('The night has ended. No one was taken.');
+          this.audioService.play(AudioKey.NightEndNoDeaths);
         } else {
-          const names = deaths.map(d => d.playerName).join(' and ');
-          this.audioService.speak(`The night has ended. ${names} ${deaths.length === 1 ? 'was' : 'were'} taken in the night.`);
+          this.audioService.play(deaths.length === 1 ? AudioKey.NightEndOneDeath : AudioKey.NightEndManyDeaths);
         }
         break;
       }
       case 'Discussion':
-        this.audioService.speak('The village wakes up. Discuss who you believe is a werewolf. Vote before time runs out.');
+        this.audioService.play(AudioKey.Discussion);
         break;
       case 'TiebreakDiscussion':
-        this.audioService.speak('There is a tie! One more minute to revote between the tied players.');
+        this.audioService.play(AudioKey.TiebreakDiscussion);
         break;
       case 'DayElimination': {
         const dayDeaths = this.lobbyState?.game.dayDeaths ?? [];
         if (dayDeaths.length === 0) {
-          this.audioService.speak('The votes are tied. No one was eliminated.');
+          this.audioService.play(AudioKey.DayEliminationTie);
         } else {
-          const name = dayDeaths[0].playerName;
-          this.audioService.speak(`The village has decided. ${name} has been eliminated.`);
+          this.audioService.play(AudioKey.DayElimination);
         }
         break;
       }
       case 'GameOver': {
         const winner = this.lobbyState?.game.winner;
-        this.audioService.speak(winner === 'Villagers'
-          ? 'The werewolves have been found! The villagers win!'
-          : 'The werewolves have taken over the village! The werewolves win! Game over.');
+        this.audioService.play(winner === 'Villagers' ? AudioKey.GameOverVillagers : AudioKey.GameOverWerewolves);
         break;
       }
     }
@@ -178,7 +175,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       // 3-second warning before night ends
       if (!this.nightWarningSpoken && (this.phase === 'WerewolvesMeeting' || this.phase === 'WerewolvesTurn') && this.secondsRemaining <= 3 && this.secondsRemaining > 0) {
         this.nightWarningSpoken = true;
-        this.audioService.speak('Werewolves, close your eyes. Everyone has closed their eyes. It is now morning and everyone can open their eyes.');
+        this.audioService.play(AudioKey.NightWarning);
       }
     };
     update();

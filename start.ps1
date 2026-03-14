@@ -61,7 +61,7 @@ $backendPath = "backend\WerewolvesAPI"
 $backendUrl = "http://localhost:$backendPort"
 
 # Frontend configuration
-$frontendPort = 4201
+$frontendPort = 4200
 $frontendPath = "frontend\werewolves-app"
 $frontendUrl = "http://localhost:$frontendPort"
 
@@ -92,7 +92,7 @@ if (Test-Port -Port $frontendPort) {
 
 Write-Host "[Frontend] Starting Angular app on $frontendUrl" -ForegroundColor Cyan
 
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$frontendPath'; Write-Host 'Starting Frontend App...' -ForegroundColor Cyan; npm start -- --port $frontendPort"
+Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$frontendPath'; Write-Host 'Starting Frontend App...' -ForegroundColor Cyan; npm start"
 
 Write-Host "[Frontend] Frontend starting in new window..." -ForegroundColor Green
 Write-Host "[Frontend] App will be available at: $frontendUrl" -ForegroundColor Green

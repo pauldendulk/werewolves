@@ -63,6 +63,42 @@ cd frontend/werewolves-app; npm run build
 cd frontend/werewolves-app; npm test
 ```
 
+## Audio Narration
+
+Narration is pre-generated as MP3 files using Azure AI Speech and committed to the repository under `frontend/werewolves-app/src/assets/audio/`. Re-run the generator only when narration text or voice settings change.
+
+### Setting up Azure AI Speech
+
+1. Go to [portal.azure.com](https://portal.azure.com) and sign in
+2. Click **Create a resource** → search for **Speech** → select **Speech** (under Azure AI services)
+3. Click **Create** and fill in:
+   - **Subscription**: your subscription
+   - **Resource group**: create new or use existing
+   - **Region**: `West Europe`
+   - **Name**: e.g. `werewolves-speech`
+   - **Pricing tier**: `Free F0` (5 hours audio/month free) or `Standard S0`
+4. Click **Review + create** → **Create**
+5. Once deployed, go to the resource → **Keys and Endpoint**
+6. Copy **KEY 1**
+
+### Generating MP3 files
+
+Copy the example env file and fill in your key:
+```powershell
+Copy-Item audio-scripts/GenerateAudio/.env.example audio-scripts/GenerateAudio/bin/Debug/net9.0/.env
+# Then edit .env and replace 'your-key-here' with your actual key
+```
+
+Then run:
+```powershell
+cd audio-scripts/GenerateAudio
+dotnet run
+```
+
+Files are written to `frontend/werewolves-app/public/assets/audio/en-US/`. Commit them to the repository after generation.
+
+Narration text and voice settings are managed in [audio-scripts/narration.json](audio-scripts/narration.json).
+
 ## Deployment
 
 - **Backend**: Docker → Google Artifact Registry → Cloud Run (europe-west4)
