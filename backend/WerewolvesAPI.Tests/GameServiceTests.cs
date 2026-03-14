@@ -19,11 +19,9 @@ public class GameServiceTests
     [Fact]
     public void CreateGame_ShouldCreateGameWithCreator()
     {
-        var game = _gameService.CreateGame("Test Game", "John", 30, "http://localhost:4200");
+        var game = _gameService.CreateGame("John", 30, "http://localhost:4200");
 
-        game.Should().NotBeNull();
-        game.GameName.Should().Be("Test Game");
-        game.MaxPlayers.Should().Be(30);
+        game.Should().NotBeNull();        game.MaxPlayers.Should().Be(30);
         game.Players.Should().HaveCount(1);
         game.Players.First().DisplayName.Should().Be("John");
         game.Players.First().IsCreator.Should().BeTrue();
@@ -33,7 +31,7 @@ public class GameServiceTests
     [Fact]
     public void JoinGame_ShouldAddPlayerToGame()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
 
         var (success, message, player) = _gameService.JoinGame(game.GameId, "Alice");
 
@@ -47,7 +45,7 @@ public class GameServiceTests
     [Fact]
     public void JoinGame_WhenGameFull_ShouldReturnFailure()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 2, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 2, "http://localhost");
         _gameService.JoinGame(game.GameId, "Player1");
 
         var (success, message, player) = _gameService.JoinGame(game.GameId, "Player2");
@@ -60,7 +58,7 @@ public class GameServiceTests
     [Fact]
     public void JoinGame_WhenPlayerRejoins_ShouldUpdateStatus()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
         _gameService.LeaveGame(game.GameId, player!.PlayerId);
 
@@ -75,7 +73,7 @@ public class GameServiceTests
     [Fact]
     public void LeaveGame_ShouldUpdatePlayerStatus()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
 
         _gameService.LeaveGame(game.GameId, player!.PlayerId);
@@ -87,7 +85,7 @@ public class GameServiceTests
     [Fact]
     public void RemovePlayer_ByModerator_ShouldUpdatePlayerStatus()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
 
         _gameService.RemovePlayer(game.GameId, player!.PlayerId, game.CreatorId);
@@ -99,7 +97,7 @@ public class GameServiceTests
     [Fact]
     public void UpdateMaxPlayers_ByCreator_ShouldUpdateSettings()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
 
         _gameService.UpdateMaxPlayers(game.GameId, 30, game.CreatorId).Should().BeTrue();
         _gameService.GetGame(game.GameId)!.MaxPlayers.Should().Be(30);
@@ -108,7 +106,7 @@ public class GameServiceTests
     [Fact]
     public void UpdateMaxPlayers_ByNonCreator_ShouldFail()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
 
         _gameService.UpdateMaxPlayers(game.GameId, 30, player!.PlayerId).Should().BeFalse();
@@ -117,7 +115,7 @@ public class GameServiceTests
     [Fact]
     public void UpdateEnabledSkills_ByCreator_ShouldUpdateSkills()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
 
         _gameService.UpdateEnabledSkills(game.GameId, new List<string> { "Seer", "Witch" }, game.CreatorId).Should().BeTrue();
 
@@ -130,7 +128,7 @@ public class GameServiceTests
     [Fact]
     public void HasDuplicateNames_WhenNoDuplicates_ShouldReturnFalse()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         _gameService.JoinGame(game.GameId, "Alice");
         _gameService.JoinGame(game.GameId, "Bob");
 
@@ -140,7 +138,7 @@ public class GameServiceTests
     [Fact]
     public void HasDuplicateNames_WhenDuplicates_ShouldReturnTrue()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         _gameService.JoinGame(game.GameId, "Alice");
         _gameService.JoinGame(game.GameId, "Alice");
 
@@ -150,7 +148,7 @@ public class GameServiceTests
     [Fact]
     public void UpdatePlayerName_WhenCreatorChangesName_ShouldUpdateCreatorNameInDTO()
     {
-        var game = _gameService.CreateGame("Test Game", "OriginalCreator", 40, "http://localhost");
+        var game = _gameService.CreateGame("OriginalCreator", 40, "http://localhost");
 
         _gameService.UpdatePlayerName(game.GameId, game.CreatorId, "UpdatedCreator").Should().BeTrue();
 
@@ -161,7 +159,7 @@ public class GameServiceTests
     [Fact]
     public void GetGame_ShouldDeriveCreatorNameFromPlayer()
     {
-        var game = _gameService.CreateGame("Test Game", "OriginalName", 40, "http://localhost");
+        var game = _gameService.CreateGame("OriginalName", 40, "http://localhost");
         _gameService.UpdatePlayerName(game.GameId, game.CreatorId, "NewName");
 
         _gameService.GetGame(game.GameId)!.Players.First(p => p.PlayerId == game.CreatorId)
@@ -171,13 +169,13 @@ public class GameServiceTests
     [Fact]
     public void CreateGame_ShouldStartAtVersionOne()
     {
-        _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost").Version.Should().Be(1);
+        _gameService.CreateGame("Creator", 40, "http://localhost").Version.Should().Be(1);
     }
 
     [Fact]
     public void JoinGame_ShouldBumpVersion()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var before = game.Version;
         _gameService.JoinGame(game.GameId, "Alice");
         _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
@@ -186,7 +184,7 @@ public class GameServiceTests
     [Fact]
     public void LeaveGame_ShouldBumpVersion()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
         var after = _gameService.GetGame(game.GameId)!.Version;
         _gameService.LeaveGame(game.GameId, player!.PlayerId);
@@ -196,7 +194,7 @@ public class GameServiceTests
     [Fact]
     public void RemovePlayer_ShouldBumpVersion()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var (_, _, player) = _gameService.JoinGame(game.GameId, "Alice");
         var after = _gameService.GetGame(game.GameId)!.Version;
         _gameService.RemovePlayer(game.GameId, player!.PlayerId, game.CreatorId);
@@ -206,7 +204,7 @@ public class GameServiceTests
     [Fact]
     public void UpdateMaxPlayers_ShouldBumpVersion()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var before = game.Version;
         _gameService.UpdateMaxPlayers(game.GameId, 30, game.CreatorId);
         _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
@@ -215,25 +213,16 @@ public class GameServiceTests
     [Fact]
     public void UpdateMinPlayers_ShouldBumpVersion()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var before = game.Version;
         _gameService.UpdateMinPlayers(game.GameId, 3, game.CreatorId);
         _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
     }
 
     [Fact]
-    public void UpdateGameName_ShouldBumpVersion()
-    {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
-        var before = game.Version;
-        _gameService.UpdateGameName(game.GameId, "New Name", game.CreatorId);
-        _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
-    }
-
-    [Fact]
     public void UpdatePlayerName_ShouldBumpVersion()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var before = game.Version;
         _gameService.UpdatePlayerName(game.GameId, game.CreatorId, "New Name");
         _gameService.GetGame(game.GameId)!.Version.Should().Be(before + 1);
@@ -242,14 +231,14 @@ public class GameServiceTests
     [Fact]
     public void CreateGame_ShouldStartAtWaitingForPlayers()
     {
-        _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost")
+        _gameService.CreateGame("Creator", 40, "http://localhost")
             .Status.Should().Be(Models.GameStatus.WaitingForPlayers);
     }
 
     [Fact]
     public void JoinGame_WhenEnoughPlayers_ShouldTransitionToReadyToStart()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         _gameService.JoinGame(game.GameId, "Alice");
         _gameService.JoinGame(game.GameId, "Bob");
         _gameService.JoinGame(game.GameId, "Charlie");
@@ -260,7 +249,7 @@ public class GameServiceTests
     [Fact]
     public void LeaveGame_WhenBelowMinPlayers_ShouldTransitionBackToWaitingForPlayers()
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         var (_, _, alice) = _gameService.JoinGame(game.GameId, "Alice");
         _gameService.JoinGame(game.GameId, "Bob");
         _gameService.GetGame(game.GameId)!.Status.Should().Be(Models.GameStatus.ReadyToStart);
@@ -278,7 +267,7 @@ public class GameServiceTests
 
     private Models.GameState CreateReadyGame(int extraPlayers = 3)
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         for (int i = 0; i < extraPlayers; i++)
             _gameService.JoinGame(game.GameId, $"Player{i + 1}");
         // Disable all skills so phase transitions stay simple
@@ -326,7 +315,7 @@ public class GameServiceTests
     [Fact]
     public void StartGame_WhenNotReadyToStart_ShouldFail()
     {
-        var game = _gameService.CreateGame("Test", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
 
         var (success, _) = _gameService.StartGame(game.GameId, game.CreatorId);
 
@@ -636,7 +625,7 @@ public class GameServiceTests
 
     private Models.GameState CreateReadyGameWithSkills(int extraPlayers, List<string> skills)
     {
-        var game = _gameService.CreateGame("Test Game", "Creator", 40, "http://localhost");
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
         for (int i = 0; i < extraPlayers; i++)
             _gameService.JoinGame(game.GameId, $"Player{i + 1}");
         _gameService.UpdateEnabledSkills(game.GameId, skills, game.CreatorId);

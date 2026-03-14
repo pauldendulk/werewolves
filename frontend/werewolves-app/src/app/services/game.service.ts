@@ -36,10 +36,6 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { creatorId, minPlayers, maxPlayers, discussionDurationMinutes, numberOfWerewolves, enabledSkills });
   }
 
-  updateGameName(gameId: string, creatorId: string, gameName: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/name`, { creatorId, gameName });
-  }
-
   updatePlayerName(gameId: string, playerId: string, displayName: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/player-name`, { playerId, displayName });
   }

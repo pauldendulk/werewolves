@@ -20,7 +20,7 @@ public class GameService : IGameService
 
     // â”€â”€ Lobby management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    public GameState CreateGame(string gameName, string creatorName, int maxPlayers, string baseUrl)
+    public GameState CreateGame(string creatorName, int maxPlayers, string baseUrl)
     {
         var gameId = Guid.NewGuid().ToString("N")[..8];
         var playerId = Guid.NewGuid().ToString();
@@ -29,7 +29,6 @@ public class GameService : IGameService
         var game = new GameState
         {
             GameId = gameId,
-            GameName = gameName,
             CreatorId = playerId,
             MaxPlayers = maxPlayers,
             JoinLink = joinLink,
@@ -143,14 +142,6 @@ public class GameService : IGameService
         if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
         game.MinPlayers = minPlayers;
         RecalculateGameState(game);
-        BumpVersion(game);
-        return true;
-    }
-
-    public bool UpdateGameName(string gameId, string gameName, string creatorId)
-    {
-        if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
-        game.GameName = gameName;
         BumpVersion(game);
         return true;
     }

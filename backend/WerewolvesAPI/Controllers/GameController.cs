@@ -23,7 +23,7 @@ public class GameController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var game = _gameService.CreateGame(request.GameName, request.CreatorName, request.MaxPlayers, request.FrontendBaseUrl);
+        var game = _gameService.CreateGame(request.CreatorName, request.MaxPlayers, request.FrontendBaseUrl);
 
         return Ok(new CreateGameResponse
         {
@@ -75,7 +75,6 @@ public class GameController : ControllerBase
             Game = new GameInfoDto
             {
                 GameId = game.GameId,
-                GameName = game.GameName,
                 CreatorId = game.CreatorId,
                 MinPlayers = game.MinPlayers,
                 MaxPlayers = game.MaxPlayers,
@@ -155,13 +154,6 @@ public class GameController : ControllerBase
             return Ok();
 
         return Unauthorized(new { message = "Only the creator can update settings" });
-    }
-
-    [HttpPost("{gameId}/name")]
-    public ActionResult UpdateGameName(string gameId, [FromBody] UpdateGameNameRequest request)
-    {
-        if (_gameService.UpdateGameName(gameId, request.GameName, request.CreatorId)) return Ok();
-        return Unauthorized(new { message = "Only the creator can update the game name" });
     }
 
     [HttpPost("{gameId}/player-name")]

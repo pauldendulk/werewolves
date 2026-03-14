@@ -52,7 +52,7 @@ export class JoinGameComponent implements OnInit {
     this.gameService.getGameState(this.gameId).subscribe({
       next: (state) => {
         this.gameState = state;
-        this.gameName = state.game.gameName;
+        this.gameName = state.game.gameId;
         this.loadingGame = false;
 
         // Check if player already joined

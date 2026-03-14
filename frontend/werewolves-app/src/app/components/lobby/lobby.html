@@ -23,28 +23,8 @@
     <!-- CARD 1: Game Info & Invite -->
     <div class="card-section invite-card">
 
-      <!-- Compact Game Info Header -->
-      <div class="game-info-compact">
-        <!-- Game Name Row -->
-        <div class="info-row">
-          <span class="row-label">Game Name</span>
-
-          <div class="row-value-container" *ngIf="isCreator && editingGameName">
-             <input pInputText [(ngModel)]="editedGameName" (keydown.enter)="saveGameName()" (keydown.escape)="cancelEditGameName()" class="compact-input" autoFocus />
-             <i class="pi pi-check action-icon confirm" (click)="saveGameName()"></i>
-             <i class="pi pi-times action-icon cancel" (click)="cancelEditGameName()"></i>
-          </div>
-
-          <div class="row-value-container" *ngIf="!editingGameName">
-            <span class="row-value" [class.editable]="isCreator" (click)="isCreator && startEditGameName()">
-              {{ lobbyState.game.gameName }}
-              <i *ngIf="isCreator" class="pi pi-pencil edit-indicator"></i>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
+      <!-- Game ID -->
+      <div class="game-id-label">Game: {{ lobbyState.game.gameId }}</div>
 
       <!-- QR & Invite Area -->
       <div class="invite-area">

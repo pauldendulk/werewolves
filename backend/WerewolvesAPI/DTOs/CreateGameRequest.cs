@@ -5,10 +5,6 @@ namespace WerewolvesAPI.DTOs;
 public class CreateGameRequest
 {
     [Required]
-    [StringLength(50, MinimumLength = 1)]
-    public string GameName { get; set; } = string.Empty;
-    
-    [Required]
     [StringLength(30, MinimumLength = 1)]
     public string CreatorName { get; set; } = string.Empty;
     

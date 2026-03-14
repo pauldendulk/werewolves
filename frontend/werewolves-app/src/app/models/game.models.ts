@@ -6,7 +6,6 @@ export interface EliminationEntryDto {
 
 export interface GameState {
   gameId: string;
-  gameName: string;
   creatorId: string;
   minPlayers: number;
   maxPlayers: number;
@@ -50,7 +49,6 @@ export interface LobbyState {
 }
 
 export interface CreateGameRequest {
-  gameName: string;
   creatorName: string;
   maxPlayers: number;
   frontendBaseUrl: string;

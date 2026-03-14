@@ -5,7 +5,7 @@
 
   <!-- Header -->
   <div class="session-header">
-    <span class="game-name">{{ lobbyState.game.gameName }}</span>
+    <span class="game-name">Game: {{ lobbyState.game.gameId }}</span>
     <span class="round-badge" *ngIf="lobbyState.game.roundNumber > 0">Round {{ lobbyState.game.roundNumber }}</span>
   </div>
 

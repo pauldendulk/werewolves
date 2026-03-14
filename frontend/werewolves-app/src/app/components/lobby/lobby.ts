@@ -51,8 +51,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
   private pollSubscription?: Subscription;
 
   // Editing state
-  editingGameName: boolean = false;
-  editedGameName: string = '';
   showRenameDialog: boolean = false;
   editedPlayerName: string = '';
 
@@ -222,8 +220,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: this.lobbyState!.game.gameName,
-          text: `Join my Werewolves game: ${this.lobbyState!.game.gameName}`,
+          title: 'Werewolves',
+          text: `Join my Werewolves game`,
           url: this.lobbyState!.game.joinLink
         });
       } catch (error) {
@@ -359,25 +357,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
         });
       }
     });
-  }
-
-  // Game name editing
-  startEditGameName(): void {
-    this.editedGameName = this.lobbyState!.game.gameName;
-    this.editingGameName = true;
-  }
-
-  cancelEditGameName(): void {
-    this.editingGameName = false;
-    this.editedGameName = '';
-  }
-
-  saveGameName(): void {
-    if (this.editedGameName.trim().length === 0) {
-      return;
-    }
-    this.gameService.updateGameName(this.gameId, this.playerId, this.editedGameName.trim()).subscribe();
-    this.editingGameName = false;
   }
 
   // Player name editing

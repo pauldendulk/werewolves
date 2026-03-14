@@ -26,7 +26,6 @@ import { CreateGameRequest } from '../../models/game.models';
   styleUrl: './create-game.scss'
 })
 export class CreateGameComponent {
-  gameName: string = 'GameName';
   creatorName: string = '';
   maxPlayers: number = 20;
   loading: boolean = false;
@@ -40,7 +39,6 @@ export class CreateGameComponent {
   createGame(): void {
     this.loading = true;
     const request: CreateGameRequest = {
-      gameName: this.gameName,
       creatorName: this.creatorName,
       maxPlayers: this.maxPlayers,
       frontendBaseUrl: window.location.origin
