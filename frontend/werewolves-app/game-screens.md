@@ -22,9 +22,9 @@ Pre-game screens (Create Game, Join Game, Lobby) do not use the session shell an
 | **Lobby** | Pre-game | All / host | Wait for players; host starts game | No | No |
 | **`RoleReveal`** | Day | All players | Press-and-hold card to peek at role; confirm ready | Optional — useful if the host wants to keep pace | Low value — players need a moment to register their role; nobody is waiting on a secret |
 | **`WerewolvesMeeting`** | Night | Werewolves only | Wolves identify each other; non-wolves wait with eyes closed | **Yes** — wolves should be brief | **Yes** — non-wolves are sitting with eyes closed; overtime signals "hurry up" |
-| **`WerewolvesTurn`** | Night | Werewolves only | Wolves pick a victim from a dropdown; non-wolves wait | **Yes** — decisive action | **Yes** — same reasoning; non-wolves are waiting blind |
 | **`CupidTurn`** | Night | Cupid only | Cupid links two players as lovers | **Yes** — one-time, short action | **Yes** — rest of village is waiting |
-| **`LoverReveal`** | Day | All players (passive) | Everyone opens eyes; check role card for lover name; auto-advances after 10 s | Built-in — 10 s fixed timer, auto-advance | N/A — auto-advances; no overtime needed |
+| **`LoverReveal`** | Day | All players (passive) | Everyone opens eyes; check role card for lover name; auto-advances after 20 s | Built-in — 20 s fixed timer, auto-advance | N/A — auto-advances; no overtime needed |
+| **`WerewolvesTurn`** | Night | Werewolves only | Wolves pick a victim from a dropdown; non-wolves wait | **Yes** — decisive action | **Yes** — same reasoning; non-wolves are waiting blind |
 | **`SeerTurn`** | Night | Seer only | Seer inspects one player's alignment | **Yes** — secret action should not drag | **Yes** — village is waiting; subtle overtime pressure fits the theme |
 | **`WitchTurn`** | Night | Witch only | Witch saves victim, poisons a target, or does nothing | **Yes** — meaningful decision | **Yes** — pressure to choose; "do nothing" is always available as quick escape |
 | **`HunterTurn`** | Night | Hunter only | Eliminated Hunter shoots one player | **Yes** — dramatic final act | **Yes** — the shot hangs dramatically; overtime heightens tension |

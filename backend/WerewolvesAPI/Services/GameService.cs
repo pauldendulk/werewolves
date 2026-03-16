@@ -289,6 +289,24 @@ public class GameService : IGameService
             if (voter.Role != PlayerRole.Werewolf || voter.IsEliminated)
                 return (false, "Only alive werewolves can vote at night");
             game.NightVotes[voterId] = targetId;
+            BumpVersion(game);
+
+            var aliveWerewolves = game.Players
+                .Where(p => p.Role == PlayerRole.Werewolf && !p.IsEliminated && p.ParticipationStatus == ParticipationStatus.Participating)
+                .ToList();
+            if (aliveWerewolves.Count > 0 && aliveWerewolves.All(p => game.NightVotes.ContainsKey(p.PlayerId)))
+            {
+                lock (GetPhaseLock(gameId))
+                {
+                    var aliveWolvesNow = game.Players
+                        .Where(p => p.Role == PlayerRole.Werewolf && !p.IsEliminated && p.ParticipationStatus == ParticipationStatus.Participating)
+                        .ToList();
+                    if (aliveWolvesNow.Count > 0 && aliveWolvesNow.All(p => game.NightVotes.ContainsKey(p.PlayerId)))
+                        AdvancePhase(game);
+                }
+            }
+
+            return (true, null);
         }
         else if (game.Phase == GamePhase.Discussion || game.Phase == GamePhase.TiebreakDiscussion)
         {
@@ -496,20 +514,23 @@ public class GameService : IGameService
                 TransitionToFirstNightStep(game);
                 break;
 
-            case GamePhase.CupidTurn:
-                // If Cupid chose lovers show them; otherwise skip to WerewolvesMeeting
-                if (game.Lover1Id != null && game.Lover2Id != null)
-                    BeginPhase(game, GamePhase.LoverReveal, TimeSpan.FromSeconds(10));
+            case GamePhase.WerewolvesMeeting:
+                // After wolves meet, let Cupid act (if present), else go to discussion
+                if (HasLivingSkill(game, PlayerSkill.Cupid))
+                    BeginPhase(game, GamePhase.CupidTurn);
                 else
-                    BeginPhase(game, GamePhase.WerewolvesMeeting);
+                    TransitionToDiscussion(game);
+                break;
+
+            case GamePhase.CupidTurn:
+                // If Cupid chose lovers show them; otherwise skip to discussion
+                if (game.Lover1Id != null && game.Lover2Id != null)
+                    BeginPhase(game, GamePhase.LoverReveal, TimeSpan.FromSeconds(20));
+                else
+                    TransitionToDiscussion(game);
                 break;
 
             case GamePhase.LoverReveal:
-                BeginPhase(game, GamePhase.WerewolvesMeeting);
-                break;
-
-            case GamePhase.WerewolvesMeeting:
-                // End of first night — no kill
                 TransitionToDiscussion(game);
                 break;
 
@@ -611,10 +632,7 @@ public class GameService : IGameService
 
         if (game.RoundNumber == 1)
         {
-            if (HasLivingSkill(game, PlayerSkill.Cupid))
-                BeginPhase(game, GamePhase.CupidTurn);
-            else
-                BeginPhase(game, GamePhase.WerewolvesMeeting);
+            BeginPhase(game, GamePhase.WerewolvesMeeting);
         }
         else
         {
