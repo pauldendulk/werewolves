@@ -174,8 +174,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
     return this.activePlayers.length >= minPlayers;
   }
 
+  get hasEnoughPlayersForSkills(): boolean {
+    const werewolves = this.lobbyState?.game.numberOfWerewolves ?? 1;
+    const villagerSlots = this.activePlayers.length - werewolves;
+    return this.enabledSkills.length <= villagerSlots;
+  }
+
   get canStartGame(): boolean {
-    return this.hasEnoughPlayers && !this.lobbyState?.hasDuplicateNames;
+    return this.hasEnoughPlayers && !this.lobbyState?.hasDuplicateNames && this.hasEnoughPlayersForSkills;
   }
 
   get creatorName(): string {

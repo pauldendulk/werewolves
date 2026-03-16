@@ -97,6 +97,11 @@
            <i class="pi pi-exclamation-triangle"></i>
            <span>Need at least {{ lobbyState.game.minPlayers }} players to start ({{ activePlayers.length }}/{{ lobbyState.game.minPlayers }})</span>
         </div>
+
+        <div class="warning-box" *ngIf="hasEnoughPlayers && !lobbyState.hasDuplicateNames && !hasEnoughPlayersForSkills">
+           <i class="pi pi-exclamation-triangle"></i>
+           <span>Too many special roles for {{ activePlayers.length }} players. Need {{ lobbyState.game.numberOfWerewolves + enabledSkills.length }} players or disable some skills.</span>
+        </div>
       </div>
     </div>
 

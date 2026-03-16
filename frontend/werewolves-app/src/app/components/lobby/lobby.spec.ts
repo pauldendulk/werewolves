@@ -142,6 +142,39 @@ describe('LobbyComponent', () => {
     expect(component.canStartGame).toBeFalse();
   });
 
+  it('hasEnoughPlayersForSkills should be true when no skills are enabled', () => {
+    component.enabledSkills = [];
+    expect(component.hasEnoughPlayersForSkills).toBeTrue();
+  });
+
+  it('hasEnoughPlayersForSkills should be false when skills exceed villager slots', () => {
+    // 2 active players, 1 werewolf → 1 villager slot
+    // Enabling 2 skills exceeds the 1 available slot
+    component.enabledSkills = ['Seer', 'Witch'];
+    expect(component.hasEnoughPlayersForSkills).toBeFalse();
+  });
+
+  it('hasEnoughPlayersForSkills should be true when skills fit within villager slots', () => {
+    // 2 active players, 1 werewolf → 1 villager slot, 1 skill fits
+    component.enabledSkills = ['Seer'];
+    expect(component.hasEnoughPlayersForSkills).toBeTrue();
+  });
+
+  it('canStartGame should be false when too many skills for player count', () => {
+    // Bump up players to satisfy minPlayers, but add more skills than villager slots
+    pollingServiceSpy.startPolling.and.returnValue(of({
+      ...mockLobbyState,
+      game: { ...mockLobbyState.game, minPlayers: 2 },
+      players: [
+        { ...mockLobbyState.players[0] },
+        { ...mockLobbyState.players[1] }
+      ]
+    }));
+    component.enabledSkills = ['Seer', 'Witch', 'Hunter', 'Cupid'];
+    // 2 players, 1 werewolf → 1 villager slot, 4 skills → false
+    expect(component.canStartGame).toBeFalse();
+  });
+
   it('should redirect to home if no playerId', () => {
     // Lobby component navigates away in ngOnInit when playerId is empty
     const freshComponent = fixture.componentInstance;
