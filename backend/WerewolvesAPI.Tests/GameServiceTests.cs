@@ -652,6 +652,106 @@ public class GameServiceTests
         final.Version.Should().BeGreaterThan(vAtFinalNight);
     }
 
+    // ── N-way tiebreaker tests ────────────────────────────────────────────
+
+    [Fact]
+    public void ThreeWayTie_ShouldIncludeAllThreeTiedPlayersInTiebreakCandidates()
+    {
+        // 3 players: Creator + Player1 + Player2 (MinPlayers = 3 by default)
+        var game = CreateReadyGame(2);
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        // Advance to Discussion (Round 1: RoleReveal → WerewolvesMeeting → Discussion)
+        MarkAllAliveDone(game.GameId);  // RoleReveal → WerewolvesMeeting
+        MarkAliveWolvesDone(game.GameId); // WerewolvesMeeting → Discussion
+
+        var state = _gameService.GetGame(game.GameId)!;
+        state.Phase.Should().Be(Models.GamePhase.Discussion);
+
+        // Circular vote: A→B, B→C, C→A so every player receives exactly 1 vote
+        var players = state.Players
+            .Where(p => !p.IsEliminated)
+            .OrderBy(p => p.PlayerId)
+            .ToList();
+        for (int i = 0; i < players.Count; i++)
+            _gameService.CastVote(game.GameId, players[i].PlayerId, players[(i + 1) % players.Count].PlayerId);
+
+        MarkAllAliveDone(game.GameId); // Discussion → TiebreakDiscussion
+
+        var after = _gameService.GetGame(game.GameId)!;
+        after.Phase.Should().Be(Models.GamePhase.TiebreakDiscussion);
+        after.TiebreakCandidates.Should().HaveCount(3,
+            "all three players are tied with 1 vote each");
+        after.TiebreakCandidates.Should().BeEquivalentTo(
+            players.Select(p => p.PlayerId),
+            "every tied player must be a tiebreak candidate");
+    }
+
+    [Fact]
+    public void ThreeWayTie_TiebreakVote_ShouldAcceptVoteForAnyCandidate()
+    {
+        var game = CreateReadyGame(2);
+        _gameService.StartGame(game.GameId, game.CreatorId);
+        MarkAllAliveDone(game.GameId);
+        MarkAliveWolvesDone(game.GameId);
+
+        var players = _gameService.GetGame(game.GameId)!.Players
+            .Where(p => !p.IsEliminated)
+            .OrderBy(p => p.PlayerId)
+            .ToList();
+
+        // Set up circular tie
+        for (int i = 0; i < players.Count; i++)
+            _gameService.CastVote(game.GameId, players[i].PlayerId, players[(i + 1) % players.Count].PlayerId);
+        MarkAllAliveDone(game.GameId); // → TiebreakDiscussion
+
+        // Each player should be able to vote for any of the other two candidates
+        var state = _gameService.GetGame(game.GameId)!;
+        state.TiebreakCandidates.Should().HaveCount(3);
+
+        // Verify every player can vote for each of the other tied candidates
+        foreach (var voter in players)
+        {
+            foreach (var candidate in players.Where(c => c.PlayerId != voter.PlayerId))
+            {
+                var (success, error) = _gameService.CastVote(game.GameId, voter.PlayerId, candidate.PlayerId);
+                success.Should().BeTrue(
+                    $"player {voter.DisplayName} should be able to vote for tied candidate {candidate.DisplayName}, but got: {error}");
+            }
+        }
+    }
+
+    [Fact]
+    public void FourWayCircularTie_ShouldIncludeAllFourTiedPlayersInTiebreakCandidates()
+    {
+        // 4 players: Creator + Player1 + Player2 + Player3
+        var game = CreateReadyGame(3);
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        MarkAllAliveDone(game.GameId);  // RoleReveal → WerewolvesMeeting
+        MarkAliveWolvesDone(game.GameId); // WerewolvesMeeting → Discussion
+
+        var state = _gameService.GetGame(game.GameId)!;
+        var players = state.Players
+            .Where(p => !p.IsEliminated)
+            .OrderBy(p => p.PlayerId)
+            .ToList();
+
+        // 4-way circular vote: each player votes for the next → all get 1 vote
+        for (int i = 0; i < players.Count; i++)
+            _gameService.CastVote(game.GameId, players[i].PlayerId, players[(i + 1) % players.Count].PlayerId);
+
+        MarkAllAliveDone(game.GameId); // → TiebreakDiscussion
+
+        var after = _gameService.GetGame(game.GameId)!;
+        after.Phase.Should().Be(Models.GamePhase.TiebreakDiscussion);
+        after.TiebreakCandidates.Should().HaveCount(4,
+            "all four players are tied with 1 vote each");
+        after.TiebreakCandidates.Should().BeEquivalentTo(
+            players.Select(p => p.PlayerId),
+            "every tied player must be a tiebreak candidate");
+    }
+
     // ── Skill mechanics tests ──────────────────────────────────────────────
 
     private Models.GameState CreateReadyGameWithSkills(int extraPlayers, List<string> skills)

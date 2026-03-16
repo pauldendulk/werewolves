@@ -27,7 +27,6 @@ describe('GameService', () => {
 
   it('should create a game', () => {
     const request: CreateGameRequest = {
-      gameName: 'Test Game',
       creatorName: 'John',
       maxPlayers: 30,
       frontendBaseUrl: 'http://localhost:4200'

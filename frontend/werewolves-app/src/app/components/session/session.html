@@ -335,6 +335,7 @@
         *ngIf="showDoneButton"
         label="Done"
         (onClick)="markDone()"
+        [disabled]="canVoteDay && !hasVotedThisPhase"
         styleClass="p-button-outlined w-full mt-2">
       </p-button>
       <div class="done-badge" *ngIf="currentPlayer?.isDone">

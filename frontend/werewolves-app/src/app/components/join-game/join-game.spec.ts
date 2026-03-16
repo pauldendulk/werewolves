@@ -15,7 +15,6 @@ describe('JoinGameComponent', () => {
   const mockLobbyState = {
     game: {
       gameId: 'game123',
-      gameName: 'Test Game',
       creatorId: 'creator1',
       minPlayers: 4,
       maxPlayers: 20,
@@ -30,6 +29,7 @@ describe('JoinGameComponent', () => {
       phase: 'Lobby',
       roundNumber: 0,
       phaseEndsAt: null,
+      audioPlayAt: null,
       nightDeaths: [],
       dayDeaths: [],
       winner: null,
@@ -84,7 +84,7 @@ describe('JoinGameComponent', () => {
 
   it('should load game info on init', () => {
     expect(gameServiceSpy.getGameState).toHaveBeenCalledWith('game123');
-    expect(component.gameName).toBe('Test Game');
+    expect(component.gameName).toBe('game123');
     expect(component.loadingGame).toBeFalse();
   });
 

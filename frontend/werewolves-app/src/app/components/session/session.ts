@@ -30,6 +30,7 @@ export class SessionComponent implements OnInit, OnDestroy {
   roleRevealed = false;
   hasSeenRole = false;
   selectedVoteTarget: string | null = null;
+  hasVotedThisPhase = false;
   // Skill action state
   cupidLover1: string | null = null;
   cupidLover2: string | null = null;
@@ -95,6 +96,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       this.lastRound = state.game.roundNumber;
       this.roleRevealed = false;
       this.selectedVoteTarget = null;
+      this.hasVotedThisPhase = false;
       this.onPhaseEntered(state.game.phase, state.game.roundNumber, state.game.audioPlayAt);
 
       // Refresh role on any night-skill phase so loverName, nightKillTargetName, etc. stay current
@@ -325,7 +327,10 @@ export class SessionComponent implements OnInit, OnDestroy {
   submitVote(): void {
     if (!this.selectedVoteTarget) return;
     this.gameService.castVote(this.gameId, this.playerId, this.selectedVoteTarget).subscribe({
-      next: () => this.messageService.add({ severity: 'success', summary: 'Vote cast', detail: 'Your vote has been recorded' }),
+      next: () => {
+        this.hasVotedThisPhase = true;
+        this.messageService.add({ severity: 'success', summary: 'Vote cast', detail: 'Your vote has been recorded' });
+      },
       error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'Failed to submit vote' })
     });
   }

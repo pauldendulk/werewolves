@@ -241,6 +241,12 @@
             white-space: nowrap;
          }
 
+         .setting-toggle-wrapper {
+             justify-self: end;
+             display: flex;
+             align-items: center;
+         }
+
          .setting-input-wrapper {
              justify-self: end; // Move to the right
              border: 1px solid var(--surface-border);

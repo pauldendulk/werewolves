@@ -20,7 +20,6 @@ describe('SessionComponent', () => {
   const makeLobbyState = (overrides: Partial<LobbyState['game']> = {}): LobbyState => ({
     game: {
       gameId: 'game123',
-      gameName: 'Test Game',
       creatorId: 'player1',
       minPlayers: 4,
       maxPlayers: 20,
@@ -39,6 +38,7 @@ describe('SessionComponent', () => {
       dayDeaths: [],
       winner: null,
       tiebreakCandidates: [],
+      audioPlayAt: null,
       ...overrides
     },
     players: [
@@ -80,8 +80,8 @@ describe('SessionComponent', () => {
     pollingServiceSpy = jasmine.createSpyObj('PollingService', ['startPolling']);
     pollingServiceSpy.startPolling.and.returnValue(of(makeLobbyState()));
 
-    audioServiceSpy = jasmine.createSpyObj('AudioService', ['speak']);
-    audioServiceSpy.speak.and.returnValue(Promise.resolve());
+    audioServiceSpy = jasmine.createSpyObj('AudioService', ['play', 'schedulePlay']);
+    audioServiceSpy.play.and.returnValue(Promise.resolve());
 
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -171,5 +171,99 @@ describe('SessionComponent', () => {
 
   it('canVoteDay should be false during RoleReveal', () => {
     expect(component.canVoteDay).toBeFalse();
+  });
+
+  describe('hasVotedThisPhase blocks Done button during Discussion', () => {
+    beforeEach(() => {
+      component.lobbyState = makeLobbyState({ phase: 'Discussion' });
+      component.playerId = 'player1';
+    });
+
+    it('hasVotedThisPhase starts false', () => {
+      expect(component.hasVotedThisPhase).toBeFalse();
+    });
+
+    it('canVoteDay is true during Discussion for alive player', () => {
+      expect(component.canVoteDay).toBeTrue();
+    });
+
+    it('sets hasVotedThisPhase to true on successful vote', () => {
+      gameServiceSpy.castVote.and.returnValue(of(void 0));
+      component.selectedVoteTarget = 'player2';
+      component.submitVote();
+      expect(component.hasVotedThisPhase).toBeTrue();
+    });
+
+    it('resets hasVotedThisPhase when phase changes', () => {
+      component.hasVotedThisPhase = true;
+      // Simulate a state update with a new phase
+      const newState = makeLobbyState({ phase: 'TiebreakDiscussion', tiebreakCandidates: ['player1', 'player2'] });
+      (component as any).handleStateUpdate(newState);
+      expect(component.hasVotedThisPhase).toBeFalse();
+    });
+  });
+
+  describe('voteTargets in TiebreakDiscussion with 3 tied candidates', () => {
+    const makeThreePlayerTiebreakState = (): LobbyState => ({
+      game: {
+        gameId: 'game123',
+        creatorId: 'player1',
+        minPlayers: 3,
+        maxPlayers: 20,
+        joinLink: '',
+        qrCodeBase64: '',
+        status: 'InProgress',
+        version: 1,
+        discussionDurationMinutes: 5,
+        numberOfWerewolves: 1,
+        enabledSkills: [],
+        phaseStartedAt: null,
+        phase: 'TiebreakDiscussion',
+        roundNumber: 1,
+        phaseEndsAt: null,
+        audioPlayAt: null,
+        nightDeaths: [],
+        dayDeaths: [],
+        winner: null,
+        tiebreakCandidates: ['player1', 'player2', 'player3']
+      },
+      players: [
+        { playerId: 'player1', displayName: 'Alice', isCreator: true, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false },
+        { playerId: 'player2', displayName: 'Bob', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false },
+        { playerId: 'player3', displayName: 'Carol', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false }
+      ],
+      hasDuplicateNames: false
+    });
+
+    it('tied player should see the other two candidates as vote targets', () => {
+      component.lobbyState = makeThreePlayerTiebreakState();
+      component.playerId = 'player1'; // Alice is a tied candidate
+
+      const targets = component.voteTargets;
+
+      expect(targets.length).toBe(2, 'Alice should see exactly 2 options (Bob and Carol)');
+      expect(targets.map(t => t.value)).toContain('player2');
+      expect(targets.map(t => t.value)).toContain('player3');
+      expect(targets.map(t => t.value)).not.toContain('player1', 'a player cannot vote for themselves');
+    });
+
+    it('non-tied player should see all three candidates as vote targets', () => {
+      const state = makeThreePlayerTiebreakState();
+      state.game.tiebreakCandidates = ['player2', 'player3', 'player4'];
+      state.players.push({
+        playerId: 'player4', displayName: 'Dave', isCreator: false, isModerator: false,
+        isConnected: true, participationStatus: 'Participating', role: null, skill: null,
+        isEliminated: false, isDone: false
+      });
+      component.lobbyState = state;
+      component.playerId = 'player1'; // Alice is NOT one of the tied candidates
+
+      const targets = component.voteTargets;
+
+      expect(targets.length).toBe(3, 'non-tied Alice should see all 3 tied candidates');
+      expect(targets.map(t => t.value)).toContain('player2');
+      expect(targets.map(t => t.value)).toContain('player3');
+      expect(targets.map(t => t.value)).toContain('player4');
+    });
   });
 });
