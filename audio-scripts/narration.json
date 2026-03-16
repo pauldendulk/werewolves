@@ -4,24 +4,24 @@
   "defaultStyledegree": 1.5,
   "entries": {
     "en-US": {
-      "role-reveal": "Everyone may now look at their role cards. Press and hold your card to reveal your role. Confirm that you have seen it.",
-      "werewolves-meeting": "Close your eyes. The night begins. Werewolves, open your eyes and look around. Now you can see who the other werewolves are. On the first night, the werewolves cannot eliminate anyone.",
-      "werewolves-turn": "Close your eyes. The night begins. Werewolves, open your eyes and silently decide who to eliminate.",
-      "cupid-turn": "Cupid, wake up. Point to two players to link as lovers.",
-      "lover-reveal": "Everyone, open your eyes. Check your role card to find out if you are one of the lovers.",
-      "seer-turn": "Seer, wake up. Point to a player to reveal their role.",
-      "witch-turn": "Witch, wake up. You may use your potions.",
-      "hunter-turn": "Hunter, you have been eliminated. But before you go, you may take one player with you.",
-      "night-end-no-deaths": "The night has ended. No one was taken.",
-      "night-end-one-death": "The night has ended. Someone was taken in the night.",
-      "night-end-many-deaths": "The night has ended. Some villagers were taken in the night.",
-      "discussion": "The village wakes up. Discuss who you believe is a werewolf. Vote before time runs out.",
-      "tiebreak-discussion": "There is a tie! One more minute to revote between the tied players.",
-      "day-elimination-tie": "The votes are tied. No one was eliminated.",
-      "day-elimination": "The village has decided. Someone has been eliminated.",
-      "game-over-villagers": "The werewolves have been found! The villagers win!",
-      "game-over-werewolves": "The werewolves have taken over the village! The werewolves win! Game over.",
-      "night-warning": "Werewolves, close your eyes. Everyone has closed their eyes. It is now morning and everyone can open their eyes."
+      "role-reveal":           { "version": 1, "text": "Everyone may now look at their role cards. Press and hold your card to reveal your role. Confirm that you have seen it." },
+      "werewolves-meeting":    { "version": 1, "text": "Close your eyes. The night begins. Werewolves, open your eyes and look around. Now you can see who the other werewolves are. On the first night, the werewolves cannot eliminate anyone." },
+      "werewolves-turn":       { "version": 1, "text": "Close your eyes. The night begins. Werewolves, open your eyes and silently decide who to eliminate." },
+      "cupid-turn":            { "version": 1, "text": "Cupid, wake up. Point to two players to link as lovers." },
+      "lover-reveal":          { "version": 2, "text": "Everyone, open your eyes. Check your role card to find out if you are one of the lovers." },
+      "seer-turn":             { "version": 1, "text": "Seer, wake up. Point to a player to reveal their role." },
+      "witch-turn":            { "version": 1, "text": "Witch, wake up. You may use your potions." },
+      "hunter-turn":           { "version": 1, "text": "Hunter, you have been eliminated. But before you go, you may take one player with you." },
+      "night-end-no-deaths":   { "version": 1, "text": "The night has ended. No one was taken." },
+      "night-end-one-death":   { "version": 1, "text": "The night has ended. Someone was taken in the night." },
+      "night-end-many-deaths": { "version": 1, "text": "The night has ended. Some villagers were taken in the night." },
+      "discussion":            { "version": 1, "text": "The village wakes up. Discuss who you believe is a werewolf. Vote before time runs out." },
+      "tiebreak-discussion":   { "version": 1, "text": "There is a tie! One more minute to revote between the tied players." },
+      "day-elimination-tie":   { "version": 1, "text": "The votes are tied. No one was eliminated." },
+      "day-elimination":       { "version": 1, "text": "The village has decided. Someone has been eliminated." },
+      "game-over-villagers":   { "version": 1, "text": "The werewolves have been found! The villagers win!" },
+      "game-over-werewolves":  { "version": 1, "text": "The werewolves have taken over the village! The werewolves win! Game over." },
+      "night-warning":         { "version": 1, "text": "Werewolves, close your eyes. Everyone has closed their eyes. It is now morning and everyone can open their eyes." }
     }
   }
 }

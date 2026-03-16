@@ -1,0 +1,22 @@
+{
+  "en-US": {
+    "role-reveal": 1,
+    "werewolves-meeting": 1,
+    "werewolves-turn": 1,
+    "cupid-turn": 1,
+    "lover-reveal": 2,
+    "seer-turn": 1,
+    "witch-turn": 1,
+    "hunter-turn": 1,
+    "night-end-no-deaths": 1,
+    "night-end-one-death": 1,
+    "night-end-many-deaths": 1,
+    "discussion": 1,
+    "tiebreak-discussion": 1,
+    "day-elimination-tie": 1,
+    "day-elimination": 1,
+    "game-over-villagers": 1,
+    "game-over-werewolves": 1,
+    "night-warning": 1
+  }
+}
