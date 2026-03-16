@@ -50,6 +50,10 @@ using var http = new HttpClient();
 http.DefaultRequestHeaders.Add("User-Agent", "GenerateAudio/1.0");
 int generated = 0, skipped = 0;
 
+// Optional key filter: dotnet run -- <key> (e.g. dotnet run -- lover-reveal)
+var filterKey = args.Length > 0 ? args[0] : null;
+if (filterKey != null) Console.WriteLine($"Filtering to key: {filterKey}");
+
 foreach (var (lang, textsNode) in entries)
 {
     var outputDir = Path.Combine(outputBase, lang);
@@ -57,6 +61,7 @@ foreach (var (lang, textsNode) in entries)
 
     foreach (var (key, textNode) in textsNode!.AsObject())
     {
+        if (filterKey != null && key != filterKey) continue;
         var text       = textNode!.GetValue<string>();
         var outputPath = Path.Combine(outputDir, $"{key}.mp3");
 

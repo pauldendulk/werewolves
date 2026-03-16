@@ -1,6 +1,6 @@
 <div class="session-container" *ngIf="lobbyState"
-     [class.night-theme]="phase === 'WerewolvesMeeting' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'LoverReveal' || phase === 'SeerTurn' || phase === 'WitchTurn' || phase === 'HunterTurn' || phase === 'NightElimination'"
-     [class.day-theme]="phase !== 'WerewolvesMeeting' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'LoverReveal' && phase !== 'SeerTurn' && phase !== 'WitchTurn' && phase !== 'HunterTurn' && phase !== 'NightElimination'">
+     [class.night-theme]="phase === 'WerewolvesMeeting' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'SeerTurn' || phase === 'WitchTurn' || phase === 'HunterTurn' || phase === 'NightElimination'"
+     [class.day-theme]="phase !== 'WerewolvesMeeting' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'SeerTurn' && phase !== 'WitchTurn' && phase !== 'HunterTurn' && phase !== 'NightElimination'">
   <p-toast></p-toast>
 
   <!-- Header -->
@@ -38,6 +38,7 @@
           {{ roleDto?.role ?? '...' }}
         </span>
         <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
+        <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
         <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
       </div>
     </div>
@@ -163,10 +164,25 @@
   <!-- LOVER REVEAL phase                                       -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content" *ngIf="phase === 'LoverReveal'">
-    <h2 class="phase-title night-title">💞 The Lovers</h2>
-    <p class="phase-subtitle" *ngIf="roleDto?.loverName">Your lover is <strong>{{ roleDto!.loverName }}</strong>. You must protect each other.</p>
-    <p class="phase-subtitle" *ngIf="!roleDto?.loverName">The lovers are looking at each other...</p>
-    <p-button *ngIf="isCreator" label="Continue" (onClick)="forceAdvance()"
+    <h2 class="phase-title">💞 The Lovers</h2>
+    <p class="phase-subtitle">Everyone, open your eyes. Check your role card to find out if you are one of the lovers.</p>
+
+    <div class="role-card" [class.revealed]="roleRevealed"
+         (mousedown)="revealRole()" (mouseup)="hideRole()" (mouseleave)="hideRole()"
+         (touchstart)="revealRole(); $event.preventDefault()" (touchend)="hideRole()" (touchcancel)="hideRole()">
+      <div class="card-front" *ngIf="!roleRevealed">
+        <span class="card-hint">Press &amp; hold to reveal</span>
+        <i class="pi pi-eye-slash"></i>
+      </div>
+      <div class="card-back" *ngIf="roleRevealed">
+        <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
+        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
+        <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
+        <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
+      </div>
+    </div>
+
+    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
@@ -330,6 +346,22 @@
         (onClick)="forceAdvance()"
         styleClass="p-button-text p-button-secondary mt-2 w-full">
       </p-button>
+    </div>
+
+    <!-- Role card -->
+    <div class="role-card role-card-compact" [class.revealed]="roleRevealed"
+         (mousedown)="revealRole()" (mouseup)="hideRole()" (mouseleave)="hideRole()"
+         (touchstart)="revealRole(); $event.preventDefault()" (touchend)="hideRole()" (touchcancel)="hideRole()">
+      <div class="card-front" *ngIf="!roleRevealed">
+        <span class="card-hint">Press &amp; hold to see your role</span>
+        <i class="pi pi-eye-slash"></i>
+      </div>
+      <div class="card-back" *ngIf="roleRevealed">
+        <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
+        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
+        <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
+        <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
+      </div>
     </div>
   </div>
 

@@ -669,6 +669,7 @@ public class GameServiceTests
         success.Should().BeTrue();
         var updated = _gameService.GetGame(game.GameId)!;
         updated.Phase.Should().Be(Models.GamePhase.LoverReveal);
+        updated.PhaseEndsAt.Should().NotBeNull();
         updated.Lover1Id.Should().Be(others[0].PlayerId);
         updated.Lover2Id.Should().Be(others[1].PlayerId);
     }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using QRCoder;
 using WerewolvesAPI.DTOs;
 using WerewolvesAPI.Models;
@@ -18,7 +18,7 @@ public class GameService : IGameService
         _logger = logger;
     }
 
-    // â”€â”€ Lobby management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Lobby management ─────────────────────────────────────────────────────
 
     public GameState CreateGame(string creatorName, int maxPlayers, string baseUrl)
     {
@@ -197,7 +197,7 @@ public class GameService : IGameService
         return true;
     }
 
-    // â”€â”€ Session phase logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Session phase logic ──────────────────────────────────────────────────
 
     public (bool Success, string? Error) StartGame(string gameId, string creatorId)
     {
@@ -227,7 +227,7 @@ public class GameService : IGameService
         game.RoundNumber = 1;
         game.PhaseEndsAt = null;
         game.PhaseStartedAt = DateTime.UtcNow;
-        game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(2000);
+        game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(3000);
         game.NightVotes.Clear();
         game.DayVotes.Clear();
         game.TiebreakCandidates.Clear();
@@ -486,7 +486,7 @@ public class GameService : IGameService
         return (player.Role.ToString()!, player.Skill.ToString(), fellows, loverName, nightKillTargetName, game.WitchHealUsed, game.WitchPoisonUsed);
     }
 
-    // â”€â”€ Private phase engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Private phase engine ─────────────────────────────────────────────────
 
     private void AdvancePhase(GameState game)
     {
@@ -499,7 +499,7 @@ public class GameService : IGameService
             case GamePhase.CupidTurn:
                 // If Cupid chose lovers show them; otherwise skip to WerewolvesMeeting
                 if (game.Lover1Id != null && game.Lover2Id != null)
-                    BeginPhase(game, GamePhase.LoverReveal);
+                    BeginPhase(game, GamePhase.LoverReveal, TimeSpan.FromSeconds(10));
                 else
                     BeginPhase(game, GamePhase.WerewolvesMeeting);
                 break;
@@ -509,7 +509,7 @@ public class GameService : IGameService
                 break;
 
             case GamePhase.WerewolvesMeeting:
-                // End of first night â€” no kill
+                // End of first night — no kill
                 TransitionToDiscussion(game);
                 break;
 
@@ -563,7 +563,7 @@ public class GameService : IGameService
                     game.DayVotes.Clear();
                     game.PhaseEndsAt = DateTime.UtcNow.AddSeconds(60);
                     game.PhaseStartedAt = DateTime.UtcNow;
-                    game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(2000);
+                    game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(3000);
                     ResetDone(game);
                     BumpVersion(game);
                 }
@@ -620,7 +620,7 @@ public class GameService : IGameService
         {
             BeginPhase(game, GamePhase.WerewolvesTurn);
         }
-        _logger.LogInformation("Game {GameId} â†’ {Phase} (round {Round})", game.GameId, game.Phase, game.RoundNumber);
+        _logger.LogInformation("Game {GameId} → {Phase} (round {Round})", game.GameId, game.Phase, game.RoundNumber);
     }
 
     private void TransitionToNextAfterWerewolves(GameState game)
@@ -652,7 +652,7 @@ public class GameService : IGameService
         game.DayTiebreakUsed = false;
         game.TiebreakCandidates.Clear();
         BeginPhase(game, GamePhase.Discussion, TimeSpan.FromMinutes(game.DiscussionDurationMinutes));
-        _logger.LogInformation("Game {GameId} â†’ Discussion (round {Round})", game.GameId, game.RoundNumber);
+        _logger.LogInformation("Game {GameId} → Discussion (round {Round})", game.GameId, game.RoundNumber);
     }
 
     private void FinalizeDayElimination(GameState game, string? eliminatedId)
@@ -672,7 +672,7 @@ public class GameService : IGameService
 
         EvaluateWinCondition(game);
         BeginPhase(game, GamePhase.DayElimination, TimeSpan.FromSeconds(10));
-        _logger.LogInformation("Game {GameId} â†’ DayElimination (eliminated: {Id}, winner: {Winner})", game.GameId, eliminatedId ?? "none", game.Winner ?? "none");
+        _logger.LogInformation("Game {GameId} → DayElimination (eliminated: {Id}, winner: {Winner})", game.GameId, eliminatedId ?? "none", game.Winner ?? "none");
     }
 
     private static void ResolveNightDeaths(GameState game)
@@ -829,7 +829,7 @@ public class GameService : IGameService
         game.Phase = phase;
         game.PhaseStartedAt = DateTime.UtcNow;
         game.PhaseEndsAt = duration.HasValue ? DateTime.UtcNow.Add(duration.Value) : null;
-        game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(2000);
+        game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(3000);
         ResetDone(game);
         BumpVersion(game);
     }
@@ -839,7 +839,7 @@ public class GameService : IGameService
         foreach (var p in game.Players) p.IsDone = false;
     }
 
-    // â”€â”€ Lobby state recalculation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Lobby state recalculation ────────────────────────────────────────────
 
     private static void RecalculateGameState(GameState game)
     {

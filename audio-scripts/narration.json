@@ -4,11 +4,11 @@
   "defaultStyledegree": 1.5,
   "entries": {
     "en-US": {
-      "role-reveal": "Everyone may now look at their role cards. Press and hold your card to reveal your role. Press done when you have seen it.",
+      "role-reveal": "Everyone may now look at their role cards. Press and hold your card to reveal your role. Confirm that you have seen it.",
       "werewolves-meeting": "Close your eyes. The night begins. Werewolves, open your eyes and look around. Now you can see who the other werewolves are. On the first night, the werewolves cannot eliminate anyone.",
       "werewolves-turn": "Close your eyes. The night begins. Werewolves, open your eyes and silently decide who to eliminate.",
       "cupid-turn": "Cupid, wake up. Point to two players to link as lovers.",
-      "lover-reveal": "Lovers, open your eyes and see who your partner is.",
+      "lover-reveal": "Everyone, open your eyes. Check your role card to find out if you are one of the lovers.",
       "seer-turn": "Seer, wake up. Point to a player to reveal their role.",
       "witch-turn": "Witch, wake up. You may use your potions.",
       "hunter-turn": "Hunter, you have been eliminated. But before you go, you may take one player with you.",
