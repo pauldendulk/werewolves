@@ -29,6 +29,17 @@ if ($LASTEXITCODE -ne 0) { Write-Host "[Backend] Cloud Run deploy failed." -Fore
 Write-Host "[Backend] Deployed successfully." -ForegroundColor Green
 Write-Host ""
 
+# ── Docs ──────────────────────────────────────────────────────────────────────
+
+Write-Host "[Docs] Building MkDocs documentation..." -ForegroundColor Yellow
+Push-Location docs-src
+mkdocs build
+if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Host "[Docs] MkDocs build failed." -ForegroundColor Red; exit 1 }
+Pop-Location
+
+Write-Host "[Docs] Documentation built successfully." -ForegroundColor Green
+Write-Host ""
+
 # ── Frontend ──────────────────────────────────────────────────────────────────
 
 Write-Host "[Frontend] Building Angular app..." -ForegroundColor Yellow

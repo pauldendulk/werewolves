@@ -42,6 +42,10 @@
         "/^firebase projects:addfirebase brutiledemo 2>&1$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^python --version; pip show mkdocs mkdocs-material 2>\\$null$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
