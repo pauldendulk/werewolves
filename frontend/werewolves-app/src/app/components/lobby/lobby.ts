@@ -89,6 +89,13 @@ export class LobbyComponent implements OnInit, OnDestroy {
   loadLobbyState(): void {
     this.gameService.getGameState(this.gameId).subscribe({
       next: (state) => {
+        // If the stored playerId is not a participant in this game, send them to join
+        const isParticipant = state.players.some(p => p.playerId === this.playerId);
+        if (!isParticipant) {
+          this.router.navigate(['/game', this.gameId], { replaceUrl: true });
+          return;
+        }
+
         this.lobbyState = state;
         this.qrCodeImage = this.sanitizer.bypassSecurityTrustUrl(
           `data:image/png;base64,${state.game.qrCodeBase64}`
