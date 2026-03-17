@@ -6,6 +6,16 @@ const LANGUAGE = 'en-US';
 @Injectable({ providedIn: 'root' })
 export class AudioService {
   private unlocked = false;
+  private preloaded = new Map<string, HTMLAudioElement>();
+
+  constructor() {
+    for (const key of Object.values(AudioKey)) {
+      const audio = new Audio(`assets/audio/${LANGUAGE}/${key}.mp3`);
+      audio.preload = 'auto';
+      audio.load();
+      this.preloaded.set(key, audio);
+    }
+  }
 
   /** Call this on any user gesture (e.g. button click) to satisfy browser autoplay policy. */
   unlock(): void {
@@ -17,7 +27,9 @@ export class AudioService {
 
   play(key: AudioKey): Promise<void> {
     return new Promise(resolve => {
-      const audio = new Audio(`assets/audio/${LANGUAGE}/${key}.mp3`);
+      const audio = this.preloaded.get(key);
+      if (!audio) { resolve(); return; }
+      audio.currentTime = 0;
       audio.onended = () => resolve();
       audio.onerror = () => resolve();
       audio.play().catch(() => resolve());
