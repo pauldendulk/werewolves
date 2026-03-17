@@ -2,7 +2,7 @@
 
 ## Overview
 
-Werewolves is a hidden-role social deduction game for groups. The app replaces the human moderator, handling role assignment, phase narration, countdown timers, and vote tallying while the players sit together in the same room.
+Werewolves is a hidden-role social deduction game for groups. The app replaces the human moderator, handling role assignment, phase narration via text-to-speech, countdown timers, and vote tallying while the players sit together in the same room. Players join the session on their own phones; each phone shows only what that player is allowed to see.
 
 ---
 
@@ -10,82 +10,244 @@ Werewolves is a hidden-role social deduction game for groups. The app replaces t
 
 | Role | Team | Goal |
 |---|---|---|
-| **Werewolf** | Wolves | Eliminate all villagers |
-| **Villager** | Village | Identify and eliminate all werewolves |
-| **Seer** | Village | Each night, secretly learn one player's alignment |
-| **Witch** | Village | One-use save and one-use poison each game |
-| **Hunter** | Village | When eliminated, immediately shoots one other player |
-| **Cupid** | Village | On the first night, links two players as lovers |
+| **Werewolf** | Wolves | Eliminate all villagers before being outnumbered |
+| **Villager** | Village | Identify and eliminate all werewolves through discussion and voting |
+| **Seer** | Village | Each night, secretly learn one player's true alignment (wolf or villager) |
+| **Witch** | Village | One-use heal potion to save tonight's victim; one-use poison to eliminate any player |
+| **Hunter** | Village | When eliminated (night or day), immediately shoots one other surviving player |
+| **Cupid** | Village | On the very first night, secretly links two players as lovers |
 
-!!! note "Lovers"
-    If one lover is eliminated, the other dies of heartbreak immediately. Lovers win together — their team affiliation becomes secondary to survival as a pair. If both lovers are from opposite teams they effectively become a third win condition.
+### Special Rule: Lovers
+
+When Cupid links two players, each receives a private notification of their partner's name on their role card.
+
+- If one lover is eliminated for any reason, the other dies of heartbreak **immediately**
+- Lovers share a secondary win condition: if both survive to the end they win **regardless** of team
+- A Werewolf-Villager lover pair effectively becomes a third faction — they must outlast both sides
 
 ---
 
-## Game Flow
+## Screens & Game Flow
 
-### 1. Setup
+### 1. Setup — Create & Join
 
-1. A host creates a game and shares the join link or QR code
-2. Players join the lobby on their phones
-3. The host configures settings (number of werewolves, discussion time)
-4. The host starts the game; the app assigns secret roles
+The host creates a game and receives a QR code and shareable link. Other players scan the QR code or open the link on their own phones and enter their name.
 
-### 2. Role Reveal
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Create Game</strong></figcaption><img src="../screenshots/01-create-game.png" alt="Create Game screen"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Join Game</strong></figcaption><img src="../screenshots/02-join-game.png" alt="Join Game screen"></figure>
+</div>
 
-Each player privately views their assigned role by pressing and holding their role card. Werewolves also see who the other werewolves are.
+---
 
-### 3. First Night — Special Roles
+### 2. Lobby
 
-On the opening night, special roles act in sequence before the standard werewolf turn:
+All players wait in the lobby while the host configures the game. Non-host players see the settings in read-only mode; only the host can change them and start the game.
 
-- **Cupid** links two players as lovers
-- Lovers receive a private reveal of their partner's name
+![Lobby screen (non-host view)](screenshots/03-lobby.png)
 
-### 4. Night Phase
+**Configurable settings:**
 
-1. The app narrates "close your eyes" — all players close their eyes
-2. **Werewolves** silently choose a victim from the player list
-3. **Seer** (if alive) inspects one player's alignment
-4. **Witch** (if alive) may save the victim and/or poison another player
-5. A countdown timer governs each night action; overtime ticking signals urgency
+| Setting | Description |
+|---|---|
+| Min / Max players | Lobby won't start below the minimum; capped at the maximum |
+| Number of werewolves | How many Werewolf roles are assigned |
+| Discussion duration | Minutes allotted for each day discussion phase |
+| Skills (toggles) | Enable or disable Seer, Cupid, Witch, Hunter individually |
 
-### 5. Dawn — Night Elimination
+The Start Game button is only visible to the host and is disabled until sufficient players have joined and all skill/werewolf counts are consistent with the player count.
 
-The app announces who was eliminated overnight (or that the village slept safely). If the **Hunter** was eliminated during the night, they immediately shoot one surviving player before the day phase begins.
+---
 
-### 6. Day Phase — Discussion & Voting
+### 3. Role Reveal
 
-1. Players discuss who they suspect is a werewolf
-2. Each player casts a vote within a configurable timer
-3. When the timer ends (or all players confirm), votes are tallied
-4. The player with the most votes is eliminated
-5. **Ties** result in no elimination unless a tiebreak vote is triggered
+Once the game starts, each player privately views their assigned role by pressing and holding their roll card. The card flips back the moment they release, so no-one nearby can glance at it.
 
-### 7. Day Elimination
+![Role Reveal — card hidden](screenshots/04-role-reveal.png)
 
-The eliminated player's role is publicly revealed. Win conditions are checked after each elimination.
+Werewolves see the names of all fellow werewolves on their card. When everyone confirms they have seen their role, the first night begins.
 
-### 8. Game Over
+---
+
+### 4. Night — Werewolves Meeting *(Round 1 only)*
+
+On the very first night, before anything else happens, the werewolves open their eyes and identify each other silently. Villagers see a generic waiting screen.
+
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Villager view</strong></figcaption><img src="../screenshots/05-night-werewolves-meeting-villager.png" alt="Werewolves Meeting — villager"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Werewolf view</strong></figcaption><img src="../screenshots/06-night-werewolves-meeting-werewolf.png" alt="Werewolves Meeting — werewolf"></figure>
+</div>
+
+The werewolf screen shows the names of all pack members and a "I'm ready" button. Once all wolves have confirmed, the phase advances.
+
+---
+
+### 5. Night — Cupid Turn *(Round 1 only, if enabled)*
+
+Cupid wakes up and secretly links two players as lovers. Everyone else sees a waiting screen.
+
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Non-Cupid view</strong></figcaption><img src="../screenshots/09-night-cupid-turn-non-cupid.png" alt="Cupid Turn — waiting"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Cupid view</strong></figcaption><img src="../screenshots/10-night-cupid-turn-cupid.png" alt="Cupid Turn — Cupid"></figure>
+</div>
+
+Cupid selects two players from the alive-players list and confirms. The lovers are notified privately during the Lover Reveal phase that immediately follows.
+
+---
+
+### 6. Lover Reveal *(Round 1 only, if Cupid is enabled)*
+
+Everyone opens their eyes and checks their role card to see if they are one of the lovers.
+
+![Lover Reveal — card showing lover name](screenshots/11-lover-reveal.png)
+
+If a player is a lover, their partner's name appears on the card when held down. All other players see their usual role with no lover name.
+
+---
+
+### 7. Night — Werewolves Turn *(Round 2 onwards)*
+
+The app narrates "close your eyes". Villagers see a waiting screen. Werewolves silently agree on a victim and confirm their vote.
+
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Villager view</strong></figcaption><img src="../screenshots/07-night-werewolves-turn-villager.png" alt="Werewolves Turn — villager"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Werewolf view</strong></figcaption><img src="../screenshots/08-night-werewolves-turn-werewolf.png" alt="Werewolves Turn — werewolf"></figure>
+</div>
+
+The werewolf screen shows a dropdown of all living non-wolf players. Once every wolf has voted the same target (or the timer expires), the kill is locked in.
+
+---
+
+### 8. Night — Seer Turn *(if alive and enabled)*
+
+The Seer wakes up and inspects one player. The result reveals whether that player is a Werewolf or a Villager, and shows their skill if they have one.
+
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Non-Seer view</strong></figcaption><img src="../screenshots/12-night-seer-turn-non-seer.png" alt="Seer Turn — waiting"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Seer view</strong></figcaption><img src="../screenshots/13-night-seer-turn-seer.png" alt="Seer Turn — Seer"></figure>
+</div>
+
+The Seer receives the result immediately on their screen. This information is theirs alone — they must use it strategically during the day discussion without directly revealing how they know.
+
+---
+
+### 9. Night — Witch Turn *(if alive and enabled)*
+
+The Witch wakes up last. She is shown tonight's werewolf victim and can use either, both, or none of her potions.
+
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Non-Witch view</strong></figcaption><img src="../screenshots/14-night-witch-turn-non-witch.png" alt="Witch Turn — waiting"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Witch view</strong></figcaption><img src="../screenshots/15-night-witch-turn-witch.png" alt="Witch Turn — Witch"></figure>
+</div>
+
+**Potions (each usable only once per game):**
+
+| Potion | Effect |
+|---|---|
+| 🧴 Heal | Saves tonight's werewolf victim; they survive the night |
+| ☠️ Poison | Eliminates any living player of the Witch's choice |
+
+Once a potion is used it is gone for the rest of the game. The "Do nothing" option advances the phase without using either.
+
+---
+
+### 10. Night — Hunter Turn *(triggered on elimination)*
+
+The Hunter phase activates whenever the Hunter is eliminated — either by werewolves at night or by the village vote during the day. The Hunter gets one last action: shooting a player of their choice.
+
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Non-Hunter view</strong></figcaption><img src="../screenshots/16-night-hunter-turn-non-hunter.png" alt="Hunter Turn — waiting"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Hunter view</strong></figcaption><img src="../screenshots/17-night-hunter-turn-hunter.png" alt="Hunter Turn — Hunter"></figure>
+</div>
+
+The selected player is immediately eliminated. Win conditions are then re-checked.
+
+---
+
+### 11. Dawn — Night Elimination
+
+The app reveals what happened overnight. Everyone "opens their eyes" and sees the night's outcome.
+
+![Dawn — night elimination revealed](screenshots/18-dawn-night-elimination.png)
+
+Possible outcomes:
+
+- One or more players were killed by werewolves (and possibly saved or poisoned by the witch)
+- The village woke up safely — nobody was taken
+- The Witch saved the victim, but also poisoned someone else
+
+After the announcement, the day phase begins automatically.
+
+---
+
+### 12. Day — Discussion & Voting
+
+Players discuss freely, sharing suspicions and defending themselves. Each living player casts one vote for who they believe is a werewolf. A countdown timer governs the discussion period.
+
+![Discussion — alive player with vote controls](screenshots/19-discussion.png)
+
+Eliminated players can still watch but cannot vote. When the timer ends or all living players confirm, votes are tallied.
+
+---
+
+### 13. Day — Tiebreak Discussion *(if a tie occurs)*
+
+If two or more players are tied for most votes, a second short discussion round takes place. Only the tied candidates can be voted for this time.
+
+![Tiebreak Discussion](screenshots/20-tiebreak-discussion.png)
+
+If the tiebreak vote is also tied, no elimination occurs and the game moves straight to night.
+
+---
+
+### 14. Day Elimination
+
+The player with the most votes is eliminated and their role is publicly revealed to everyone.
+
+![Day Elimination — verdict](screenshots/21-day-elimination.png)
+
+Win conditions are checked immediately after each elimination. If the Hunter was just eliminated, the Hunter Turn phase activates before the game continues.
+
+---
+
+### 15. Game Over
+
+The game ends when a win condition is met. All roles are revealed in a summary table.
+
+![Game Over screen](screenshots/22-game-over.png)
 
 | Winner | Condition |
 |---|---|
-| Village | All werewolves have been eliminated |
-| Werewolves | Werewolves equal or outnumber living villagers |
-| Lovers | Both lovers survive to the end (if from opposing teams) |
+| **Village** | All werewolves have been eliminated |
+| **Werewolves** | Werewolves equal or outnumber the surviving villagers |
+| **Lovers** | Both lovers survive to the end (only applies when they are from opposing teams) |
 
-All roles are revealed on the game-over screen.
+Players return to the lobby and can start a new game.
 
 ---
 
-## Configurable Settings
+## Win Condition Details
 
-| Setting | Default | Description |
+Win conditions are evaluated after **every** elimination — night kill, witch poison, and day vote all trigger a check. The precedence is:
+
+1. **Lovers win** checked first (if applicable) — if both lovers are among the survivors and one of the standard win conditions is also met, the lovers take priority
+2. **Werewolves win** — wolves ≥ living villagers
+3. **Village wins** — all wolves eliminated
+
+---
+
+## Configurable Settings Reference
+
+| Setting | Range | Description |
 |---|---|---|
-| Minimum players | — | Lobby won't allow start below this count |
-| Maximum players | — | Cap on lobby size |
-| Number of werewolves | — | How many wolf roles are assigned |
-| Discussion duration | — | Minutes allotted for the day discussion phase |
+| Min players | 2–20 | Prevents the host from starting below this threshold |
+| Max players | 4–20 | Cap on lobby size |
+| Number of werewolves | 1–10 | Must be less than total player count minus special roles |
+| Discussion duration | 1–30 min | Countdown for each Discussion and Tiebreak phase |
+| Seer | on/off | Enables the Seer night action |
+| Cupid | on/off | Enables Cupid + Lover Reveal on round 1 |
+| Witch | on/off | Enables the Witch night action |
+| Hunter | on/off | Enables the Hunter's last-shot ability |
 
 ---
 

@@ -41,6 +41,7 @@ nav:
       - Concept & Rules: game-concept.md
       - Screen Inventory: screens.md
   - Technical:
+      - Technology Overview: tech-overview.md
       - Architecture: architecture.md
       - Audio Narration: audio.md
   - Developer Guide:
