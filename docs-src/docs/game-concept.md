@@ -107,11 +107,14 @@ If a player is a lover, their partner's name appears on the card when held down.
 
 ### 7. Day — Discussion & Voting *(Round 1: follows directly after the first night)*
 
-After the first night — once the Lover Reveal has concluded (or the Werewolves Meeting if Cupid is not enabled) — the first day discussion begins immediately. No one has been killed yet, so there is no dawn announcement. Players discuss freely, sharing suspicions and defending themselves. Each living player casts one vote for who they believe is a werewolf. A countdown timer governs the discussion period.
+After the first night — once the Lover Reveal has concluded (or the Werewolves Meeting if Cupid is not enabled) — the first day discussion begins immediately. No one has been killed yet, so there is no dawn announcement. Players discuss freely, sharing suspicions and defending themselves. Every player — including those already eliminated — casts one vote for who they believe is a werewolf. A countdown timer governs the discussion period.
 
-![Discussion — alive player with vote controls](screenshots/19-discussion.png)
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Alive player</strong></figcaption><img src="../screenshots/19-discussion.png" alt="Discussion — alive player with vote controls"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Eliminated player</strong></figcaption><img src="../screenshots/19b-discussion-eliminated.png" alt="Discussion — eliminated player can still vote"></figure>
+</div>
 
-Eliminated players can still watch but cannot vote. When the timer ends or all living players confirm, votes are tallied.
+Eliminated players see a notice explaining they have been eliminated but can still vote to earn bonus points. When the timer ends or all living players confirm, votes are tallied.
 
 ---
 

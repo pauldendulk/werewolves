@@ -247,11 +247,11 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   get canVoteDay(): boolean {
-    return (this.phase === 'Discussion' || this.phase === 'TiebreakDiscussion')
-      && !(this.currentPlayer?.isEliminated ?? false);
+    return this.phase === 'Discussion' || this.phase === 'TiebreakDiscussion';
   }
 
   get showDoneButton(): boolean {
+    if (this.currentPlayer?.isEliminated ?? false) return false;
     return (this.phase === 'RoleReveal' || this.phase === 'WerewolvesMeeting' || this.phase === 'Discussion' || this.phase === 'TiebreakDiscussion')
       && !(this.currentPlayer?.isDone ?? false);
   }

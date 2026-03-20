@@ -438,6 +438,20 @@ test('19-discussion', async ({ page }) => {
   await shot(page, '19-discussion');
 });
 
+// ── 19b · Discussion — eliminated player (sees notice + vote controls) ───────
+test('19b-discussion-eliminated', async ({ page }) => {
+  const players = BASE_PLAYERS.map(p =>
+    p.playerId === ALICE ? { ...p, isEliminated: true } : p
+  );
+  const state = makeGameState('Discussion', 2, {}, players);
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('.vote-section');
+  await shot(page, '19b-discussion-eliminated');
+});
+
 // ── 20 · Tiebreak Discussion ─────────────────────────────────────────────────
 test('20-tiebreak-discussion', async ({ page }) => {
   const state = makeGameState('TiebreakDiscussion', 2, {

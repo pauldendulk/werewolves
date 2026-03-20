@@ -9,8 +9,8 @@
     <span class="round-badge" *ngIf="lobbyState.game.roundNumber > 0">Round {{ lobbyState.game.roundNumber }}</span>
   </div>
 
-  <!-- Eliminated banner -->
-  <div class="eliminated-banner" *ngIf="currentPlayer?.isEliminated">
+  <!-- Eliminated banner (hidden during discussion where a richer inline notice is shown) -->
+  <div class="eliminated-banner" *ngIf="currentPlayer?.isEliminated && phase !== 'Discussion' && phase !== 'TiebreakDiscussion'">
     <i class="pi pi-times-circle"></i> You are eliminated
   </div>
 
@@ -297,6 +297,12 @@
     <p class="phase-subtitle" *ngIf="phase === 'TiebreakDiscussion'">
       Only tied players can be voted for.
     </p>
+
+    <!-- Eliminated player notice -->
+    <div class="eliminated-banner" *ngIf="currentPlayer?.isEliminated">
+      <i class="pi pi-info-circle"></i>
+      You have been eliminated, but you can still vote to earn bonus points.
+    </div>
 
     <!-- Player list -->
     <div class="player-chips">

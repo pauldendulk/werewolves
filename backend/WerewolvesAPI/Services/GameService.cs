@@ -310,8 +310,6 @@ public class GameService : IGameService
         }
         else if (game.Phase == GamePhase.Discussion || game.Phase == GamePhase.TiebreakDiscussion)
         {
-            if (voter.IsEliminated)
-                return (false, "Eliminated players cannot vote");
             if (game.Phase == GamePhase.TiebreakDiscussion && !game.TiebreakCandidates.Contains(targetId))
                 return (false, "Can only vote for tied candidates in tiebreak");
             game.DayVotes[voterId] = targetId;

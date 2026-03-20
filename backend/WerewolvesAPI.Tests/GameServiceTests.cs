@@ -494,7 +494,7 @@ public class GameServiceTests
     }
 
     [Fact]
-    public void EliminatedPlayers_CannotVoteDuringDay()
+    public void EliminatedPlayers_CanVoteDuringDay()
     {
         var game = CreateReadyGame();
         _gameService.StartGame(game.GameId, game.CreatorId);
@@ -517,9 +517,10 @@ public class GameServiceTests
 
         _gameService.GetGame(game.GameId)!.Phase.Should().Be(Models.GamePhase.Discussion);
 
+        // Eliminated player can still cast a day vote
         var (success, error) = _gameService.CastVote(game.GameId, villagers[0].PlayerId, werewolf.PlayerId);
-        success.Should().BeFalse();
-        error.Should().Contain("Eliminated");
+        success.Should().BeTrue();
+        error.Should().BeNull();
     }
 
     [Fact]
