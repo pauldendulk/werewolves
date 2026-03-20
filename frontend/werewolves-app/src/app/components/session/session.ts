@@ -214,6 +214,12 @@ export class SessionComponent implements OnInit, OnDestroy {
     ) ?? [];
   }
 
+  get sortedPlayersForGameOver(): PlayerState[] {
+    return [...(this.lobbyState?.players ?? [])]
+      .filter(p => p.participationStatus === 'Participating')
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  }
+
   get voteTargets(): { label: string; value: string }[] {
     const candidates = this.phase === 'TiebreakDiscussion'
       ? (this.lobbyState?.game.tiebreakCandidates ?? [])

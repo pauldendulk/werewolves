@@ -573,7 +573,7 @@ public class GameService : IGameService
 
             case GamePhase.Discussion:
             {
-                var (winnerId, isTie, tiedIds) = ResolveDayVote(game.DayVotes);
+                var (winnerId, isTie, tiedIds) = ResolveDayVote(AliveVotes(game));
                 if (isTie && !game.DayTiebreakUsed)
                 {
                     game.Phase = GamePhase.TiebreakDiscussion;
@@ -595,7 +595,7 @@ public class GameService : IGameService
 
             case GamePhase.TiebreakDiscussion:
             {
-                var (tbWinner, tbIsTie, _) = ResolveDayVote(game.DayVotes);
+                var (tbWinner, tbIsTie, _) = ResolveDayVote(AliveVotes(game));
                 FinalizeDayElimination(game, tbIsTie ? null : tbWinner);
                 break;
             }
@@ -684,6 +684,7 @@ public class GameService : IGameService
             game.DayDeaths.Add(new EliminationEntry { PlayerId = eliminatedId, PlayerName = p.DisplayName, Cause = EliminationCause.VillageVote });
             ApplyLoverCascade(game, killedIds, game.DayDeaths);
             CheckHunterTriggered(game, killedIds);
+            AwardCorrectVotePoints(game, eliminatedId);
         }
 
         EvaluateWinCondition(game);
@@ -781,6 +782,7 @@ public class GameService : IGameService
     private static bool TransitionToGameOverIfWon(GameState game)
     {
         if (game.Winner == null) return false;
+        AwardTeamWinPoints(game);
         game.Phase = GamePhase.GameOver;
         game.PhaseEndsAt = null;
         game.Status = GameStatus.Ended;
@@ -801,10 +803,11 @@ public class GameService : IGameService
         return top.Count == 1 ? top[0].TargetId : null;
     }
 
-    private static (string? Winner, bool IsTie, List<string> TiedIds) ResolveDayVote(ConcurrentDictionary<string, string> votes)
+    private static (string? Winner, bool IsTie, List<string> TiedIds) ResolveDayVote(IEnumerable<KeyValuePair<string, string>> votes)
     {
-        if (!votes.Any()) return (null, false, new());
-        var tally = votes
+        var voteList = votes.ToList();
+        if (!voteList.Any()) return (null, false, new());
+        var tally = voteList
             .GroupBy(kv => kv.Value)
             .Select(g => (TargetId: g.Key, Count: g.Count()))
             .OrderByDescending(x => x.Count)
@@ -812,6 +815,44 @@ public class GameService : IGameService
         var maxVotes = tally[0].Count;
         var top = tally.Where(x => x.Count == maxVotes).Select(x => x.TargetId).ToList();
         return top.Count > 1 ? (null, true, top) : (top[0], false, new());
+    }
+
+    // Only alive, participating players' votes count toward who gets eliminated.
+    // Eliminated players can still vote (for scoring), but not for the tally.
+    private static IEnumerable<KeyValuePair<string, string>> AliveVotes(GameState game) =>
+        game.DayVotes.Where(kv => game.Players.Any(p =>
+            p.PlayerId == kv.Key &&
+            !p.IsEliminated &&
+            p.ParticipationStatus == ParticipationStatus.Participating));
+
+    // Award 1 point to every player who voted for the eliminated player.
+    private static void AwardCorrectVotePoints(GameState game, string eliminatedId)
+    {
+        var playerMap = game.Players.ToDictionary(p => p.PlayerId);
+        foreach (var (voterId, targetId) in game.DayVotes)
+            if (targetId == eliminatedId && playerMap.TryGetValue(voterId, out var voter))
+                voter.Score++;
+    }
+
+    // Award 8 points to all players on the winning team.
+    private static void AwardTeamWinPoints(GameState game)
+    {
+        const int WinPoints = 8;
+        IEnumerable<PlayerState> winners = game.Winner switch
+        {
+            "Villagers"  => game.Players.Where(p =>
+                p.Role == PlayerRole.Villager &&
+                p.ParticipationStatus == ParticipationStatus.Participating),
+            "Werewolves" => game.Players.Where(p =>
+                p.Role == PlayerRole.Werewolf &&
+                p.ParticipationStatus == ParticipationStatus.Participating),
+            "Lovers"     => game.Players.Where(p =>
+                p.ParticipationStatus == ParticipationStatus.Participating &&
+                (p.PlayerId == game.Lover1Id || p.PlayerId == game.Lover2Id)),
+            _            => Enumerable.Empty<PlayerState>()
+        };
+        foreach (var p in winners)
+            p.Score += WinPoints;
     }
 
     private static IEnumerable<PlayerState> GetEligibleForMarkDone(GameState game)

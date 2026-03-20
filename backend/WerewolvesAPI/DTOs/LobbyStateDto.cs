@@ -44,6 +44,7 @@ public class PlayerDto
     public string? Skill { get; set; }
     public bool IsEliminated { get; set; }
     public bool IsDone { get; set; }
+    public int Score { get; set; }
     public DateTime JoinedAt { get; set; }
 }
 

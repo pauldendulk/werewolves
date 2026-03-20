@@ -37,7 +37,7 @@ describe('SessionComponent', () => {
       nightDeaths: [],
       dayDeaths: [],
       winner: null,
-      tiebreakCandidates: [],
+      tiebreakCandidates: [] as string[],
       audioPlayAt: null,
       ...overrides
     },
@@ -52,7 +52,8 @@ describe('SessionComponent', () => {
         role: null,
         skill: null,
         isEliminated: false,
-        isDone: false
+        isDone: false,
+        score: 0
       },
       {
         playerId: 'player2',
@@ -64,7 +65,8 @@ describe('SessionComponent', () => {
         role: null,
         skill: null,
         isEliminated: false,
-        isDone: false
+        isDone: false,
+        score: 0
       }
     ],
     hasDuplicateNames: false
@@ -228,9 +230,9 @@ describe('SessionComponent', () => {
         tiebreakCandidates: ['player1', 'player2', 'player3']
       },
       players: [
-        { playerId: 'player1', displayName: 'Alice', isCreator: true, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false },
-        { playerId: 'player2', displayName: 'Bob', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false },
-        { playerId: 'player3', displayName: 'Carol', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false }
+        { playerId: 'player1', displayName: 'Alice', isCreator: true, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0 },
+        { playerId: 'player2', displayName: 'Bob', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0 },
+        { playerId: 'player3', displayName: 'Carol', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0 }
       ],
       hasDuplicateNames: false
     });
@@ -253,7 +255,7 @@ describe('SessionComponent', () => {
       state.players.push({
         playerId: 'player4', displayName: 'Dave', isCreator: false, isModerator: false,
         isConnected: true, participationStatus: 'Participating', role: null, skill: null,
-        isEliminated: false, isDone: false
+        isEliminated: false, isDone: false, score: 0
       });
       component.lobbyState = state;
       component.playerId = 'player1'; // Alice is NOT one of the tied candidates

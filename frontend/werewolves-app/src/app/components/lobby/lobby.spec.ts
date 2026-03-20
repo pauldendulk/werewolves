@@ -36,7 +36,7 @@ describe('LobbyComponent', () => {
       nightDeaths: [],
       dayDeaths: [],
       winner: null,
-      tiebreakCandidates: []
+      tiebreakCandidates: [] as string[]
     },
     players: [
       {
@@ -50,6 +50,7 @@ describe('LobbyComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
+        score: 0,
         joinedAt: new Date().toISOString()
       },
       {
@@ -63,6 +64,7 @@ describe('LobbyComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
+        score: 0,
         joinedAt: new Date().toISOString()
       },
       {
@@ -76,6 +78,7 @@ describe('LobbyComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
+        score: 0,
         joinedAt: new Date().toISOString()
       }
     ],

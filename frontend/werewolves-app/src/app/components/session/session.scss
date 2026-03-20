@@ -345,12 +345,23 @@
 
       &.eliminated { opacity: 0.5; }
 
-      .eliminated-badge { font-size: 0.85rem; margin-left: -0.25rem; }
+      .player-name { margin-right: 0.35rem; }
+
+      .eliminated-badge { font-size: 0.85rem; }
 
       .role-tag {
         color: #22c55e;
         font-weight: 600;
         &.wolf { color: #ef4444; }
+      }
+
+      .score-badge {
+        margin-left: auto;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #facc15;
+        min-width: 3rem;
+        text-align: right;
       }
     }
   }

@@ -33,7 +33,7 @@ describe('JoinGameComponent', () => {
       nightDeaths: [],
       dayDeaths: [],
       winner: null,
-      tiebreakCandidates: []
+      tiebreakCandidates: [] as string[]
     },
     players: [
       {
@@ -46,7 +46,8 @@ describe('JoinGameComponent', () => {
         role: null,
         skill: null,
         isEliminated: false,
-        isDone: false
+        isDone: false,
+        score: 0
       }
     ],
     hasDuplicateNames: false

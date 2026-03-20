@@ -409,10 +409,11 @@
       {{ lobbyState.game.winner }} Win!
     </p>
     <div class="player-roles-summary">
-      <div *ngFor="let p of lobbyState.players" class="role-summary-row" [class.eliminated]="p.isEliminated">
-        <span>{{ p.displayName }}</span>
-        <span class="eliminated-badge" *ngIf="p.isEliminated">💀</span>
+      <div *ngFor="let p of sortedPlayersForGameOver" class="role-summary-row" [class.eliminated]="p.isEliminated">
+        <span class="player-name">{{ p.displayName }}</span>
+        <span class="eliminated-badge" *ngIf="p.isEliminated"> 💀 </span>
         <span class="role-tag" [class.wolf]="p.role === 'Werewolf'">{{ p.role ?? '?' }}</span>
+        <span class="score-badge">{{ p.score }} pts</span>
       </div>
     </div>
     <p-button label="Back to lobby" (onClick)="goHome()" styleClass="mt-4 w-full"></p-button>

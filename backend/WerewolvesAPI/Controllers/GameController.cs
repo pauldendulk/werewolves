@@ -117,6 +117,7 @@ public class GameController : ControllerBase
                 Skill = p.Skill == PlayerSkill.None ? null : p.Skill.ToString(),
                 IsEliminated = p.IsEliminated,
                 IsDone = p.IsDone,
+                Score = p.Score,
                 JoinedAt = p.JoinedAt
             }).ToList(),
             HasDuplicateNames = hasDuplicateNames

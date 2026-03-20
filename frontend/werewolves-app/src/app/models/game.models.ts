@@ -39,6 +39,7 @@ export interface PlayerState {
   skill: string | null;
   isEliminated: boolean;
   isDone: boolean;
+  score: number;
   joinedAt?: string;
 }
 

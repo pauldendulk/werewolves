@@ -753,6 +753,120 @@ public class GameServiceTests
             "every tied player must be a tiebreak candidate");
     }
 
+    // ── Scoring tests ──────────────────────────────────────────────────────
+
+    [Fact]
+    public void CorrectDayVote_AwardsOnePoint()
+    {
+        var game = CreateReadyGame(3); // 4 players: 1W + 3V
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var started  = _gameService.GetGame(game.GameId)!;
+        var werewolf = started.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var villagers = started.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(game.GameId); // → WerewolvesMeeting
+        MarkAliveWolvesDone(game.GameId); // → Discussion
+
+        // All 3 villagers vote for the werewolf (correct); werewolf votes for V[0] (wrong)
+        foreach (var v in villagers)
+            _gameService.CastVote(game.GameId, v.PlayerId, werewolf.PlayerId);
+        _gameService.CastVote(game.GameId, werewolf.PlayerId, villagers[0].PlayerId);
+        MarkAllAliveDone(game.GameId); // → DayElimination
+
+        var result = _gameService.GetGame(game.GameId)!;
+        result.DayDeaths.Should().ContainSingle(e => e.PlayerId == werewolf.PlayerId);
+
+        foreach (var v in villagers)
+            result.Players.First(p => p.PlayerId == v.PlayerId).Score.Should().Be(1, "correct voter earns 1 point");
+        result.Players.First(p => p.PlayerId == werewolf.PlayerId).Score.Should().Be(0, "wrong voter earns 0 points");
+    }
+
+    [Fact]
+    public void TeamWin_AwardsEightPoints_ToWinningTeam()
+    {
+        var game = CreateReadyGame(2); // 3 players: 1W + 2V
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var started  = _gameService.GetGame(game.GameId)!;
+        var werewolf = started.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var villagers = started.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(game.GameId); // → WerewolvesMeeting
+        MarkAliveWolvesDone(game.GameId); // → Discussion
+
+        // All villagers vote for wolf; wolf votes for V[0]
+        foreach (var v in villagers)
+            _gameService.CastVote(game.GameId, v.PlayerId, werewolf.PlayerId);
+        _gameService.CastVote(game.GameId, werewolf.PlayerId, villagers[0].PlayerId);
+        MarkAllAliveDone(game.GameId); // → DayElimination (Villagers win)
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → GameOver
+
+        var result = _gameService.GetGame(game.GameId)!;
+        result.Phase.Should().Be(Models.GamePhase.GameOver);
+        result.Winner.Should().Be("Villagers");
+
+        // Villagers: 1 point (correct vote) + 8 points (team win) = 9
+        foreach (var v in villagers)
+            result.Players.First(p => p.PlayerId == v.PlayerId).Score.Should().Be(9);
+        // Werewolf: 0 (wrong vote) + 0 (losing team) = 0
+        result.Players.First(p => p.PlayerId == werewolf.PlayerId).Score.Should().Be(0);
+    }
+
+    [Fact]
+    public void EliminatedPlayerVote_DoesNotCountForElimination_ButAwardsPoints()
+    {
+        // Setup: 4 players (1W + 3V).
+        // Round 1: eliminate V[0].
+        // Round 2: V[0] (dead) votes for V[1].
+        //          Alive votes: V[1]→W, V[2]→W, W→V[1].
+        //          If dead vote counted: W=2, V[1]=2 → tie (no elimination).
+        //          With only alive votes: W=2, V[1]=1 → W eliminated (correct result).
+        var game = CreateReadyGame(3); // 4 players: 1W + 3V
+        _gameService.StartGame(game.GameId, game.CreatorId);
+
+        var started  = _gameService.GetGame(game.GameId)!;
+        var werewolf = started.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var villagers = started.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(game.GameId); // → WerewolvesMeeting
+        MarkAliveWolvesDone(game.GameId); // → Discussion
+
+        // Round 1: V[1], V[2], W vote for V[0] → V[0] eliminated
+        _gameService.CastVote(game.GameId, villagers[1].PlayerId, villagers[0].PlayerId);
+        _gameService.CastVote(game.GameId, villagers[2].PlayerId, villagers[0].PlayerId);
+        _gameService.CastVote(game.GameId, werewolf.PlayerId,     villagers[0].PlayerId);
+        MarkAllAliveDone(game.GameId); // → DayElimination
+
+        _gameService.GetGame(game.GameId)!.Players
+            .First(p => p.PlayerId == villagers[0].PlayerId).IsEliminated.Should().BeTrue();
+
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → WerewolvesTurn
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → NightElimination
+        _gameService.ForceAdvancePhase(game.GameId, game.CreatorId); // → Discussion (round 2)
+
+        // Round 2: dead V[0] votes for V[1] (this would cause a tie if counted)
+        _gameService.CastVote(game.GameId, villagers[0].PlayerId, villagers[1].PlayerId);
+        _gameService.CastVote(game.GameId, villagers[1].PlayerId, werewolf.PlayerId);
+        _gameService.CastVote(game.GameId, villagers[2].PlayerId, werewolf.PlayerId);
+        _gameService.CastVote(game.GameId, werewolf.PlayerId,     villagers[1].PlayerId);
+        MarkAllAliveDone(game.GameId); // → DayElimination
+
+        var result = _gameService.GetGame(game.GameId)!;
+
+        // W should be eliminated (dead vote did not create a tie)
+        result.DayDeaths.Should().ContainSingle(e => e.PlayerId == werewolf.PlayerId,
+            "eliminated player's vote must not count toward the tally");
+
+        // V[0] voted for V[1] but W was eliminated → 0 correct-vote points in round 2
+        // (V[0] had no vote in round 1)  → total 0
+        result.Players.First(p => p.PlayerId == villagers[0].PlayerId).Score.Should().Be(0);
+        // V[1] and V[2] voted correctly in both rounds → 2 points each from voting
+        result.Players.First(p => p.PlayerId == villagers[1].PlayerId).Score.Should().Be(2);
+        result.Players.First(p => p.PlayerId == villagers[2].PlayerId).Score.Should().Be(2);
+    }
+
     // ── Skill mechanics tests ──────────────────────────────────────────────
 
     private Models.GameState CreateReadyGameWithSkills(int extraPlayers, List<string> skills)
