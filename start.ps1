@@ -55,6 +55,12 @@ function Stop-ProcessOnPort {
     return $true
 }
 
+# Start Postgres via Docker Compose (if not already running)
+Write-Host "[Database] Starting Postgres via Docker Compose..." -ForegroundColor Yellow
+docker compose up -d
+Write-Host "[Database] Postgres available at localhost:5432" -ForegroundColor Green
+Write-Host ""
+
 # Backend configuration
 $backendPort = 5000
 $backendPath = "backend\WerewolvesAPI"

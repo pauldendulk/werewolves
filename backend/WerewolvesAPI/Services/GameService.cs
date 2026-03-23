@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using QRCoder;
 using WerewolvesAPI.DTOs;
 using WerewolvesAPI.Models;
+using WerewolvesAPI.Repositories;
 
 namespace WerewolvesAPI.Services;
 
@@ -10,12 +11,14 @@ public class GameService : IGameService
     private readonly ConcurrentDictionary<string, GameState> _games = new();
     private readonly ConcurrentDictionary<string, object> _phaseLocks = new();
     private readonly ILogger<GameService> _logger;
+    private readonly IGameRepository _gameRepository;
 
     private object GetPhaseLock(string gameId) => _phaseLocks.GetOrAdd(gameId, _ => new object());
 
-    public GameService(ILogger<GameService> logger)
+    public GameService(ILogger<GameService> logger, IGameRepository gameRepository)
     {
         _logger = logger;
+        _gameRepository = gameRepository;
     }
 
     // ── Lobby management ─────────────────────────────────────────────────────
@@ -779,7 +782,7 @@ public class GameService : IGameService
             game.Winner = "Werewolves";
     }
 
-    private static bool TransitionToGameOverIfWon(GameState game)
+    private bool TransitionToGameOverIfWon(GameState game)
     {
         if (game.Winner == null) return false;
         AwardTeamWinPoints(game);
@@ -787,7 +790,56 @@ public class GameService : IGameService
         game.PhaseEndsAt = null;
         game.Status = GameStatus.Ended;
         BumpVersion(game);
+        _ = PersistGameResultsAsync(game);
         return true;
+    }
+
+    private async Task PersistGameResultsAsync(GameState game)
+    {
+        try
+        {
+            var gameRecord = new GameRecord(
+                Id: game.GameId,
+                TournamentId: null,
+                JoinCode: game.GameId,
+                Status: game.Status.ToString(),
+                Winner: game.Winner,
+                Settings: System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    game.MinPlayers,
+                    game.MaxPlayers,
+                    game.DiscussionDurationMinutes,
+                    game.NumberOfWerewolves,
+                    EnabledSkills = game.EnabledSkills.Select(s => s.ToString())
+                }),
+                CreatedAt: game.CreatedAt,
+                EndedAt: DateTime.UtcNow);
+
+            await _gameRepository.SaveGameAsync(gameRecord);
+
+            var playerRecords = game.Players
+                .Where(p => p.ParticipationStatus == ParticipationStatus.Participating)
+                .Select(p => new GamePlayerRecord(
+                    GameId: game.GameId,
+                    PlayerId: p.PlayerId,
+                    DisplayName: p.DisplayName,
+                    Role: p.Role?.ToString(),
+                    Skill: p.Skill == PlayerSkill.None ? null : p.Skill.ToString(),
+                    IsEliminated: p.IsEliminated,
+                    EliminationCause: null,
+                    Score: p.Score,
+                    IsCreator: p.IsCreator,
+                    IsModerator: p.IsModerator,
+                    ParticipationStatus: p.ParticipationStatus.ToString(),
+                    JoinedAt: p.JoinedAt));
+
+            await _gameRepository.SaveGamePlayersAsync(playerRecords);
+            _logger.LogInformation("Game {GameId} results persisted", game.GameId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to persist results for game {GameId}", game.GameId);
+        }
     }
 
     private static string? ResolveNightVote(GameState game)

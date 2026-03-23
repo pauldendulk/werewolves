@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using WerewolvesAPI.Repositories;
 using WerewolvesAPI.Services;
 
 namespace WerewolvesAPI.Tests;
@@ -13,7 +14,8 @@ public class GameServiceTests
     public GameServiceTests()
     {
         _loggerMock = new Mock<ILogger<GameService>>();
-        _gameService = new GameService(_loggerMock.Object);
+        var gameRepositoryMock = new Mock<IGameRepository>();
+        _gameService = new GameService(_loggerMock.Object, gameRepositoryMock.Object);
     }
 
     [Fact]
