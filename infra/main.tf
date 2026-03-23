@@ -59,6 +59,9 @@ resource "google_cloud_run_v2_service" "api" {
   deletion_protection = false
 
   template {
+    # Run as a dedicated service account with minimal permissions
+    service_account = google_service_account.cloud_run.email
+
     # Connect to Cloud SQL via Unix socket (no public IP needed)
     volumes {
       name = "cloudsql"
@@ -106,6 +109,9 @@ resource "google_cloud_run_v2_service" "api" {
     google_project_service.run,
     google_sql_database_instance.main,
     google_secret_manager_secret_version.db_connection_string,
+    google_service_account.cloud_run,
+    google_secret_manager_secret_iam_member.cloud_run_secret_access,
+    google_project_iam_member.cloud_run_sql_client,
   ]
 }
 
@@ -169,16 +175,20 @@ resource "google_secret_manager_secret_version" "db_connection_string" {
 
 # ── IAM — let Cloud Run read the secret and connect to Cloud SQL ──────────────
 
-data "google_compute_default_service_account" "default" {}
+# Dedicated service account for the Cloud Run service
+resource "google_service_account" "cloud_run" {
+  account_id   = "werewolves-api"
+  display_name = "Werewolves API (Cloud Run)"
+}
 
 resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
   secret_id = google_secret_manager_secret.db_connection_string.secret_id
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+  member    = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
 resource "google_project_iam_member" "cloud_run_sql_client" {
   project = var.project_id
   role    = "roles/cloudsql.client"
-  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+  member  = "serviceAccount:${google_service_account.cloud_run.email}"
 }
