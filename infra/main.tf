@@ -41,6 +41,11 @@ resource "google_project_service" "secretmanager" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "iam" {
+  service            = "iam.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Artifact Registry repository to store Docker images
 resource "google_artifact_registry_repository" "werewolves" {
   repository_id = "werewolves"
@@ -135,6 +140,7 @@ resource "google_sql_database_instance" "main" {
 
   settings {
     tier      = "db-f1-micro"
+    edition   = "ENTERPRISE"
     disk_size = 10
 
     backup_configuration {
@@ -179,6 +185,8 @@ resource "google_secret_manager_secret_version" "db_connection_string" {
 resource "google_service_account" "cloud_run" {
   account_id   = "werewolves-api"
   display_name = "Werewolves API (Cloud Run)"
+
+  depends_on = [google_project_service.iam]
 }
 
 resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
