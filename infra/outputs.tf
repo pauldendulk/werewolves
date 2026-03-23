@@ -7,3 +7,8 @@ output "docker_image" {
   description = "Docker image path to push to"
   value       = "${var.region}-docker.pkg.dev/${var.project_id}/werewolves/werewolves-api:latest"
 }
+
+output "db_connection_name" {
+  description = "Cloud SQL connection name (PROJECT:REGION:INSTANCE)"
+  value       = google_sql_database_instance.main.connection_name
+}

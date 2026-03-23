@@ -5,6 +5,14 @@ terraform {
       version = "~> 6.0"
     }
   }
+
+  # Remote state stored in GCS so GitHub Actions and local runs share the same state.
+  # One-time setup: create the bucket first (see README), then run:
+  #   terraform init -migrate-state
+  backend "gcs" {
+    bucket = "brutiledemo-terraform-state"
+    prefix = "werewolves"
+  }
 }
 
 provider "google" {
@@ -20,6 +28,16 @@ resource "google_project_service" "run" {
 
 resource "google_project_service" "artifact_registry" {
   service            = "artifactregistry.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "sqladmin" {
+  service            = "sqladmin.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "secretmanager" {
+  service            = "secretmanager.googleapis.com"
   disable_on_destroy = false
 }
 
@@ -41,6 +59,14 @@ resource "google_cloud_run_v2_service" "api" {
   deletion_protection = false
 
   template {
+    # Connect to Cloud SQL via Unix socket (no public IP needed)
+    volumes {
+      name = "cloudsql"
+      cloud_sql_instance {
+        instances = [google_sql_database_instance.main.connection_name]
+      }
+    }
+
     containers {
       image = "${var.region}-docker.pkg.dev/${var.project_id}/werewolves/werewolves-api:latest"
 
@@ -52,6 +78,22 @@ resource "google_cloud_run_v2_service" "api" {
         name  = "ASPNETCORE_ENVIRONMENT"
         value = "Production"
       }
+
+      # Inject connection string from Secret Manager
+      env {
+        name = "ConnectionStrings__DefaultConnection"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.db_connection_string.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      volume_mounts {
+        name       = "cloudsql"
+        mount_path = "/cloudsql"
+      }
     }
 
     scaling {
@@ -60,7 +102,11 @@ resource "google_cloud_run_v2_service" "api" {
     }
   }
 
-  depends_on = [google_project_service.run]
+  depends_on = [
+    google_project_service.run,
+    google_sql_database_instance.main,
+    google_secret_manager_secret_version.db_connection_string,
+  ]
 }
 
 # Allow unauthenticated (public) access to the Cloud Run service
@@ -70,4 +116,69 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
   name     = google_cloud_run_v2_service.api.name
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# ── Cloud SQL ─────────────────────────────────────────────────────────────────
+
+resource "google_sql_database_instance" "main" {
+  name             = "werewolves-db"
+  database_version = "POSTGRES_16"
+  region           = var.region
+
+  deletion_protection = false
+
+  settings {
+    tier      = "db-f1-micro"
+    disk_size = 10
+
+    backup_configuration {
+      enabled = true
+    }
+  }
+
+  depends_on = [google_project_service.sqladmin]
+}
+
+resource "google_sql_database" "werewolves" {
+  name     = "werewolves"
+  instance = google_sql_database_instance.main.name
+}
+
+resource "google_sql_user" "werewolves" {
+  name     = "werewolves"
+  instance = google_sql_database_instance.main.name
+  password = var.db_password
+}
+
+# ── Secret Manager ────────────────────────────────────────────────────────────
+
+resource "google_secret_manager_secret" "db_connection_string" {
+  secret_id = "werewolves-db-connection-string"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "db_connection_string" {
+  secret      = google_secret_manager_secret.db_connection_string.id
+  secret_data = "Host=/cloudsql/${google_sql_database_instance.main.connection_name};Database=werewolves;Username=werewolves;Password=${var.db_password}"
+}
+
+# ── IAM — let Cloud Run read the secret and connect to Cloud SQL ──────────────
+
+data "google_compute_default_service_account" "default" {}
+
+resource "google_secret_manager_secret_iam_member" "cloud_run_secret_access" {
+  secret_id = google_secret_manager_secret.db_connection_string.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+}
+
+resource "google_project_iam_member" "cloud_run_sql_client" {
+  project = var.project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
 }

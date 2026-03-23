@@ -9,3 +9,9 @@ variable "region" {
   type        = string
   default     = "europe-west4"
 }
+
+variable "db_password" {
+  description = "Password for the werewolves database user"
+  type        = string
+  sensitive   = true
+}
