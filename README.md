@@ -103,3 +103,13 @@ Narration text and voice settings are managed in [audio-scripts/narration.json](
 
 - **Backend**: Docker → Google Artifact Registry → Cloud Run (europe-west4)
 - **Frontend**: `ng build --configuration production` → Firebase Hosting
+
+## AI Agent Memory
+
+Infrastructure and development preferences for GitHub Copilot are stored in user memory, shared across all projects:
+
+```
+C:\Users\pauld\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\memory-tool\memories\
+```
+
+The key file is `gcp-preferred-infrastructure.md`, which describes the preferred GCP stack (Firebase, Cloud Run, PostgreSQL), local Docker setup, and Terraform conventions. It is framed as an option to suggest for new projects, not a hard requirement.

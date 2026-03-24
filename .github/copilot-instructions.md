@@ -197,3 +197,11 @@ Before marking a task as complete:
 ---
 
 **Remember: Never stop work without ensuring the build is clean and all tests pass!**
+
+## Skills
+
+The following skill files contain domain-specific knowledge. Read the relevant file when working on that topic.
+
+| Skill | When to use |
+|---|---|
+| [gcp-cloud-sql](.github/skills/gcp-cloud-sql/SKILL.md) | Setting up or modifying GCP infrastructure: Cloud Run, Cloud SQL, Secret Manager, Terraform, GitHub Actions CI/CD |
