@@ -33,14 +33,14 @@ describe('GameService', () => {
     };
 
     const mockResponse = {
-      gameId: 'abc123',
+      tournamentCode: 'abc123',
       playerId: 'player1',
       joinLink: 'http://localhost:4200/game/abc123',
       qrCodeBase64: 'base64string'
     };
 
     service.createGame(request).subscribe(response => {
-      expect(response.gameId).toBe('abc123');
+      expect(response.tournamentCode).toBe('abc123');
       expect(response.playerId).toBe('player1');
     });
 

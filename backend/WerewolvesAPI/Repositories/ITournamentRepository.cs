@@ -3,6 +3,7 @@ namespace WerewolvesAPI.Repositories;
 public record TournamentRecord(
     Guid Id,
     string? Name,
+    string? JoinCode,
     string HostPlayerId,
     DateTime CreatedAt,
     bool IsPremium);

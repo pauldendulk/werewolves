@@ -86,11 +86,20 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   private handleStateUpdate(state: LobbyState): void {
+    if (state.game.status === 'WaitingForPlayers' || state.game.status === 'ReadyToStart') {
+      this.goToLobby();
+      return;
+    }
+
     const phaseChanged = state.game.phase !== this.lastPhase;
     const roundChanged = state.game.roundNumber !== this.lastRound;
 
     this.lobbyState = state;
 
+    if (state.game.phase === 'GameOver' && this.currentPlayer?.isDone) {
+      this.goToLobby();
+      return;
+    }
     if (phaseChanged || roundChanged) {
       this.lastPhase = state.game.phase;
       this.lastRound = state.game.roundNumber;
@@ -350,6 +359,15 @@ export class SessionComponent implements OnInit, OnDestroy {
   getEliminatedRole(playerId: string | null): string {
     if (!playerId) return '?';
     return this.lobbyState?.players.find(p => p.playerId === playerId)?.role ?? '?';
+  }
+
+  goToLobby(): void {
+    this.router.navigate(['/game', this.gameId, 'lobby']);
+  }
+
+  doneWithResults(): void {
+    this.gameService.markDone(this.gameId, this.playerId).subscribe({ error: () => {} });
+    this.goToLobby();
   }
 
   goHome(): void {

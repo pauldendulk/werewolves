@@ -10,6 +10,7 @@ public class LobbyStateDto
 public class GameInfoDto
 {
     public string GameId { get; set; } = string.Empty;
+    public string TournamentCode { get; set; } = string.Empty;
     public string CreatorId { get; set; } = string.Empty;
     public int MinPlayers { get; set; }
     public int MaxPlayers { get; set; }

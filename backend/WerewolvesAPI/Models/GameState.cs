@@ -5,6 +5,8 @@ namespace WerewolvesAPI.Models;
 public class GameState
 {
     public string GameId { get; set; } = string.Empty;
+    public string TournamentId { get; set; } = string.Empty;
+    public string TournamentCode { get; set; } = string.Empty;
     public string CreatorId { get; set; } = string.Empty;
     public int MinPlayers { get; set; } = 3;
     public int MaxPlayers { get; set; } = 20;
@@ -42,6 +44,37 @@ public class GameState
     public bool HunterEliminatedAtNight { get; set; }
     public List<EliminationEntry> NightDeaths { get; set; } = new();
     public List<EliminationEntry> DayDeaths { get; set; } = new();
+
+    // Add new per-game fields here alongside their property initializers above.
+    public void ResetSessionState()
+    {
+        Phase = GamePhase.RoleReveal;
+        RoundNumber = 0;
+        PhaseEndsAt = null;
+        PhaseStartedAt = null;
+        AudioPlayAt = null;
+        NightVotes = new();
+        DayVotes = new();
+        TiebreakCandidates = new();
+        DayTiebreakUsed = false;
+        Winner = null;
+
+        // Skill state
+        Lover1Id = null;
+        Lover2Id = null;
+        WitchHealUsed = false;
+        WitchPoisonUsed = false;
+        NightKillTargetId = null;
+        WitchSavedThisNight = false;
+        WitchPoisonTargetId = null;
+        HunterMustShoot = false;
+        HunterEliminatedAtNight = false;
+        NightDeaths = new();
+        DayDeaths = new();
+
+        foreach (var p in Players)
+            p.ResetForNewGame();
+    }
 }
 
 public enum GameStatus

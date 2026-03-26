@@ -15,10 +15,3 @@ public class CreateGameRequest
     public string FrontendBaseUrl { get; set; } = string.Empty;
 }
 
-public class CreateGameResponse
-{
-    public string GameId { get; set; } = string.Empty;
-    public string PlayerId { get; set; } = string.Empty;
-    public string JoinLink { get; set; } = string.Empty;
-    public string QrCodeBase64 { get; set; } = string.Empty;
-}

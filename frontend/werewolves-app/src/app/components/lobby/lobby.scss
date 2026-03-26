@@ -219,6 +219,21 @@
 }
 
 // --- CARD 3: SETTINGS ---
+// --- CARD: GAME STATUS (in-progress / game-over) ---
+.game-status-card {
+  text-align: center;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-color-secondary);
+  }
+}
+
 .settings-card {
    .card-header {
       margin-bottom: 1.5rem;

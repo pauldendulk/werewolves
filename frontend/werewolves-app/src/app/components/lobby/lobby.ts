@@ -49,6 +49,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
   qrCodeImage: SafeUrl = '';
   enabledSkills: string[] = [];
   private pollSubscription?: Subscription;
+  secondsRemaining = 0;
+  private timerHandle?: ReturnType<typeof setInterval>;
 
   // Editing state
   showRenameDialog: boolean = false;
@@ -84,12 +86,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pollSubscription?.unsubscribe();
+    clearInterval(this.timerHandle);
   }
 
   loadLobbyState(): void {
     this.gameService.getGameState(this.gameId).subscribe({
       next: (state) => {
-        // If the stored playerId is not a participant in this game, send them to join
         const isParticipant = state.players.some(p => p.playerId === this.playerId);
         if (!isParticipant) {
           this.router.navigate(['/game', this.gameId], { replaceUrl: true });
@@ -104,7 +106,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.loading = false;
-        // If game not found, redirect to home
         if (error.status === 404) {
           this.router.navigate(['/']);
           return;
@@ -129,13 +130,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
         );
         this.loading = false;
 
-        // Redirect to session if game has started
-        if (state.game.status === 'InProgress') {
+        // Role is null for mid-game joiners; they wait in the lobby for the next game.
+        if (state.game.status === 'InProgress' && this.currentPlayer?.role != null) {
           this.router.navigate(['/game', this.gameId, 'session'], { replaceUrl: true });
           return;
         }
 
-        // Notify if a new player joined
+        this.updateTimer(state.game.phaseEndsAt);
+
         if (state.players.length > prevPlayerCount && prevPlayerCount > 0) {
           this.messageService.add({
             severity: 'info',
@@ -151,6 +153,23 @@ export class LobbyComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  get timerLabel(): string {
+    const m = Math.floor(this.secondsRemaining / 60).toString().padStart(2, '0');
+    const s = (this.secondsRemaining % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  private updateTimer(phaseEndsAt: string | null): void {
+    clearInterval(this.timerHandle);
+    if (!phaseEndsAt) { this.secondsRemaining = 0; return; }
+    const update = () => {
+      const diff = new Date(phaseEndsAt).getTime() - Date.now();
+      this.secondsRemaining = Math.max(0, Math.ceil(diff / 1000));
+    };
+    update();
+    this.timerHandle = setInterval(update, 500);
   }
 
   get isCreator(): boolean {

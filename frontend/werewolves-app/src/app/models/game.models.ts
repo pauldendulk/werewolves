@@ -6,6 +6,7 @@ export interface EliminationEntryDto {
 
 export interface GameState {
   gameId: string;
+  tournamentCode: string;
   creatorId: string;
   minPlayers: number;
   maxPlayers: number;
@@ -56,7 +57,7 @@ export interface CreateGameRequest {
 }
 
 export interface CreateGameResponse {
-  gameId: string;
+  tournamentCode: string;
   playerId: string;
   joinLink: string;
   qrCodeBase64: string;

@@ -24,7 +24,7 @@
     <div class="card-section invite-card">
 
       <!-- Game ID -->
-      <div class="game-id-label">Game: {{ lobbyState.game.gameId }}</div>
+      <div class="game-id-label">Session: {{ lobbyState.game.tournamentCode }}</div>
 
       <!-- QR & Invite Area -->
       <div class="invite-area">
@@ -81,7 +81,7 @@
 
       <div class="action-footer">
          <p-button
-          *ngIf="isCreator"
+          *ngIf="isCreator && lobbyState.game.status !== 'InProgress' && lobbyState.game.phase !== 'GameOver'"
           label="Start Game"
           styleClass="p-button-lg w-full"
           [disabled]="!canStartGame"
@@ -103,6 +103,19 @@
            <span>Too many special roles for {{ activePlayers.length }} players. Need {{ lobbyState.game.numberOfWerewolves + enabledSkills.length }} players or disable some skills.</span>
         </div>
       </div>
+    </div>
+
+    <!-- CARD 2.5: Game In Progress notice (for mid-game joiners) -->
+    <div class="card-section game-status-card" *ngIf="lobbyState.game.status === 'InProgress' && !currentPlayer?.role">
+      <h3>🎮 Game in Progress</h3>
+      <p>A game is currently being played. You'll join when the next game starts.</p>
+    </div>
+
+    <!-- CARD 2.6: Game Over countdown (players waiting for next game) -->
+    <div class="card-section game-status-card" *ngIf="lobbyState.game.phase === 'GameOver'">
+      <h3>🎉 Game Over</h3>
+      <p *ngIf="secondsRemaining > 0">Next game starts in <strong>{{ timerLabel }}</strong></p>
+      <p *ngIf="secondsRemaining === 0">Starting next game...</p>
     </div>
 
     <!-- CARD 3: Settings -->

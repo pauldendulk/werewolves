@@ -9,6 +9,9 @@
 ## Code Style Rules
 
 - **One class per file** – Every class, record, or DTO must be in its own file. Do not define multiple classes in a single file (e.g., do not put request DTOs at the bottom of a controller).
+- **No silent error swallowing** – Never catch an exception just to log it and continue. Errors must surface loudly. Do not use `_ = SomeAsync()` fire-and-forget patterns. If a background task must run without being awaited, use the `ThrowOnFailure(Task)` helper in `GameService` so that any failure crashes the process immediately. The preference is always: **break hard and in your face**.
+- **Named methods over comments** – If code needs a comment to explain what it does, extract it into a well-named method instead. Comments explain *why*; method names explain *what*.
+- **Pure functions** – Prefer methods that take inputs and return a value without mutating shared state (i.e., no side effects). In C#, these are typically `private static`. In TypeScript, use `private static` inside a class or a module-level function (unexported) outside the class. This makes logic easier to test and reason about in isolation.
 
 ## Critical: Build and Test After Every Change
 

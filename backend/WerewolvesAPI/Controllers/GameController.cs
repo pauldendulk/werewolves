@@ -27,19 +27,19 @@ public class GameController : ControllerBase
 
         return Ok(new CreateGameResponse
         {
-            GameId = game.GameId,
+            TournamentCode = game.TournamentCode,
             PlayerId = game.CreatorId,
             JoinLink = game.JoinLink,
             QrCodeBase64 = game.QrCodeUrl
         });
     }
 
-    [HttpPost("{gameId}/join")]
-    public ActionResult<JoinGameResponse> JoinGame(string gameId, [FromBody] JoinGameRequest request)
+    [HttpPost("{tournamentCode}/join")]
+    public ActionResult<JoinGameResponse> JoinGame(string tournamentCode, [FromBody] JoinGameRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var (success, message, player) = _gameService.JoinGame(gameId, request.DisplayName, request.PlayerId);
+        var (success, message, player) = _gameService.JoinGame(tournamentCode, request.DisplayName, request.PlayerId);
 
         if (!success)
             return BadRequest(new JoinGameResponse { Success = false, Message = message });
@@ -53,18 +53,18 @@ public class GameController : ControllerBase
         return Ok(new { serverTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
     }
 
-    [HttpGet("{gameId}")]
-    public ActionResult<LobbyStateDto> GetGameState(string gameId, [FromQuery] int? version = null)
+    [HttpGet("{tournamentCode}")]
+    public ActionResult<LobbyStateDto> GetGameState(string tournamentCode, [FromQuery] int? version = null)
     {
-        _gameService.TryAdvancePhaseIfExpired(gameId);
+        _gameService.TryAdvancePhaseIfExpired(tournamentCode);
 
-        var game = _gameService.GetGame(gameId);
+        var game = _gameService.GetGame(tournamentCode);
         if (game == null) return NotFound(new { message = "Game not found" });
 
         if (version.HasValue && version.Value == game.Version)
             return NoContent();
 
-        var hasDuplicateNames = _gameService.HasDuplicateNames(gameId);
+        var hasDuplicateNames = _gameService.HasDuplicateNames(tournamentCode);
         return Ok(MapToLobbyStateDto(game, hasDuplicateNames));
     }
 
@@ -75,6 +75,7 @@ public class GameController : ControllerBase
             Game = new GameInfoDto
             {
                 GameId = game.GameId,
+                TournamentCode = game.TournamentCode,
                 CreatorId = game.CreatorId,
                 MinPlayers = game.MinPlayers,
                 MaxPlayers = game.MaxPlayers,
@@ -124,32 +125,32 @@ public class GameController : ControllerBase
         };
     }
 
-    [HttpPost("{gameId}/leave")]
-    public ActionResult LeaveGame(string gameId, [FromBody] LeaveGameRequest request)
+    [HttpPost("{tournamentCode}/leave")]
+    public ActionResult LeaveGame(string tournamentCode, [FromBody] LeaveGameRequest request)
     {
-        if (_gameService.LeaveGame(gameId, request.PlayerId)) return Ok();
+        if (_gameService.LeaveGame(tournamentCode, request.PlayerId)) return Ok();
         return NotFound(new { message = "Game or player not found" });
     }
 
-    [HttpPost("{gameId}/remove")]
-    public ActionResult RemovePlayer(string gameId, [FromBody] RemovePlayerRequest request)
+    [HttpPost("{tournamentCode}/remove")]
+    public ActionResult RemovePlayer(string tournamentCode, [FromBody] RemovePlayerRequest request)
     {
-        if (_gameService.RemovePlayer(gameId, request.PlayerId, request.ModeratorId)) return Ok();
+        if (_gameService.RemovePlayer(tournamentCode, request.PlayerId, request.ModeratorId)) return Ok();
         return Unauthorized(new { message = "Not authorized to remove player" });
     }
 
-    [HttpPost("{gameId}/settings")]
-    public ActionResult UpdateSettings(string gameId, [FromBody] UpdateSettingsRequest request)
+    [HttpPost("{tournamentCode}/settings")]
+    public ActionResult UpdateSettings(string tournamentCode, [FromBody] UpdateSettingsRequest request)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        bool maxUpdated      = _gameService.UpdateMaxPlayers(gameId, request.MaxPlayers, request.CreatorId);
-        bool minUpdated      = _gameService.UpdateMinPlayers(gameId, request.MinPlayers, request.CreatorId);
-        bool durationUpdated = _gameService.UpdateDiscussionDuration(gameId, request.DiscussionDurationMinutes, request.CreatorId);
-        bool wolvesUpdated   = _gameService.UpdateNumberOfWerewolves(gameId, request.NumberOfWerewolves, request.CreatorId);
+        bool maxUpdated      = _gameService.UpdateMaxPlayers(tournamentCode, request.MaxPlayers, request.CreatorId);
+        bool minUpdated      = _gameService.UpdateMinPlayers(tournamentCode, request.MinPlayers, request.CreatorId);
+        bool durationUpdated = _gameService.UpdateDiscussionDuration(tournamentCode, request.DiscussionDurationMinutes, request.CreatorId);
+        bool wolvesUpdated   = _gameService.UpdateNumberOfWerewolves(tournamentCode, request.NumberOfWerewolves, request.CreatorId);
         bool skillsUpdated   = false;
         if (request.EnabledSkills != null)
-            skillsUpdated = _gameService.UpdateEnabledSkills(gameId, request.EnabledSkills, request.CreatorId);
+            skillsUpdated = _gameService.UpdateEnabledSkills(tournamentCode, request.EnabledSkills, request.CreatorId);
 
         if (maxUpdated || minUpdated || durationUpdated || wolvesUpdated || skillsUpdated)
             return Ok();
@@ -157,87 +158,87 @@ public class GameController : ControllerBase
         return Unauthorized(new { message = "Only the creator can update settings" });
     }
 
-    [HttpPost("{gameId}/player-name")]
-    public ActionResult UpdatePlayerName(string gameId, [FromBody] UpdatePlayerNameRequest request)
+    [HttpPost("{tournamentCode}/player-name")]
+    public ActionResult UpdatePlayerName(string tournamentCode, [FromBody] UpdatePlayerNameRequest request)
     {
-        if (_gameService.UpdatePlayerName(gameId, request.PlayerId, request.DisplayName)) return Ok();
+        if (_gameService.UpdatePlayerName(tournamentCode, request.PlayerId, request.DisplayName)) return Ok();
         return NotFound(new { message = "Game or player not found" });
     }
 
-    [HttpPost("{gameId}/start")]
-    public ActionResult StartGame(string gameId, [FromBody] StartGameRequest request)
+    [HttpPost("{tournamentCode}/start")]
+    public ActionResult StartGame(string tournamentCode, [FromBody] StartGameRequest request)
     {
-        var (success, error) = _gameService.StartGame(gameId, request.CreatorId);
+        var (success, error) = _gameService.StartGame(tournamentCode, request.CreatorId);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }
 
-    [HttpPost("{gameId}/done")]
-    public ActionResult MarkDone(string gameId, [FromBody] PlayerActionRequest request)
+    [HttpPost("{tournamentCode}/done")]
+    public ActionResult MarkDone(string tournamentCode, [FromBody] PlayerActionRequest request)
     {
-        var (success, error) = _gameService.MarkDone(gameId, request.PlayerId);
+        var (success, error) = _gameService.MarkDone(tournamentCode, request.PlayerId);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }
 
-    [HttpPost("{gameId}/vote")]
-    public ActionResult CastVote(string gameId, [FromBody] VoteRequest request)
+    [HttpPost("{tournamentCode}/vote")]
+    public ActionResult CastVote(string tournamentCode, [FromBody] VoteRequest request)
     {
-        var (success, error) = _gameService.CastVote(gameId, request.VoterId, request.TargetId);
+        var (success, error) = _gameService.CastVote(tournamentCode, request.VoterId, request.TargetId);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }
 
-    [HttpPost("{gameId}/cupid-action")]
-    public ActionResult CupidAction(string gameId, [FromBody] CupidActionRequest request)
+    [HttpPost("{tournamentCode}/cupid-action")]
+    public ActionResult CupidAction(string tournamentCode, [FromBody] CupidActionRequest request)
     {
-        var (success, error) = _gameService.CupidAction(gameId, request.PlayerId, request.Lover1Id, request.Lover2Id);
+        var (success, error) = _gameService.CupidAction(tournamentCode, request.PlayerId, request.Lover1Id, request.Lover2Id);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }
 
-    [HttpGet("{gameId}/seer-action")]
-    public ActionResult<SeerActionResponse> SeerAction(string gameId, [FromQuery] string seerId, [FromQuery] string targetId)
+    [HttpGet("{tournamentCode}/seer-action")]
+    public ActionResult<SeerActionResponse> SeerAction(string tournamentCode, [FromQuery] string seerId, [FromQuery] string targetId)
     {
-        var (success, error, result) = _gameService.SeerAction(gameId, seerId, targetId);
+        var (success, error, result) = _gameService.SeerAction(tournamentCode, seerId, targetId);
         if (!success) return BadRequest(new { message = error });
         return Ok(result);
     }
 
-    [HttpPost("{gameId}/witch-action")]
-    public ActionResult WitchAction(string gameId, [FromBody] WitchActionRequest request)
+    [HttpPost("{tournamentCode}/witch-action")]
+    public ActionResult WitchAction(string tournamentCode, [FromBody] WitchActionRequest request)
     {
-        var (success, error) = _gameService.WitchAction(gameId, request.PlayerId, request.Choice, request.PoisonTargetId);
+        var (success, error) = _gameService.WitchAction(tournamentCode, request.PlayerId, request.Choice, request.PoisonTargetId);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }
 
-    [HttpPost("{gameId}/hunter-action")]
-    public ActionResult HunterAction(string gameId, [FromBody] HunterActionRequest request)
+    [HttpPost("{tournamentCode}/hunter-action")]
+    public ActionResult HunterAction(string tournamentCode, [FromBody] HunterActionRequest request)
     {
-        var (success, error) = _gameService.HunterAction(gameId, request.PlayerId, request.TargetId);
+        var (success, error) = _gameService.HunterAction(tournamentCode, request.PlayerId, request.TargetId);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }
 
-    [HttpPost("{gameId}/force-advance")]
-    public ActionResult ForceAdvancePhase(string gameId, [FromBody] PlayerActionRequest request)
+    [HttpPost("{tournamentCode}/force-advance")]
+    public ActionResult ForceAdvancePhase(string tournamentCode, [FromBody] PlayerActionRequest request)
     {
-        var (success, error) = _gameService.ForceAdvancePhase(gameId, request.PlayerId);
+        var (success, error) = _gameService.ForceAdvancePhase(tournamentCode, request.PlayerId);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }
 
-    [HttpGet("{gameId}/role")]
-    public ActionResult<PlayerRoleDto> GetRole(string gameId, [FromQuery] string playerId)
+    [HttpGet("{tournamentCode}/role")]
+    public ActionResult<PlayerRoleDto> GetRole(string tournamentCode, [FromQuery] string playerId)
     {
-        var game = _gameService.GetGame(gameId);
+        var game = _gameService.GetGame(tournamentCode);
         if (game == null) return NotFound(new { message = "Game not found" });
         if (game.Status != GameStatus.InProgress && game.Status != GameStatus.Ended)
             return BadRequest(new { message = "Game has not started" });
 
         var (role, skill, fellows, loverName, nightKillTargetName, witchHealUsed, witchPoisonUsed) =
-            _gameService.GetPlayerRole(gameId, playerId);
+            _gameService.GetPlayerRole(tournamentCode, playerId);
 
         return Ok(new PlayerRoleDto
         {

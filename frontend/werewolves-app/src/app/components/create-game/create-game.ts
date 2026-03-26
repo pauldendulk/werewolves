@@ -47,7 +47,7 @@ export class CreateGameComponent {
     this.gameService.createGame(request).subscribe({
       next: (response) => {
         this.gameService.setPlayerId(response.playerId);
-        this.router.navigate(['/game', response.gameId, 'lobby'], { replaceUrl: true });
+        this.router.navigate(['/game', response.tournamentCode, 'lobby'], { replaceUrl: true });
       },
       error: (error) => {
         this.loading = false;

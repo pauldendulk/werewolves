@@ -12,26 +12,32 @@ public class GameService : IGameService
     private readonly ConcurrentDictionary<string, object> _phaseLocks = new();
     private readonly ILogger<GameService> _logger;
     private readonly IGameRepository _gameRepository;
+    private readonly ITournamentRepository _tournamentRepository;
 
     private object GetPhaseLock(string gameId) => _phaseLocks.GetOrAdd(gameId, _ => new object());
 
-    public GameService(ILogger<GameService> logger, IGameRepository gameRepository)
+    public GameService(ILogger<GameService> logger, IGameRepository gameRepository, ITournamentRepository tournamentRepository)
     {
         _logger = logger;
         _gameRepository = gameRepository;
+        _tournamentRepository = tournamentRepository;
     }
 
     // ── Lobby management ─────────────────────────────────────────────────────
 
     public GameState CreateGame(string creatorName, int maxPlayers, string baseUrl)
     {
+        var tournamentId = Guid.NewGuid();
+        var tournamentCode = GenerateTournamentCode();
         var gameId = Guid.NewGuid().ToString("N")[..8];
         var playerId = Guid.NewGuid().ToString();
-        var joinLink = $"{baseUrl}/game/{gameId}";
+        var joinLink = $"{baseUrl}/game/{tournamentCode}";
 
         var game = new GameState
         {
             GameId = gameId,
+            TournamentId = tournamentId.ToString(),
+            TournamentCode = tournamentCode,
             CreatorId = playerId,
             MaxPlayers = maxPlayers,
             JoinLink = joinLink,
@@ -49,9 +55,10 @@ public class GameService : IGameService
 
         game.Players.Add(creator);
         RecalculateGameState(game);
-        _games[gameId] = game;
+        _games[tournamentCode] = game;
 
-        _logger.LogInformation("Game created: {GameId} by {CreatorName}", gameId, creatorName);
+        ThrowOnFailure(SaveTournamentAsync(tournamentId, tournamentCode, playerId));
+        _logger.LogInformation("Game created: {TournamentCode} by {CreatorName}", tournamentCode, creatorName);
         return game;
     }
 
@@ -75,6 +82,9 @@ public class GameService : IGameService
                     return (false, "You were removed from this game", null);
                 existingPlayer.IsConnected = true;
                 existingPlayer.ParticipationStatus = ParticipationStatus.Participating;
+                // Player rejoining mid-game won't participate until next game
+                if (game.Status == GameStatus.InProgress)
+                    existingPlayer.IsDone = true;
                 RecalculateGameState(game);
                 BumpVersion(game);
                 return (true, "Rejoined successfully", existingPlayer);
@@ -94,6 +104,10 @@ public class GameService : IGameService
             IsModerator = false,
             IsConnected = true
         };
+
+        // Player joining mid-game won't participate until next game
+        if (game.Status == GameStatus.InProgress)
+            player.IsDone = true;
 
         game.Players.Add(player);
         RecalculateGameState(game);
@@ -213,11 +227,9 @@ public class GameService : IGameService
             .OrderBy(_ => Guid.NewGuid())
             .ToList();
 
-        // Assign roles
         for (int i = 0; i < activePlayers.Count; i++)
             activePlayers[i].Role = i < game.NumberOfWerewolves ? PlayerRole.Werewolf : PlayerRole.Villager;
 
-        // Assign skills to villagers (shuffle enabled skills, assign one-per-villager)
         var villagers = activePlayers.Where(p => p.Role == PlayerRole.Villager).ToList();
         var skills = game.EnabledSkills.OrderBy(_ => Guid.NewGuid()).ToList();
         for (int i = 0; i < Math.Min(villagers.Count, skills.Count); i++)
@@ -255,7 +267,8 @@ public class GameService : IGameService
     public (bool Success, string? Error) MarkDone(string gameId, string playerId)
     {
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
-        if (game.Status != GameStatus.InProgress) return (false, "Game is not in progress");
+        var isGameOver = game.Status == GameStatus.Ended && game.Phase == GamePhase.GameOver;
+        if (game.Status != GameStatus.InProgress && !isGameOver) return (false, "Game is not in progress");
 
         var player = game.Players.FirstOrDefault(p => p.PlayerId == playerId);
         if (player == null) return (false, "Player not found");
@@ -457,6 +470,19 @@ public class GameService : IGameService
     public void TryAdvancePhaseIfExpired(string gameId)
     {
         if (!_games.TryGetValue(gameId, out var game)) return;
+
+        // GameOver isn't a regular phase — the timer triggers a full game reset instead.
+        if (game.Phase == GamePhase.GameOver)
+        {
+            if (game.PhaseEndsAt == null || DateTime.UtcNow < game.PhaseEndsAt.Value) return;
+            lock (GetPhaseLock(gameId))
+            {
+                if (game.PhaseEndsAt == null || DateTime.UtcNow < game.PhaseEndsAt.Value) return;
+                ResetForNextGame(game);
+            }
+            return;
+        }
+
         if (game.Status != GameStatus.InProgress) return;
         if (game.PhaseEndsAt == null || DateTime.UtcNow < game.PhaseEndsAt.Value) return;
 
@@ -787,59 +813,69 @@ public class GameService : IGameService
         if (game.Winner == null) return false;
         AwardTeamWinPoints(game);
         game.Phase = GamePhase.GameOver;
-        game.PhaseEndsAt = null;
+        game.PhaseEndsAt = DateTime.UtcNow.AddMinutes(1);
         game.Status = GameStatus.Ended;
         BumpVersion(game);
-        _ = PersistGameResultsAsync(game);
+        ThrowOnFailure(PersistGameResultsAsync(game));
         return true;
     }
 
+    private void ResetForNextGame(GameState game)
+    {
+        game.GameId = Guid.NewGuid().ToString("N")[..8];
+        game.Status = GameStatus.WaitingForPlayers; // RecalculateGameState skips non-lobby states
+        game.ResetSessionState();
+        RecalculateGameState(game);
+        BumpVersion(game);
+        _logger.LogInformation("Game reset for next round: {TournamentCode}", game.TournamentCode);
+    }
+
+    // Faults on the thread pool crash the process — we prefer that over silently swallowed errors.
+    private static void ThrowOnFailure(Task task) =>
+        task.ContinueWith(
+            t => System.Runtime.ExceptionServices.ExceptionDispatchInfo
+                     .Capture(t.Exception!.GetBaseException()).Throw(),
+            TaskContinuationOptions.OnlyOnFaulted);
+
     private async Task PersistGameResultsAsync(GameState game)
     {
-        try
-        {
-            var gameRecord = new GameRecord(
-                Id: game.GameId,
-                TournamentId: null,
-                JoinCode: game.GameId,
-                Status: game.Status.ToString(),
-                Winner: game.Winner,
-                Settings: System.Text.Json.JsonSerializer.Serialize(new
-                {
-                    game.MinPlayers,
-                    game.MaxPlayers,
-                    game.DiscussionDurationMinutes,
-                    game.NumberOfWerewolves,
-                    EnabledSkills = game.EnabledSkills.Select(s => s.ToString())
-                }),
-                CreatedAt: game.CreatedAt,
-                EndedAt: DateTime.UtcNow);
+        var gameRecord = new GameRecord(
+            Id: game.GameId,
+            TournamentId: string.IsNullOrEmpty(game.TournamentId) ? null : game.TournamentId,
+            JoinCode: string.IsNullOrEmpty(game.TournamentCode) ? game.GameId : game.TournamentCode,
+            Status: game.Status.ToString(),
+            Winner: game.Winner,
+            Settings: System.Text.Json.JsonSerializer.Serialize(new
+            {
+                game.MinPlayers,
+                game.MaxPlayers,
+                game.DiscussionDurationMinutes,
+                game.NumberOfWerewolves,
+                EnabledSkills = game.EnabledSkills.Select(s => s.ToString())
+            }),
+            CreatedAt: game.CreatedAt,
+            EndedAt: DateTime.UtcNow);
 
-            await _gameRepository.SaveGameAsync(gameRecord);
+        await _gameRepository.SaveGameAsync(gameRecord);
 
-            var playerRecords = game.Players
-                .Where(p => p.ParticipationStatus == ParticipationStatus.Participating)
-                .Select(p => new GamePlayerRecord(
-                    GameId: game.GameId,
-                    PlayerId: p.PlayerId,
-                    DisplayName: p.DisplayName,
-                    Role: p.Role?.ToString(),
-                    Skill: p.Skill == PlayerSkill.None ? null : p.Skill.ToString(),
-                    IsEliminated: p.IsEliminated,
-                    EliminationCause: null,
-                    Score: p.Score,
-                    IsCreator: p.IsCreator,
-                    IsModerator: p.IsModerator,
-                    ParticipationStatus: p.ParticipationStatus.ToString(),
-                    JoinedAt: p.JoinedAt));
+        var playerRecords = game.Players
+            .Where(p => p.ParticipationStatus == ParticipationStatus.Participating)
+            .Select(p => new GamePlayerRecord(
+                GameId: game.GameId,
+                PlayerId: p.PlayerId,
+                DisplayName: p.DisplayName,
+                Role: p.Role?.ToString(),
+                Skill: p.Skill == PlayerSkill.None ? null : p.Skill.ToString(),
+                IsEliminated: p.IsEliminated,
+                EliminationCause: null,
+                Score: p.Score,
+                IsCreator: p.IsCreator,
+                IsModerator: p.IsModerator,
+                ParticipationStatus: p.ParticipationStatus.ToString(),
+                JoinedAt: p.JoinedAt));
 
-            await _gameRepository.SaveGamePlayersAsync(playerRecords);
-            _logger.LogInformation("Game {GameId} results persisted", game.GameId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to persist results for game {GameId}", game.GameId);
-        }
+        await _gameRepository.SaveGamePlayersAsync(playerRecords);
+        _logger.LogInformation("Game {GameId} results persisted", game.GameId);
     }
 
     private static string? ResolveNightVote(GameState game)
@@ -959,6 +995,29 @@ public class GameService : IGameService
     }
 
     private static void BumpVersion(GameState game) => game.Version++;
+
+    private string GenerateTournamentCode()
+    {
+        const string Chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        string code;
+        do
+        {
+            code = new string(Enumerable.Range(0, 6).Select(_ => Chars[Random.Shared.Next(Chars.Length)]).ToArray());
+        } while (_games.ContainsKey(code));
+        return code;
+    }
+
+    private async Task SaveTournamentAsync(Guid tournamentId, string joinCode, string hostPlayerId)
+    {
+        var record = new TournamentRecord(
+            Id: tournamentId,
+            Name: null,
+            JoinCode: joinCode,
+            HostPlayerId: hostPlayerId,
+            CreatedAt: DateTime.UtcNow,
+            IsPremium: false);
+        await _tournamentRepository.SaveTournamentAsync(record);
+    }
 
     private string GenerateQrCode(string text)
     {

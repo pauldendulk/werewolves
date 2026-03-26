@@ -18,6 +18,7 @@ describe('LobbyComponent', () => {
   const mockLobbyState = {
     game: {
       gameId: 'game123',
+      tournamentCode: 'game123',
       creatorId: 'player1',
       minPlayers: 4,
       maxPlayers: 20,

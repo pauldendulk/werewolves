@@ -41,7 +41,7 @@ describe('CreateGameComponent', () => {
 
   it('should call createGame and navigate on success', () => {
     const mockResponse = {
-      gameId: 'game123',
+      tournamentCode: 'game123',
       playerId: 'player1',
       joinLink: 'http://localhost:4200/game/game123',
       qrCodeBase64: 'base64'

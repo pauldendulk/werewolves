@@ -20,6 +20,7 @@ describe('SessionComponent', () => {
   const makeLobbyState = (overrides: Partial<LobbyState['game']> = {}): LobbyState => ({
     game: {
       gameId: 'game123',
+      tournamentCode: 'TEST',
       creatorId: 'player1',
       minPlayers: 4,
       maxPlayers: 20,
@@ -209,6 +210,7 @@ describe('SessionComponent', () => {
     const makeThreePlayerTiebreakState = (): LobbyState => ({
       game: {
         gameId: 'game123',
+        tournamentCode: 'TEST',
         creatorId: 'player1',
         minPlayers: 3,
         maxPlayers: 20,

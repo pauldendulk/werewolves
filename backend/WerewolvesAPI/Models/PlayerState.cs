@@ -14,6 +14,15 @@ public class PlayerState
     public bool IsDone { get; set; }
     public int Score { get; set; } = 0;
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
+
+    public void ResetForNewGame()
+    {
+        Role = null;
+        Skill = PlayerSkill.None;
+        IsEliminated = false;
+        IsDone = false;
+        Score = 0;
+    }
 }
 
 public enum ParticipationStatus

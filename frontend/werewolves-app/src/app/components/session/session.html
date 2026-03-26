@@ -5,7 +5,7 @@
 
   <!-- Header -->
   <div class="session-header">
-    <span class="game-name">Game: {{ lobbyState.game.gameId }}</span>
+    <span class="game-name">Session: {{ lobbyState.game.tournamentCode }}</span>
     <span class="round-badge" *ngIf="lobbyState.game.roundNumber > 0">Round {{ lobbyState.game.roundNumber }}</span>
   </div>
 
@@ -416,7 +416,15 @@
         <span class="score-badge">{{ p.score }} pts</span>
       </div>
     </div>
-    <p-button label="Back to lobby" (onClick)="goHome()" styleClass="mt-4 w-full"></p-button>
+    <p-button
+      label="Done — back to lobby"
+      (onClick)="doneWithResults()"
+      [disabled]="currentPlayer?.isDone"
+      styleClass="mt-4 w-full">
+    </p-button>
+    <div class="done-badge" *ngIf="currentPlayer?.isDone">
+      <i class="pi pi-check-circle"></i> Heading to lobby...
+    </div>
   </div>
 
 </div>

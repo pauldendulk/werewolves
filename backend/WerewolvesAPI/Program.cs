@@ -2,17 +2,22 @@ using WerewolvesAPI.Infrastructure;
 using WerewolvesAPI.Repositories;
 using WerewolvesAPI.Services;
 
+// Crash the process on any unobserved task exception — we prefer loud failures over silent data loss.
+TaskScheduler.UnobservedTaskException += (_, args) =>
+{
+    args.SetObserved();
+    Environment.FailFast("Unobserved task exception", args.Exception);
+};
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
 
-// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddSingleton<IGameRepository>(_ => new GameRepository(connectionString));
 builder.Services.AddSingleton<ITournamentRepository>(_ => new TournamentRepository(connectionString));
 builder.Services.AddSingleton<IGameService, GameService>();
 
-// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -27,7 +32,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add OpenAPI/Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -40,7 +44,6 @@ if (!string.IsNullOrEmpty(connectionString))
     DatabaseMigrator.Run(connectionString, migratorLogger);
 }
 
-// Configure the HTTP request pipeline
 app.UseSwagger();
 app.UseSwaggerUI();
 

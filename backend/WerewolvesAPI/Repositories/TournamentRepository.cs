@@ -19,10 +19,11 @@ public class TournamentRepository(string connectionString) : ITournamentReposito
     {
         using var conn = Open();
         await conn.ExecuteAsync("""
-            INSERT INTO tournaments (id, name, host_player_id, created_at, is_premium)
-            VALUES (@Id, @Name, @HostPlayerId, @CreatedAt, @IsPremium)
+            INSERT INTO tournaments (id, name, join_code, host_player_id, created_at, is_premium)
+            VALUES (@Id, @Name, @JoinCode, @HostPlayerId, @CreatedAt, @IsPremium)
             ON CONFLICT (id) DO UPDATE SET
                 name       = EXCLUDED.name,
+                join_code  = COALESCE(tournaments.join_code, EXCLUDED.join_code),
                 is_premium = EXCLUDED.is_premium
             """, tournament);
     }
