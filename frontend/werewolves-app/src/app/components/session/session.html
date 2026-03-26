@@ -401,10 +401,10 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- GAME OVER                                                -->
+  <!-- SHOW SCORES                                              -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content game-over" *ngIf="phase === 'GameOver'">
-    <h2 class="phase-title">🎉 Game Over</h2>
+    <h2 class="phase-title">🎉 Show Scores</h2>
     <p class="winner-text" [class.villagers]="lobbyState.game.winner === 'Villagers'" [class.werewolves]="lobbyState.game.winner === 'Werewolves'">
       {{ lobbyState.game.winner }} Win!
     </p>

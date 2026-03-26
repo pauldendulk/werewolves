@@ -111,11 +111,10 @@
       <p>A game is currently being played. You'll join when the next game starts.</p>
     </div>
 
-    <!-- CARD 2.6: Game Over countdown (players waiting for next game) -->
+    <!-- CARD 2.6: Others still on Show Scores screen -->
     <div class="card-section game-status-card" *ngIf="lobbyState.game.phase === 'GameOver'">
-      <h3>🎉 Game Over</h3>
-      <p *ngIf="secondsRemaining > 0">Next game starts in <strong>{{ timerLabel }}</strong></p>
-      <p *ngIf="secondsRemaining === 0">Starting next game...</p>
+      <p>Others are still viewing results</p>
+      <p *ngIf="secondsRemaining > 0"><strong>{{ timerLabel }}</strong></p>
     </div>
 
     <!-- CARD 3: Settings -->
