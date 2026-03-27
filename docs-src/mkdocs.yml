@@ -40,6 +40,7 @@ nav:
   - Game Design:
       - Concept & Rules: game-concept.md
       - Screen Inventory: screens.md
+      - Tournament Mode: tournament.md
   - Technical:
       - Technology Overview: tech-overview.md
       - Architecture: architecture.md
@@ -47,3 +48,4 @@ nav:
   - Developer Guide:
       - Local Development: development.md
       - Deployment: deployment.md
+      - Secret Management: secrets.md
