@@ -819,6 +819,7 @@ public class GameService : IGameService
     {
         if (game.Winner == null) return false;
         AwardTeamWinPoints(game);
+        AccumulateTournamentScores(game);
         game.Phase = GamePhase.GameOver;
         game.PhaseEndsAt = DateTime.UtcNow.AddMinutes(1);
         game.Status = GameStatus.Ended;
@@ -827,15 +828,22 @@ public class GameService : IGameService
         return true;
     }
 
+    private static void AccumulateTournamentScores(GameState game)
+    {
+        foreach (var p in game.Players.Where(p => p.ParticipationStatus == ParticipationStatus.Participating))
+            p.TotalScore += p.Score;
+    }
+
     private void ResetForNextGame(GameState game)
     {
+        game.GameIndex++;
         game.GameId = Guid.NewGuid().ToString("N")[..8];
         game.Status = GameStatus.WaitingForPlayers; // RecalculateGameState skips non-lobby states
         game.ResetSessionState();
         RecalculateGameState(game);
         BumpVersion(game);
         ThrowOnFailure(UpsertLiveStateAsync(game));
-        _logger.LogInformation("Game reset for next round: {TournamentCode}", game.TournamentCode);
+        _logger.LogInformation("Game reset for next round: {TournamentCode} (game {GameIndex})", game.TournamentCode, game.GameIndex);
     }
 
     public async Task InitializeAsync()
@@ -905,7 +913,25 @@ public class GameService : IGameService
                 JoinedAt: p.JoinedAt));
 
         await _gameRepository.SaveGamePlayersAsync(playerRecords);
+
+        if (!string.IsNullOrEmpty(game.TournamentId) && Guid.TryParse(game.TournamentId, out var tournamentId))
+            await UpsertTournamentParticipantsAsync(game, tournamentId);
+
         _logger.LogInformation("Game {GameId} results persisted", game.GameId);
+    }
+
+    private async Task UpsertTournamentParticipantsAsync(GameState game, Guid tournamentId)
+    {
+        foreach (var p in game.Players.Where(p => p.ParticipationStatus == ParticipationStatus.Participating))
+        {
+            var record = new TournamentParticipantRecord(
+                TournamentId: tournamentId,
+                PlayerId: p.PlayerId,
+                DisplayName: p.DisplayName,
+                TotalScore: p.TotalScore,
+                JoinedAt: p.JoinedAt);
+            await _tournamentRepository.UpsertParticipantAsync(record);
+        }
     }
 
     private static string? ResolveNightVote(GameState game)

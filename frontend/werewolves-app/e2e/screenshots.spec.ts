@@ -44,6 +44,7 @@ interface PlayerOverride {
   isEliminated?: boolean;
   isDone?: boolean;
   score?: number;
+  totalScore?: number;
 }
 
 function makePlayer(
@@ -64,6 +65,7 @@ function makePlayer(
     isEliminated: overrides.isEliminated ?? false,
     isDone: overrides.isDone ?? false,
     score: overrides.score ?? 0,
+    totalScore: overrides.totalScore ?? 0,
     joinedAt: '2026-03-17T10:00:00Z',
   };
 }
@@ -112,6 +114,7 @@ function makeGameState(
       dayDeaths: [],
       winner: null,
       tiebreakCandidates: [],
+      gameIndex: 1,
       ...extra,
     },
     players,
@@ -142,6 +145,7 @@ function makeLobbyState(players = BASE_PLAYERS) {
       dayDeaths: [],
       winner: null,
       tiebreakCandidates: [],
+      gameIndex: 1,
     },
     players,
     hasDuplicateNames: false,
@@ -504,6 +508,27 @@ test('22-game-over', async ({ page }) => {
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
-  await page.waitForSelector('h2:has-text("Game Over")');
+  await page.waitForSelector('h2:has-text("Show Scores")');
   await shot(page, '22-game-over');
+});
+
+// ── 23 · Game Over — after game 2, showing running totals ────────────────────
+test('23-game-over-game2', async ({ page }) => {
+  const players = [
+    makePlayer(HOST,  'Host',  true,  { role: 'Villager', isEliminated: false, score: 9,  totalScore: 20 }),
+    makePlayer(ALICE, 'Alice', false, { role: 'Villager', isEliminated: false, score: 11, totalScore: 20 }),
+    makePlayer(BOB,   'Bob',   false, { role: 'Werewolf', isEliminated: true,  score: 0,  totalScore: 7  }),
+    makePlayer(CAROL, 'Carol', false, { role: 'Villager', skill: 'Seer',   isEliminated: false, score: 10, totalScore: 20 }),
+    makePlayer(DAVE,  'Dave',  false, { role: 'Villager', skill: 'Cupid',  isEliminated: false, score: 8,  totalScore: 16 }),
+    makePlayer(EVE,   'Eve',   false, { role: 'Villager', skill: 'Witch',  isEliminated: false, score: 8,  totalScore: 16 }),
+    makePlayer(FRANK, 'Frank', false, { role: 'Villager', skill: 'Hunter', isEliminated: false, score: 10, totalScore: 19 }),
+    makePlayer(GRACE, 'Grace', false, { role: 'Werewolf', isEliminated: true,  score: 0,  totalScore: 9  }),
+  ];
+  const state = makeGameState('GameOver', 2, { winner: 'Villagers', gameIndex: 2 }, players);
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('h2:has-text("Show Scores")');
+  await shot(page, '23-game-over-game2');
 });

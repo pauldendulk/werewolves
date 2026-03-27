@@ -31,6 +31,7 @@ public class GameInfoDto
     public List<EliminationEntryDto> DayDeaths { get; set; } = new();
     public string? Winner { get; set; }
     public List<string> TiebreakCandidates { get; set; } = new();
+    public int GameIndex { get; set; }
 }
 
 public class PlayerDto
@@ -46,6 +47,7 @@ public class PlayerDto
     public bool IsEliminated { get; set; }
     public bool IsDone { get; set; }
     public int Score { get; set; }
+    public int TotalScore { get; set; }
     public DateTime JoinedAt { get; set; }
 }
 

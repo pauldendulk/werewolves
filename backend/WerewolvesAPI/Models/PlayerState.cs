@@ -13,6 +13,7 @@ public class PlayerState
     public bool IsEliminated { get; set; }
     public bool IsDone { get; set; }
     public int Score { get; set; } = 0;
+    public int TotalScore { get; set; } = 0;
     public int VotesCast { get; set; } = 0;
     public int VotesCorrect { get; set; } = 0;
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;

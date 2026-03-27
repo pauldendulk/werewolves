@@ -27,6 +27,7 @@ export interface GameState {
   dayDeaths: EliminationEntryDto[];
   winner: string | null;
   tiebreakCandidates: string[];
+  gameIndex: number;
 }
 
 export interface PlayerState {
@@ -41,6 +42,7 @@ export interface PlayerState {
   isEliminated: boolean;
   isDone: boolean;
   score: number;
+  totalScore: number;
   joinedAt?: string;
 }
 

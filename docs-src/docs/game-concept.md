@@ -215,9 +215,12 @@ After the announcement, the day discussion phase begins automatically.
 
 ### 15. Game Over
 
-The game ends when a win condition is met. All roles are revealed in a summary table.
+The game ends when a win condition is met. All roles are revealed in a summary table, sorted by score. From the second game onwards a running **total** column appears alongside each player's per-game score, so everyone can see the tournament standings at a glance.
 
-![Game Over screen](screenshots/22-game-over.png)
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>After game 1</strong></figcaption><img src="../screenshots/22-game-over.png" alt="Game Over — first game, per-game scores only"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>After game 2+ (with totals)</strong></figcaption><img src="../screenshots/23-game-over-game2.png" alt="Game Over — second game, running totals shown"></figure>
+</div>
 
 | Winner | Condition |
 |---|---|

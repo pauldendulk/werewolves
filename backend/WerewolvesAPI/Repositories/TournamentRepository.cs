@@ -35,7 +35,8 @@ public class TournamentRepository(string connectionString) : ITournamentReposito
             INSERT INTO tournament_participants (tournament_id, player_id, display_name, total_score, joined_at)
             VALUES (@TournamentId, @PlayerId, @DisplayName, @TotalScore, @JoinedAt)
             ON CONFLICT (tournament_id, player_id) DO UPDATE SET
-                display_name = EXCLUDED.display_name
+                display_name = EXCLUDED.display_name,
+                total_score  = EXCLUDED.total_score
             """, participant);
     }
 

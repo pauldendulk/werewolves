@@ -54,14 +54,6 @@ public class GameRepository(string connectionString) : IGameRepository
             """, new { TournamentCode = tournamentCode, State = stateJson });
     }
 
-    public async Task DeleteLiveStateAsync(string tournamentCode)
-    {
-        using var conn = Open();
-        await conn.ExecuteAsync(
-            "DELETE FROM game_live_state WHERE tournament_code = @TournamentCode",
-            new { TournamentCode = tournamentCode });
-    }
-
     public async Task<IEnumerable<string>> LoadAllLiveStatesAsync()
     {
         using var conn = Open();

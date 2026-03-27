@@ -104,7 +104,8 @@ public class GameController : ControllerBase
                     Cause = e.Cause.ToString()
                 }).ToList(),
                 Winner = game.Winner,
-                TiebreakCandidates = game.TiebreakCandidates
+                TiebreakCandidates = game.TiebreakCandidates,
+                GameIndex = game.GameIndex
             },
             Players = game.Players.Select(p => new PlayerDto
             {
@@ -119,6 +120,7 @@ public class GameController : ControllerBase
                 IsEliminated = p.IsEliminated,
                 IsDone = p.IsDone,
                 Score = p.Score,
+                TotalScore = p.TotalScore,
                 JoinedAt = p.JoinedAt
             }).ToList(),
             HasDuplicateNames = hasDuplicateNames

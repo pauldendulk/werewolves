@@ -414,6 +414,7 @@
         <span class="eliminated-badge" *ngIf="p.isEliminated"> 💀 </span>
         <span class="role-tag" [class.wolf]="p.role === 'Werewolf'">{{ p.role ?? '?' }}</span>
         <span class="score-badge">{{ p.score }} pts</span>
+        <span class="total-score-badge" *ngIf="lobbyState.game.gameIndex >= 2">{{ p.totalScore }} total</span>
       </div>
     </div>
     <p-button

@@ -45,6 +45,8 @@ public class GameState
     public List<EliminationEntry> NightDeaths { get; set; } = new();
     public List<EliminationEntry> DayDeaths { get; set; } = new();
 
+    public int GameIndex { get; set; } = 1;
+
     // Add new per-game fields here alongside their property initializers above.
     public void ResetSessionState()
     {
