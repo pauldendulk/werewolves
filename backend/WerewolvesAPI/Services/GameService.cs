@@ -647,6 +647,7 @@ public class GameService : IGameService
                 break;
 
             case GamePhase.GameOver:
+                ResetForNextGame(game);
                 break;
         }
     }
@@ -1028,6 +1029,7 @@ public class GameService : IGameService
             GamePhase.SeerTurn           => alive.Where(p => p.Skill == PlayerSkill.Seer),
             GamePhase.Discussion         => alive,
             GamePhase.TiebreakDiscussion => alive,
+            GamePhase.GameOver           => game.Players.Where(p => p.ParticipationStatus == ParticipationStatus.Participating),
             _                            => Enumerable.Empty<PlayerState>()
         };
     }

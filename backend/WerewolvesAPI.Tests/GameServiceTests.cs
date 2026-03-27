@@ -970,6 +970,317 @@ public class GameServiceTests
         gameOver2.TournamentCode.Should().Be(tc, "tournament code survives both games");
         gameOver2.GameId.Should().NotBe(g1GameId, "game 2 has its own per-game ID");
     }
+
+    // ── Tournament multi-game tests ────────────────────────────────────────
+
+    [Fact]
+    public void TwoGamesInRow_WithSkills_SkillStateIsResetBetweenGames()
+    {
+        // Verify that WitchHealUsed and Lover1Id/Lover2Id are cleared after a reset.
+        // If those fields survived, game 2 would be silently broken (witch can't heal;
+        // lover cascade fires on the wrong players).
+        //
+        // Game plan (4 players: wolf, cupid/V, witch/V, extra/V):
+        //   Lovers: wolf + witch. Day 1: eliminate extra. Night 2: wolf kills cupid,
+        //   witch saves (WitchHealUsed=true). Day 2: village votes wolf out →
+        //   lover cascade kills witch → Villagers win → GameOver.
+        var game = CreateReadyGameWithSkills(3, new List<string> { "Witch", "Cupid" }); // 4 players
+        _gameService.StartGame(game.TournamentCode, game.CreatorId);
+        var tc = game.TournamentCode;
+
+        var state = _gameService.GetGame(tc)!;
+        var wolf  = state.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var cupid = state.Players.First(p => p.Skill == Models.PlayerSkill.Cupid);
+        var witch = state.Players.First(p => p.Skill == Models.PlayerSkill.Witch);
+        var extra = state.Players.First(p => p.Role == Models.PlayerRole.Villager && p.Skill == Models.PlayerSkill.None);
+
+        // RoleReveal → WerewolvesMeeting → CupidTurn
+        MarkAllAliveDone(tc);
+        MarkAliveWolvesDone(tc);
+
+        // Cupid links wolf + witch as lovers → LoverReveal → Discussion
+        _gameService.CupidAction(tc, cupid.PlayerId, wolf.PlayerId, witch.PlayerId);
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // LoverReveal → Discussion
+
+        // Day 1: everyone votes to eliminate extra
+        foreach (var p in state.Players.Where(p => p.PlayerId != extra.PlayerId))
+            _gameService.CastVote(tc, p.PlayerId, extra.PlayerId);
+        MarkAllAliveDone(tc); // → DayElimination (extra out)
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → WerewolvesTurn round 2
+
+        // Night 2: wolf kills cupid; witch saves cupid (WitchHealUsed = true)
+        _gameService.CastVote(tc, wolf.PlayerId, cupid.PlayerId);
+        // CastVote auto-advances to WitchTurn when all wolves have voted
+        _gameService.WitchAction(tc, witch.PlayerId, "save", null); // → NightElimination (cupid saved)
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → Discussion round 2
+
+        // Sanity: skill state is active before reset
+        var beforeReset = _gameService.GetGame(tc)!;
+        beforeReset.WitchHealUsed.Should().BeTrue("sanity: heal was used in night 2");
+        beforeReset.Lover1Id.Should().NotBeNull("sanity: lovers were set by cupid");
+
+        // Day 2: cupid + witch vote wolf; wolf votes cupid
+        // Wolf eliminated → lover cascade kills witch → Villagers win
+        _gameService.CastVote(tc, cupid.PlayerId, wolf.PlayerId);
+        _gameService.CastVote(tc, witch.PlayerId, wolf.PlayerId);
+        _gameService.CastVote(tc, wolf.PlayerId, cupid.PlayerId);
+        MarkAllAliveDone(tc); // → DayElimination (wolf + witch out, Villagers win)
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
+
+        var gameOver = _gameService.GetGame(tc)!;
+        gameOver.Phase.Should().Be(Models.GamePhase.GameOver);
+
+        // Trigger reset
+        gameOver.PhaseEndsAt = DateTime.UtcNow.AddSeconds(-1);
+        _gameService.TryAdvancePhaseIfExpired(tc);
+
+        var lobby = _gameService.GetGame(tc)!;
+        lobby.WitchHealUsed.Should().BeFalse("WitchHealUsed must be cleared for game 2");
+        lobby.WitchPoisonUsed.Should().BeFalse("WitchPoisonUsed must be cleared for game 2");
+        lobby.Lover1Id.Should().BeNull("Lover1Id must be cleared — lover cascade must not fire in game 2");
+        lobby.Lover2Id.Should().BeNull("Lover2Id must be cleared — lover cascade must not fire in game 2");
+        lobby.NightKillTargetId.Should().BeNull();
+        lobby.HunterMustShoot.Should().BeFalse();
+    }
+
+    [Fact]
+    public void TwoGamesInRow_TotalScore_IsPreservedBetweenGames()
+    {
+        // After game 1 ends and the lobby resets, TotalScore must equal what Score was at
+        // the end of game 1, and Score itself must be zeroed.
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
+        _gameService.JoinGame(game.TournamentCode, "Alice");
+        _gameService.JoinGame(game.TournamentCode, "Bob");
+        _gameService.UpdateEnabledSkills(game.TournamentCode, new List<string>(), game.CreatorId);
+        var tc = game.TournamentCode;
+
+        _gameService.StartGame(tc, game.CreatorId);
+        var g1 = _gameService.GetGame(tc)!;
+        var wolf = g1.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var vills = g1.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(tc);    // RoleReveal → WerewolvesMeeting
+        MarkAliveWolvesDone(tc); // WerewolvesMeeting → Discussion
+        foreach (var v in vills)
+            _gameService.CastVote(tc, v.PlayerId, wolf.PlayerId);
+        _gameService.CastVote(tc, wolf.PlayerId, vills[0].PlayerId);
+        MarkAllAliveDone(tc);    // → DayElimination (Villagers win)
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
+
+        var gameOver = _gameService.GetGame(tc)!;
+        var scoresGameOne = gameOver.Players.ToDictionary(p => p.PlayerId, p => p.Score);
+
+        gameOver.PhaseEndsAt = DateTime.UtcNow.AddSeconds(-1);
+        _gameService.TryAdvancePhaseIfExpired(tc);
+
+        var lobby = _gameService.GetGame(tc)!;
+        foreach (var p in lobby.Players)
+        {
+            p.TotalScore.Should().Be(scoresGameOne[p.PlayerId],
+                $"{p.DisplayName}: TotalScore must equal game 1 score after reset");
+            p.Score.Should().Be(0, $"{p.DisplayName}: per-game Score must be zeroed after reset");
+        }
+    }
+
+    [Fact]
+    public void TwoGamesInRow_TotalScore_AccumulatesAcrossGames()
+    {
+        // TotalScore must equal the sum of Score earned in both games.
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
+        _gameService.JoinGame(game.TournamentCode, "Alice");
+        _gameService.JoinGame(game.TournamentCode, "Bob");
+        _gameService.UpdateEnabledSkills(game.TournamentCode, new List<string>(), game.CreatorId);
+        var tc = game.TournamentCode;
+
+        // ── GAME 1 ──────────────────────────────────────────────────────────
+        _gameService.StartGame(tc, game.CreatorId);
+        var g1 = _gameService.GetGame(tc)!;
+        var wolf1 = g1.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var vills1 = g1.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(tc);
+        MarkAliveWolvesDone(tc);
+        foreach (var v in vills1)
+            _gameService.CastVote(tc, v.PlayerId, wolf1.PlayerId);
+        _gameService.CastVote(tc, wolf1.PlayerId, vills1[0].PlayerId);
+        MarkAllAliveDone(tc);
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
+
+        var afterGame1 = _gameService.GetGame(tc)!;
+        var scoresGame1 = afterGame1.Players.ToDictionary(p => p.PlayerId, p => p.Score);
+
+        afterGame1.PhaseEndsAt = DateTime.UtcNow.AddSeconds(-1);
+        _gameService.TryAdvancePhaseIfExpired(tc);
+
+        // ── GAME 2 ──────────────────────────────────────────────────────────
+        _gameService.StartGame(tc, game.CreatorId);
+        var g2 = _gameService.GetGame(tc)!;
+        var wolf2 = g2.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var vills2 = g2.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(tc);
+        MarkAliveWolvesDone(tc);
+        foreach (var v in vills2)
+            _gameService.CastVote(tc, v.PlayerId, wolf2.PlayerId);
+        _gameService.CastVote(tc, wolf2.PlayerId, vills2[0].PlayerId);
+        MarkAllAliveDone(tc);
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
+
+        var afterGame2 = _gameService.GetGame(tc)!;
+        foreach (var p in afterGame2.Players)
+        {
+            var expectedTotal = scoresGame1[p.PlayerId] + p.Score;
+            p.TotalScore.Should().Be(expectedTotal,
+                $"{p.DisplayName}: TotalScore must be the sum of scores from both games");
+        }
+    }
+
+    [Fact]
+    public void TwoGamesInRow_GameIndex_IncrementsAfterReset()
+    {
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
+        _gameService.JoinGame(game.TournamentCode, "Alice");
+        _gameService.JoinGame(game.TournamentCode, "Bob");
+        _gameService.UpdateEnabledSkills(game.TournamentCode, new List<string>(), game.CreatorId);
+        var tc = game.TournamentCode;
+
+        game.GameIndex.Should().Be(1);
+
+        _gameService.StartGame(tc, game.CreatorId);
+        var g1 = _gameService.GetGame(tc)!;
+        var wolf = g1.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var vills = g1.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(tc);
+        MarkAliveWolvesDone(tc);
+        foreach (var v in vills)
+            _gameService.CastVote(tc, v.PlayerId, wolf.PlayerId);
+        _gameService.CastVote(tc, wolf.PlayerId, vills[0].PlayerId);
+        MarkAllAliveDone(tc);
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
+
+        var gameOver = _gameService.GetGame(tc)!;
+        gameOver.PhaseEndsAt = DateTime.UtcNow.AddSeconds(-1);
+        _gameService.TryAdvancePhaseIfExpired(tc);
+
+        _gameService.GetGame(tc)!.GameIndex.Should().Be(2, "GameIndex must increment after the first reset");
+    }
+
+    [Fact]
+    public void TwoGamesInRow_TournamentId_IsPreservedAfterReset()
+    {
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
+        _gameService.JoinGame(game.TournamentCode, "Alice");
+        _gameService.JoinGame(game.TournamentCode, "Bob");
+        _gameService.UpdateEnabledSkills(game.TournamentCode, new List<string>(), game.CreatorId);
+        var tc = game.TournamentCode;
+        var originalTournamentId = _gameService.GetGame(tc)!.TournamentId;
+
+        _gameService.StartGame(tc, game.CreatorId);
+        var g1 = _gameService.GetGame(tc)!;
+        var wolf = g1.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var vills = g1.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(tc);
+        MarkAliveWolvesDone(tc);
+        foreach (var v in vills)
+            _gameService.CastVote(tc, v.PlayerId, wolf.PlayerId);
+        _gameService.CastVote(tc, wolf.PlayerId, vills[0].PlayerId);
+        MarkAllAliveDone(tc);
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
+
+        var gameOver = _gameService.GetGame(tc)!;
+        gameOver.PhaseEndsAt = DateTime.UtcNow.AddSeconds(-1);
+        _gameService.TryAdvancePhaseIfExpired(tc);
+
+        _gameService.GetGame(tc)!.TournamentId.Should().Be(originalTournamentId,
+            "TournamentId must survive across game resets so DB records link to the same tournament");
+    }
+
+    [Fact]
+    public void TwoGamesInRow_PlayerWhoLeft_RemainsExcludedInGame2()
+    {
+        // 4 players so the game is still valid after one leaves (3 remain, meeting MinPlayers).
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
+        _gameService.JoinGame(game.TournamentCode, "Alice");
+        var (_, _, bob) = _gameService.JoinGame(game.TournamentCode, "Bob");
+        _gameService.JoinGame(game.TournamentCode, "Charlie");
+        _gameService.UpdateEnabledSkills(game.TournamentCode, new List<string>(), game.CreatorId);
+        var tc = game.TournamentCode;
+
+        _gameService.LeaveGame(tc, bob!.PlayerId);
+
+        _gameService.StartGame(tc, game.CreatorId);
+        var g1 = _gameService.GetGame(tc)!;
+        g1.Players.First(p => p.PlayerId == bob.PlayerId).Role.Should().BeNull("Left player must not be assigned a role");
+
+        var wolf = g1.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var vills = g1.Players.Where(p => p.Role == Models.PlayerRole.Villager
+            && p.ParticipationStatus == Models.ParticipationStatus.Participating).ToList();
+
+        MarkAllAliveDone(tc);
+        MarkAliveWolvesDone(tc);
+        foreach (var v in vills)
+            _gameService.CastVote(tc, v.PlayerId, wolf.PlayerId);
+        _gameService.CastVote(tc, wolf.PlayerId, vills[0].PlayerId);
+        MarkAllAliveDone(tc);
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
+
+        var gameOver = _gameService.GetGame(tc)!;
+        gameOver.PhaseEndsAt = DateTime.UtcNow.AddSeconds(-1);
+        _gameService.TryAdvancePhaseIfExpired(tc);
+
+        var lobby = _gameService.GetGame(tc)!;
+        var bobAfterReset = lobby.Players.First(p => p.PlayerId == bob.PlayerId);
+        bobAfterReset.ParticipationStatus.Should().Be(Models.ParticipationStatus.Left,
+            "Left status must survive the game reset");
+        bobAfterReset.Role.Should().BeNull("Left player must not receive a role after reset");
+
+        // Game 2 — Left player must still be excluded
+        _gameService.StartGame(tc, game.CreatorId);
+        var g2 = _gameService.GetGame(tc)!;
+        g2.Players.First(p => p.PlayerId == bob.PlayerId).Role.Should().BeNull(
+            "Left player must not be assigned a role in game 2");
+    }
+
+    [Fact]
+    public void TwoGamesInRow_AllParticipatingPlayersDone_TriggersEarlyReset()
+    {
+        // When every participating player (alive and eliminated) marks done during GameOver,
+        // the reset must fire immediately without waiting for the timer.
+        var game = _gameService.CreateGame("Creator", 40, "http://localhost");
+        _gameService.JoinGame(game.TournamentCode, "Alice");
+        _gameService.JoinGame(game.TournamentCode, "Bob");
+        _gameService.UpdateEnabledSkills(game.TournamentCode, new List<string>(), game.CreatorId);
+        var tc = game.TournamentCode;
+
+        _gameService.StartGame(tc, game.CreatorId);
+        var g1 = _gameService.GetGame(tc)!;
+        var wolf = g1.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
+        var vills = g1.Players.Where(p => p.Role == Models.PlayerRole.Villager).ToList();
+
+        MarkAllAliveDone(tc);
+        MarkAliveWolvesDone(tc);
+        foreach (var v in vills)
+            _gameService.CastVote(tc, v.PlayerId, wolf.PlayerId);
+        _gameService.CastVote(tc, wolf.PlayerId, vills[0].PlayerId);
+        MarkAllAliveDone(tc);
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
+
+        var gameOver = _gameService.GetGame(tc)!;
+        gameOver.Phase.Should().Be(Models.GamePhase.GameOver);
+
+        // All participating players mark done (including the eliminated wolf) — no timer manipulation
+        foreach (var p in gameOver.Players.Where(p => p.ParticipationStatus == Models.ParticipationStatus.Participating))
+            _gameService.MarkDone(tc, p.PlayerId);
+
+        var afterDone = _gameService.GetGame(tc)!;
+        afterDone.Phase.Should().NotBe(Models.GamePhase.GameOver,
+            "early reset must fire as soon as all participating players are done, without waiting for the timer");
+        afterDone.Status.Should().Be(Models.GameStatus.ReadyToStart);
+        afterDone.Winner.Should().BeNull("reset must clear the winner");
+    }
+
     private Models.GameState CreateReadyGameWithSkills(int extraPlayers, List<string> skills)
     {
         var game = _gameService.CreateGame("Creator", 40, "http://localhost");
