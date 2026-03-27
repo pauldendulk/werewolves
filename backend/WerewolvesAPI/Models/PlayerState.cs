@@ -13,6 +13,8 @@ public class PlayerState
     public bool IsEliminated { get; set; }
     public bool IsDone { get; set; }
     public int Score { get; set; } = 0;
+    public int VotesCast { get; set; } = 0;
+    public int VotesCorrect { get; set; } = 0;
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 
     public void ResetForNewGame()
@@ -22,6 +24,8 @@ public class PlayerState
         IsEliminated = false;
         IsDone = false;
         Score = 0;
+        VotesCast = 0;
+        VotesCorrect = 0;
     }
 }
 

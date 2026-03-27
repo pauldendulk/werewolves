@@ -19,6 +19,8 @@ public record GamePlayerRecord(
     bool IsEliminated,
     string? EliminationCause,
     int Score,
+    int VotesCast,
+    int VotesCorrect,
     bool IsCreator,
     bool IsModerator,
     string ParticipationStatus,

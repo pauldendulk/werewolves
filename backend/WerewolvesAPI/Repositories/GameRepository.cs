@@ -26,16 +26,18 @@ public class GameRepository(string connectionString) : IGameRepository
         await conn.ExecuteAsync("""
             INSERT INTO game_players
                 (game_id, player_id, display_name, role, skill, is_eliminated, elimination_cause,
-                 score, is_creator, is_moderator, participation_status, joined_at)
+                 score, votes_cast, votes_correct, is_creator, is_moderator, participation_status, joined_at)
             VALUES
                 (@GameId, @PlayerId, @DisplayName, @Role, @Skill, @IsEliminated, @EliminationCause,
-                 @Score, @IsCreator, @IsModerator, @ParticipationStatus, @JoinedAt)
+                 @Score, @VotesCast, @VotesCorrect, @IsCreator, @IsModerator, @ParticipationStatus, @JoinedAt)
             ON CONFLICT (game_id, player_id) DO UPDATE SET
                 role                 = EXCLUDED.role,
                 skill                = EXCLUDED.skill,
                 is_eliminated        = EXCLUDED.is_eliminated,
                 elimination_cause    = EXCLUDED.elimination_cause,
                 score                = EXCLUDED.score,
+                votes_cast           = EXCLUDED.votes_cast,
+                votes_correct        = EXCLUDED.votes_correct,
                 participation_status = EXCLUDED.participation_status
             """, players);
     }

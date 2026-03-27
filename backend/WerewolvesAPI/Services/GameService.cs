@@ -721,6 +721,8 @@ public class GameService : IGameService
             AwardCorrectVotePoints(game, eliminatedId);
         }
 
+        RecordDayVoteAccuracy(game);
+
         EvaluateWinCondition(game);
         BeginPhase(game, GamePhase.DayElimination, TimeSpan.FromSeconds(10));
         _logger.LogInformation("Game {GameId} → DayElimination (eliminated: {Id}, winner: {Winner})", game.GameId, eliminatedId ?? "none", game.Winner ?? "none");
@@ -895,6 +897,8 @@ public class GameService : IGameService
                 IsEliminated: p.IsEliminated,
                 EliminationCause: null,
                 Score: p.Score,
+                VotesCast: p.VotesCast,
+                VotesCorrect: p.VotesCorrect,
                 IsCreator: p.IsCreator,
                 IsModerator: p.IsModerator,
                 ParticipationStatus: p.ParticipationStatus.ToString(),
@@ -946,6 +950,20 @@ public class GameService : IGameService
         foreach (var (voterId, targetId) in game.DayVotes)
             if (targetId == eliminatedId && playerMap.TryGetValue(voterId, out var voter))
                 voter.Score++;
+    }
+
+    // Track how many votes each player cast and how many targeted an actual werewolf.
+    // Called after every resolved day vote, including tiebreaks and no-elimination rounds.
+    private static void RecordDayVoteAccuracy(GameState game)
+    {
+        var playerMap = game.Players.ToDictionary(p => p.PlayerId);
+        foreach (var (voterId, targetId) in game.DayVotes)
+        {
+            if (!playerMap.TryGetValue(voterId, out var voter)) continue;
+            voter.VotesCast++;
+            if (playerMap.TryGetValue(targetId, out var target) && target.Role == PlayerRole.Werewolf)
+                voter.VotesCorrect++;
+        }
     }
 
     // Award 8 points to all players on the winning team.
