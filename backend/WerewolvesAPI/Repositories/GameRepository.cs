@@ -39,4 +39,30 @@ public class GameRepository(string connectionString) : IGameRepository
                 participation_status = EXCLUDED.participation_status
             """, players);
     }
+
+    public async Task UpsertLiveStateAsync(string tournamentCode, string stateJson)
+    {
+        using var conn = Open();
+        await conn.ExecuteAsync("""
+            INSERT INTO game_live_state (tournament_code, state, saved_at)
+            VALUES (@TournamentCode, @State::jsonb, NOW())
+            ON CONFLICT (tournament_code) DO UPDATE SET
+                state    = EXCLUDED.state,
+                saved_at = NOW()
+            """, new { TournamentCode = tournamentCode, State = stateJson });
+    }
+
+    public async Task DeleteLiveStateAsync(string tournamentCode)
+    {
+        using var conn = Open();
+        await conn.ExecuteAsync(
+            "DELETE FROM game_live_state WHERE tournament_code = @TournamentCode",
+            new { TournamentCode = tournamentCode });
+    }
+
+    public async Task<IEnumerable<string>> LoadAllLiveStatesAsync()
+    {
+        using var conn = Open();
+        return await conn.QueryAsync<string>("SELECT state FROM game_live_state");
+    }
 }

@@ -42,6 +42,7 @@ if (!string.IsNullOrEmpty(connectionString))
 {
     var migratorLogger = app.Services.GetRequiredService<ILogger<Program>>();
     DatabaseMigrator.Run(connectionString, migratorLogger);
+    await app.Services.GetRequiredService<IGameService>().InitializeAsync();
 }
 
 app.UseSwagger();

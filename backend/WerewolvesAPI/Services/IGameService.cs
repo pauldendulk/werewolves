@@ -5,6 +5,7 @@ namespace WerewolvesAPI.Services;
 
 public interface IGameService
 {
+    Task InitializeAsync();
     GameState CreateGame(string creatorName, int maxPlayers, string baseUrl);
     GameState? GetGame(string tournamentCode);
     (bool Success, string? Message, PlayerState? Player) JoinGame(string tournamentCode, string displayName, string? existingPlayerId = null);

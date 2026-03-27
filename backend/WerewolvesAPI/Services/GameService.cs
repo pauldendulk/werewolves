@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using QRCoder;
 using WerewolvesAPI.DTOs;
 using WerewolvesAPI.Models;
@@ -10,6 +12,7 @@ public class GameService : IGameService
 {
     private readonly ConcurrentDictionary<string, GameState> _games = new();
     private readonly ConcurrentDictionary<string, object> _phaseLocks = new();
+    private static readonly JsonSerializerOptions _jsonOptions = new() { Converters = { new JsonStringEnumConverter() } };
     private readonly ILogger<GameService> _logger;
     private readonly IGameRepository _gameRepository;
     private readonly ITournamentRepository _tournamentRepository;
@@ -58,6 +61,7 @@ public class GameService : IGameService
         _games[tournamentCode] = game;
 
         ThrowOnFailure(SaveTournamentAsync(tournamentId, tournamentCode, playerId));
+        ThrowOnFailure(UpsertLiveStateAsync(game));
         _logger.LogInformation("Game created: {TournamentCode} by {CreatorName}", tournamentCode, creatorName);
         return game;
     }
@@ -260,6 +264,7 @@ public class GameService : IGameService
         game.HunterMustShoot = false;
         game.HunterEliminatedAtNight = false;
         BumpVersion(game);
+        ThrowOnFailure(UpsertLiveStateAsync(game));
         _logger.LogInformation("Game {GameId} started", gameId);
         return (true, null);
     }
@@ -827,8 +832,29 @@ public class GameService : IGameService
         game.ResetSessionState();
         RecalculateGameState(game);
         BumpVersion(game);
+        ThrowOnFailure(UpsertLiveStateAsync(game));
         _logger.LogInformation("Game reset for next round: {TournamentCode}", game.TournamentCode);
     }
+
+    public async Task InitializeAsync()
+    {
+        var stateJsons = await _gameRepository.LoadAllLiveStatesAsync();
+        foreach (var json in stateJsons)
+        {
+            var game = JsonSerializer.Deserialize<GameState>(json, _jsonOptions)!;
+            _games[game.TournamentCode] = game;
+            // Ensure results are persisted for any game that ended before the server restarted.
+            if (game.Phase == GamePhase.GameOver)
+                await PersistGameResultsAsync(game);
+            _logger.LogInformation("Restored game {TournamentCode} from live state (phase {Phase})", game.TournamentCode, game.Phase);
+        }
+    }
+
+    private Task UpsertLiveStateAsync(GameState game) =>
+        _gameRepository.UpsertLiveStateAsync(game.TournamentCode, SerializeState(game));
+
+    private static string SerializeState(GameState game) =>
+        JsonSerializer.Serialize(game, _jsonOptions);
 
     // Faults on the thread pool crash the process — we prefer that over silently swallowed errors.
     private static void ThrowOnFailure(Task task) =>
@@ -969,7 +995,7 @@ public class GameService : IGameService
             !p.IsEliminated &&
             p.ParticipationStatus == ParticipationStatus.Participating);
 
-    private static void BeginPhase(GameState game, GamePhase phase, TimeSpan? duration = null)
+    private void BeginPhase(GameState game, GamePhase phase, TimeSpan? duration = null)
     {
         game.Phase = phase;
         game.PhaseStartedAt = DateTime.UtcNow;
@@ -977,6 +1003,7 @@ public class GameService : IGameService
         game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(3000);
         ResetDone(game);
         BumpVersion(game);
+        ThrowOnFailure(UpsertLiveStateAsync(game));
     }
 
     private static void ResetDone(GameState game)

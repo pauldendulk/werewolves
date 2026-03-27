@@ -28,4 +28,7 @@ public interface IGameRepository
 {
     Task SaveGameAsync(GameRecord game);
     Task SaveGamePlayersAsync(IEnumerable<GamePlayerRecord> players);
+    Task UpsertLiveStateAsync(string tournamentCode, string stateJson);
+    Task DeleteLiveStateAsync(string tournamentCode);
+    Task<IEnumerable<string>> LoadAllLiveStatesAsync();
 }
