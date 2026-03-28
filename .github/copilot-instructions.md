@@ -20,8 +20,9 @@
 1. **Build the project** - Every change requires a fresh build
 2. **Inspect build errors** - Carefully review all compilation errors and warnings
 3. **Fix all errors** - Do not proceed until the build is clean
-4. **Run tests** - Execute the test suite to verify your changes
-5. **Ensure tests pass** - All tests must be green before you stop working
+4. **Fix deprecation warnings** - Resolve any `[Obsolete]` (C#) or `@deprecated` (TypeScript/Angular) warnings introduced or surfaced by your changes. Do not leave deprecated API usage behind.
+5. **Run tests** - Execute the test suite to verify your changes
+6. **Ensure tests pass** - All tests must be green before you stop working
 
 ## Building the Project
 
@@ -190,6 +191,7 @@ After implementing a feature that touches a particular screen, run the Playwrigh
 Before marking a task as complete:
 
 - [ ] Code builds without errors (`dotnet build` and `npm run build`)
+- [ ] No deprecation warnings (`[Obsolete]` in C#, `@deprecated` in TypeScript/Angular) introduced or left unresolved
 - [ ] All existing tests pass
 - [ ] New tests added for your changes
 - [ ] All new tests pass
