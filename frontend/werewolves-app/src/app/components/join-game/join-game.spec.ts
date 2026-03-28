@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { of, throwError } from 'rxjs';
@@ -34,7 +35,9 @@ describe('JoinGameComponent', () => {
       nightDeaths: [],
       dayDeaths: [],
       winner: null,
-      tiebreakCandidates: [] as string[]
+      tiebreakCandidates: [] as string[],
+      gameIndex: 1,
+      isPremium: false
     },
     players: [
       {
@@ -48,7 +51,8 @@ describe('JoinGameComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
-        score: 0
+        score: 0,
+        totalScore: 0
       }
     ],
     hasDuplicateNames: false
@@ -63,8 +67,10 @@ describe('JoinGameComponent', () => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [JoinGameComponent, HttpClientTestingModule],
+      imports: [JoinGameComponent],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: GameService, useValue: gameServiceSpy },
         { provide: Router, useValue: routerSpy },
         {

@@ -46,6 +46,7 @@ public class GameState
     public List<EliminationEntry> DayDeaths { get; set; } = new();
 
     public int GameIndex { get; set; } = 1;
+    public bool IsPremium { get; set; } = false;
 
     // Add new per-game fields here alongside their property initializers above.
     public void ResetSessionState()

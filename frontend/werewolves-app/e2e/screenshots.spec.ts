@@ -115,6 +115,7 @@ function makeGameState(
       winner: null,
       tiebreakCandidates: [],
       gameIndex: 1,
+      isPremium: false,
       ...extra,
     },
     players,
@@ -146,6 +147,7 @@ function makeLobbyState(players = BASE_PLAYERS) {
       winner: null,
       tiebreakCandidates: [],
       gameIndex: 1,
+      isPremium: false,
     },
     players,
     hasDuplicateNames: false,
@@ -531,4 +533,45 @@ test('23-game-over-game2', async ({ page }) => {
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Show Scores")');
   await shot(page, '23-game-over-game2');
+});
+
+// ── 24 · Tournament Unlock — pass code dialog ─────────────────────────────────
+test('24-tournament-unlock', async ({ page }) => {
+  const state = {
+    game: {
+      gameId: GAME_ID,
+      tournamentCode: GAME_ID,
+      creatorId: HOST,
+      minPlayers: 5,
+      maxPlayers: 10,
+      joinLink: `http://localhost:4200/game/${GAME_ID}`,
+      qrCodeBase64: QR_PLACEHOLDER,
+      status: 'ReadyToStart',
+      version: 1,
+      discussionDurationMinutes: 3,
+      numberOfWerewolves: 2,
+      enabledSkills: ['Seer', 'Cupid', 'Witch', 'Hunter'],
+      phaseStartedAt: null,
+      phase: '',
+      roundNumber: 0,
+      phaseEndsAt: null,
+      audioPlayAt: null,
+      nightDeaths: [],
+      dayDeaths: [],
+      winner: null,
+      tiebreakCandidates: [],
+      gameIndex: 2,
+      isPremium: false,
+    },
+    players: BASE_PLAYERS,
+    hasDuplicateNames: false,
+  };
+  await setupMocks(page, state, {});
+  await setViewer(page, HOST);
+  await page.goto(`/game/${GAME_ID}/lobby`);
+  await page.waitForSelector('.lobby-container');
+  await page.click('button:has-text("Start Game")');
+  await page.waitForSelector('.p-dialog-header:has-text("Tournament Pass")');
+  await page.waitForTimeout(400); // allow PrimeNG backdrop animation to settle
+  await shot(page, '24-tournament-unlock');
 });

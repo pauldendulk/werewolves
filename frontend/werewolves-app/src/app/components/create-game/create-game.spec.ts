@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { of, throwError } from 'rxjs';
@@ -17,8 +18,10 @@ describe('CreateGameComponent', () => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [CreateGameComponent, HttpClientTestingModule],
+      imports: [CreateGameComponent],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: GameService, useValue: gameServiceSpy },
         { provide: Router, useValue: routerSpy },
         MessageService

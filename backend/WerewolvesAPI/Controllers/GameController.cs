@@ -105,7 +105,8 @@ public class GameController : ControllerBase
                 }).ToList(),
                 Winner = game.Winner,
                 TiebreakCandidates = game.TiebreakCandidates,
-                GameIndex = game.GameIndex
+                GameIndex = game.GameIndex,
+                IsPremium = game.IsPremium
             },
             Players = game.Players.Select(p => new PlayerDto
             {
@@ -227,6 +228,14 @@ public class GameController : ControllerBase
     public ActionResult ForceAdvancePhase(string tournamentCode, [FromBody] PlayerActionRequest request)
     {
         var (success, error) = _gameService.ForceAdvancePhase(tournamentCode, request.PlayerId);
+        if (!success) return BadRequest(new { message = error });
+        return Ok();
+    }
+
+    [HttpPost("{tournamentCode}/unlock")]
+    public ActionResult UnlockTournament(string tournamentCode, [FromBody] UnlockTournamentRequest request)
+    {
+        var (success, error) = _gameService.UnlockTournament(tournamentCode, request.Code);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }

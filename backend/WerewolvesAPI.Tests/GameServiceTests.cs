@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using WerewolvesAPI.Repositories;
@@ -16,7 +17,8 @@ public class GameServiceTests
         _loggerMock = new Mock<ILogger<GameService>>();
         var gameRepositoryMock = new Mock<IGameRepository>();
         var tournamentRepositoryMock = new Mock<ITournamentRepository>();
-        _gameService = new GameService(_loggerMock.Object, gameRepositoryMock.Object, tournamentRepositoryMock.Object);
+        var configurationMock = new Mock<IConfiguration>();
+        _gameService = new GameService(_loggerMock.Object, gameRepositoryMock.Object, tournamentRepositoryMock.Object, configurationMock.Object);
     }
 
     [Fact]
@@ -939,6 +941,7 @@ public class GameServiceTests
         });
 
         // ── GAME 2 ──────────────────────────────────────────────────────────
+        lobby.IsPremium = true; // bypass premium gate in test
         _gameService.StartGame(tc, game.CreatorId);
 
         var g2 = _gameService.GetGame(tc)!;
@@ -1113,6 +1116,7 @@ public class GameServiceTests
         _gameService.TryAdvancePhaseIfExpired(tc);
 
         // ── GAME 2 ──────────────────────────────────────────────────────────
+        _gameService.GetGame(tc)!.IsPremium = true; // bypass premium gate in test
         _gameService.StartGame(tc, game.CreatorId);
         var g2 = _gameService.GetGame(tc)!;
         var wolf2 = g2.Players.First(p => p.Role == Models.PlayerRole.Werewolf);

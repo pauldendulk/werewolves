@@ -76,6 +76,10 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/hunter-action`, { playerId, targetId });
   }
 
+  unlockTournament(gameId: string, code: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/unlock`, { code });
+  }
+
   getPlayerId(): string | null {
     return localStorage.getItem('playerId');
   }

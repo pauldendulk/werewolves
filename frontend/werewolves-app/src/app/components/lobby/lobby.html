@@ -1,7 +1,7 @@
 <div class="lobby-container" *ngIf="!loading && lobbyState">
   <p-toast></p-toast>
   <p-confirmDialog></p-confirmDialog>
-  <p-dialog header="Rename" [(visible)]="showRenameDialog" [modal]="true" [style]="{width: '400px'}">
+  <p-dialog header="Rename" [(visible)]="showRenameDialog" [modal]="true" [style]="{width: '400px'}" appendTo="body">
     <div class="p-fluid">
       <label for="newPlayerName">New Name</label>
       <input pInputText id="newPlayerName" [(ngModel)]="editedPlayerName" (keydown.enter)="savePlayerName()" autoFocus />
@@ -9,6 +9,18 @@
     <ng-template pTemplate="footer">
       <p-button label="Cancel" (onClick)="cancelEditPlayerName()" styleClass="p-button-text"></p-button>
       <p-button label="Save" (onClick)="savePlayerName()"></p-button>
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog header="Tournament Pass" [(visible)]="showUnlockDialog" [modal]="true" [style]="{width: 'min(360px, 90vw)'}" [closable]="true" appendTo="body">
+    <p>Enter your tournament pass code to continue to game {{ lobbyState?.game?.gameIndex }}.</p>
+    <div class="unlock-form">
+      <label for="unlockCode">Pass Code</label>
+      <input pInputText id="unlockCode" [(ngModel)]="unlockCode" (keydown.enter)="submitUnlockCode()" autoFocus placeholder="Enter code" />
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Cancel" (onClick)="showUnlockDialog = false" styleClass="p-button-text" [disabled]="unlocking"></p-button>
+      <p-button label="Unlock" (onClick)="submitUnlockCode()" [loading]="unlocking" [disabled]="!unlockCode.trim()"></p-button>
     </ng-template>
   </p-dialog>
 

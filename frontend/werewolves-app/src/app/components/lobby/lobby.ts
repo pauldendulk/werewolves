@@ -56,6 +56,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
   showRenameDialog: boolean = false;
   editedPlayerName: string = '';
 
+  // Unlock dialog state
+  showUnlockDialog: boolean = false;
+  unlockCode: string = '';
+  unlocking: boolean = false;
+
   playerMenuItems: MenuItem[] = [];
   @ViewChild('playerMenu') playerMenu!: Menu;
   selectedPlayer: PlayerState | null = null;
@@ -316,6 +321,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   startGame(): void {
+    if (this.lobbyState && this.lobbyState.game.gameIndex >= 2 && !this.lobbyState.game.isPremium) {
+      this.unlockCode = '';
+      this.showUnlockDialog = true;
+      return;
+    }
     this.audioService.unlock();
     this.gameService.startGame(this.gameId, this.playerId).subscribe({
       next: () => this.router.navigate(['/game', this.gameId, 'session'], { replaceUrl: true }),
@@ -324,6 +334,34 @@ export class LobbyComponent implements OnInit, OnDestroy {
         summary: 'Error',
         detail: err.error?.message ?? 'Failed to start game'
       })
+    });
+  }
+
+  submitUnlockCode(): void {
+    if (!this.unlockCode.trim()) return;
+    this.unlocking = true;
+    this.gameService.unlockTournament(this.gameId, this.unlockCode.trim()).subscribe({
+      next: () => {
+        this.showUnlockDialog = false;
+        this.unlocking = false;
+        this.audioService.unlock();
+        this.gameService.startGame(this.gameId, this.playerId).subscribe({
+          next: () => this.router.navigate(['/game', this.gameId, 'session'], { replaceUrl: true }),
+          error: (err) => this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err.error?.message ?? 'Failed to start game'
+          })
+        });
+      },
+      error: (err) => {
+        this.unlocking = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Invalid Code',
+          detail: err.error?.message ?? 'The code you entered is incorrect'
+        });
+      }
     });
   }
 

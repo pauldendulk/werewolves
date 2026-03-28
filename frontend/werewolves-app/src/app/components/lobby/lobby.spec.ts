@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -37,7 +38,9 @@ describe('LobbyComponent', () => {
       nightDeaths: [],
       dayDeaths: [],
       winner: null,
-      tiebreakCandidates: [] as string[]
+      tiebreakCandidates: [] as string[],
+      gameIndex: 1,
+      isPremium: false
     },
     players: [
       {
@@ -52,6 +55,7 @@ describe('LobbyComponent', () => {
         isEliminated: false,
         isDone: false,
         score: 0,
+        totalScore: 0,
         joinedAt: new Date().toISOString()
       },
       {
@@ -66,6 +70,7 @@ describe('LobbyComponent', () => {
         isEliminated: false,
         isDone: false,
         score: 0,
+        totalScore: 0,
         joinedAt: new Date().toISOString()
       },
       {
@@ -80,6 +85,7 @@ describe('LobbyComponent', () => {
         isEliminated: false,
         isDone: false,
         score: 0,
+        totalScore: 0,
         joinedAt: new Date().toISOString()
       }
     ],
@@ -101,8 +107,10 @@ describe('LobbyComponent', () => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [LobbyComponent, HttpClientTestingModule],
+      imports: [LobbyComponent],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: GameService, useValue: gameServiceSpy },
         { provide: PollingService, useValue: pollingServiceSpy },
         { provide: Router, useValue: routerSpy },

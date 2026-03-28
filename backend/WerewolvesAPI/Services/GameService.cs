@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Configuration;
 using QRCoder;
 using WerewolvesAPI.DTOs;
 using WerewolvesAPI.Models;
@@ -16,14 +17,16 @@ public class GameService : IGameService
     private readonly ILogger<GameService> _logger;
     private readonly IGameRepository _gameRepository;
     private readonly ITournamentRepository _tournamentRepository;
+    private readonly string _tournamentBypassCode;
 
     private object GetPhaseLock(string gameId) => _phaseLocks.GetOrAdd(gameId, _ => new object());
 
-    public GameService(ILogger<GameService> logger, IGameRepository gameRepository, ITournamentRepository tournamentRepository)
+    public GameService(ILogger<GameService> logger, IGameRepository gameRepository, ITournamentRepository tournamentRepository, IConfiguration configuration)
     {
         _logger = logger;
         _gameRepository = gameRepository;
         _tournamentRepository = tournamentRepository;
+        _tournamentBypassCode = configuration["Tournament:BypassCode"] ?? string.Empty;
     }
 
     // ── Lobby management ─────────────────────────────────────────────────────
@@ -225,6 +228,7 @@ public class GameService : IGameService
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
         if (game.CreatorId != creatorId) return (false, "Only the creator can start the game");
         if (game.Status != GameStatus.ReadyToStart) return (false, "Not enough players to start");
+        if (game.GameIndex >= 2 && !game.IsPremium) return (false, "A tournament pass is required to continue beyond game 1");
 
         var activePlayers = game.Players
             .Where(p => p.ParticipationStatus == ParticipationStatus.Participating)
@@ -470,6 +474,26 @@ public class GameService : IGameService
             AdvancePhase(game);
 
         return (true, null);
+    }
+
+    public (bool Success, string? Error) UnlockTournament(string tournamentCode, string code)
+    {
+        if (!_games.TryGetValue(tournamentCode, out var game)) return (false, "Game not found");
+        if (string.IsNullOrEmpty(_tournamentBypassCode) || code != _tournamentBypassCode)
+            return (false, "Invalid code");
+
+        game.IsPremium = true;
+        ThrowOnFailure(UpsertLiveStateAsync(game));
+        ThrowOnFailure(UpdateTournamentPremiumAsync(game));
+        return (true, null);
+    }
+
+    private async Task UpdateTournamentPremiumAsync(GameState game)
+    {
+        if (string.IsNullOrEmpty(game.TournamentId)) return;
+        var existing = await _tournamentRepository.GetByIdAsync(Guid.Parse(game.TournamentId));
+        if (existing == null) return;
+        await _tournamentRepository.SaveTournamentAsync(existing with { IsPremium = true });
     }
 
     public void TryAdvancePhaseIfExpired(string gameId)

@@ -27,5 +27,6 @@ public interface IGameService
     (bool Success, string? Error) HunterAction(string tournamentCode, string hunterId, string targetId);
     (bool Success, string? Error) ForceAdvancePhase(string tournamentCode, string creatorId);
     void TryAdvancePhaseIfExpired(string tournamentCode);
+    (bool Success, string? Error) UnlockTournament(string tournamentCode, string code);
     (string Role, string Skill, List<string> FellowWerewolves, string? LoverName, string? NightKillTargetName, bool WitchHealUsed, bool WitchPoisonUsed) GetPlayerRole(string tournamentCode, string playerId);
 }

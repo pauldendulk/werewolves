@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { of, EMPTY } from 'rxjs';
@@ -40,6 +41,8 @@ describe('SessionComponent', () => {
       winner: null,
       tiebreakCandidates: [] as string[],
       audioPlayAt: null,
+      gameIndex: 1,
+      isPremium: false,
       ...overrides
     },
     players: [
@@ -54,7 +57,8 @@ describe('SessionComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
-        score: 0
+        score: 0,
+        totalScore: 0
       },
       {
         playerId: 'player2',
@@ -67,7 +71,8 @@ describe('SessionComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
-        score: 0
+        score: 0,
+        totalScore: 0
       }
     ],
     hasDuplicateNames: false
@@ -89,8 +94,10 @@ describe('SessionComponent', () => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      imports: [SessionComponent, HttpClientTestingModule],
+      imports: [SessionComponent],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: GameService, useValue: gameServiceSpy },
         { provide: PollingService, useValue: pollingServiceSpy },
         { provide: AudioService, useValue: audioServiceSpy },
@@ -229,12 +236,14 @@ describe('SessionComponent', () => {
         nightDeaths: [],
         dayDeaths: [],
         winner: null,
-        tiebreakCandidates: ['player1', 'player2', 'player3']
+        tiebreakCandidates: ['player1', 'player2', 'player3'],
+        gameIndex: 1,
+        isPremium: false
       },
       players: [
-        { playerId: 'player1', displayName: 'Alice', isCreator: true, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0 },
-        { playerId: 'player2', displayName: 'Bob', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0 },
-        { playerId: 'player3', displayName: 'Carol', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0 }
+        { playerId: 'player1', displayName: 'Alice', isCreator: true, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0, totalScore: 0 },
+        { playerId: 'player2', displayName: 'Bob', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0, totalScore: 0 },
+        { playerId: 'player3', displayName: 'Carol', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0, totalScore: 0 }
       ],
       hasDuplicateNames: false
     });
@@ -257,7 +266,7 @@ describe('SessionComponent', () => {
       state.players.push({
         playerId: 'player4', displayName: 'Dave', isCreator: false, isModerator: false,
         isConnected: true, participationStatus: 'Participating', role: null, skill: null,
-        isEliminated: false, isDone: false, score: 0
+        isEliminated: false, isDone: false, score: 0, totalScore: 0
       });
       component.lobbyState = state;
       component.playerId = 'player1'; // Alice is NOT one of the tied candidates

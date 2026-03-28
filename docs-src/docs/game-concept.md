@@ -232,6 +232,16 @@ Players return to the lobby and can start a new game.
 
 ---
 
+### 16. Tournament — Unlock Pass
+
+Starting a second (or later) game requires a tournament pass. When the host presses **Start Game** from game 2 onwards, a modal appears asking for the pass code.
+
+![Tournament Unlock — pass code dialog](screenshots/24-tournament-unlock.png)
+
+Entering the correct code unlocks the tournament (`isPremium = true`) and starts the game immediately. An incorrect code shows an error and lets the host try again. In development the bypass code is configured in `appsettings.Development.json` (`Tournament:BypassCode`); in production the field is empty until a real payment flow sets the flag via the backend.
+
+---
+
 ## Win Condition Details
 
 Win conditions are evaluated after **every** elimination — night kill, witch poison, and day vote all trigger a check. The precedence is:
