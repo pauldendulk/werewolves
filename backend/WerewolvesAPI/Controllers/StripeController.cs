@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
 using WerewolvesAPI.Services;
 
 namespace WerewolvesAPI.Controllers;
@@ -24,7 +25,17 @@ public class StripeController : ControllerBase
         var payload = await new StreamReader(Request.Body).ReadToEndAsync();
         var signature = Request.Headers["Stripe-Signature"].ToString();
 
-        var tournamentCode = _stripeService.GetTournamentCodeFromEvent(payload, signature);
+        string? tournamentCode;
+        try
+        {
+            tournamentCode = _stripeService.GetTournamentCodeFromEvent(payload, signature);
+        }
+        catch (StripeException ex)
+        {
+            _logger.LogWarning(ex, "Stripe webhook signature validation failed");
+            return BadRequest();
+        }
+
         if (tournamentCode == null)
             return Ok(); // unknown event type — ignore
 
