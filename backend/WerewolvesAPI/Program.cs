@@ -17,6 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<IGameRepository>(_ => new GameRepository(connectionString));
 builder.Services.AddSingleton<ITournamentRepository>(_ => new TournamentRepository(connectionString));
 builder.Services.AddSingleton<IGameService, GameService>();
+builder.Services.AddSingleton<IStripeService, StripeService>();
 
 builder.Services.AddCors(options =>
 {

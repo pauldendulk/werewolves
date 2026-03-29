@@ -60,6 +60,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
   showUnlockDialog: boolean = false;
   unlockCode: string = '';
   unlocking: boolean = false;
+  showCodeInput: boolean = false;
+  buyingPass: boolean = false;
 
   playerMenuItems: MenuItem[] = [];
   @ViewChild('playerMenu') playerMenu!: Menu;
@@ -83,6 +85,11 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (!this.playerId) {
       this.router.navigate(['/game', this.gameId]);
       return;
+    }
+
+    const payment = this.route.snapshot.queryParamMap.get('payment');
+    if (payment === 'cancelled') {
+      this.messageService.add({ severity: 'warn', summary: 'Cancelled', detail: 'Payment was cancelled. You can try again when ready.' });
     }
 
     this.loadLobbyState();
@@ -323,6 +330,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   startGame(): void {
     if (this.lobbyState && this.lobbyState.game.gameIndex >= 2 && !this.lobbyState.game.isPremium) {
       this.unlockCode = '';
+      this.showCodeInput = false;
       this.showUnlockDialog = true;
       return;
     }
@@ -360,6 +368,23 @@ export class LobbyComponent implements OnInit, OnDestroy {
           severity: 'error',
           summary: 'Invalid Code',
           detail: err.error?.message ?? 'The code you entered is incorrect'
+        });
+      }
+    });
+  }
+
+  buyTournamentPass(): void {
+    this.buyingPass = true;
+    const successUrl = `${window.location.origin}/game/${this.gameId}/lobby?payment=success`;
+    const cancelUrl = `${window.location.origin}/game/${this.gameId}/lobby?payment=cancelled`;
+    this.gameService.createCheckoutSession(this.gameId, successUrl, cancelUrl).subscribe({
+      next: ({ checkoutUrl }) => window.location.href = checkoutUrl,
+      error: (err) => {
+        this.buyingPass = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.error?.message ?? 'Could not start payment'
         });
       }
     });

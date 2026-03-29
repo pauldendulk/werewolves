@@ -49,3 +49,4 @@ nav:
       - Local Development: development.md
       - Deployment: deployment.md
       - Secret Management: secrets.md
+      - Stripe Configuration: stripe.md

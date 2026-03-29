@@ -80,6 +80,10 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/unlock`, { code });
   }
 
+  createCheckoutSession(gameId: string, successUrl: string, cancelUrl: string): Observable<{ checkoutUrl: string }> {
+    return this.http.post<{ checkoutUrl: string }>(`${this.apiUrl}/game/${gameId}/checkout`, { successUrl, cancelUrl });
+  }
+
   getPlayerId(): string | null {
     return localStorage.getItem('playerId');
   }

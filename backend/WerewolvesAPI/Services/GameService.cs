@@ -488,6 +488,15 @@ public class GameService : IGameService
         return (true, null);
     }
 
+    public bool SetPremium(string tournamentCode)
+    {
+        if (!_games.TryGetValue(tournamentCode, out var game)) return false;
+        game.IsPremium = true;
+        ThrowOnFailure(UpsertLiveStateAsync(game));
+        ThrowOnFailure(UpdateTournamentPremiumAsync(game));
+        return true;
+    }
+
     private async Task UpdateTournamentPremiumAsync(GameState game)
     {
         if (string.IsNullOrEmpty(game.TournamentId)) return;

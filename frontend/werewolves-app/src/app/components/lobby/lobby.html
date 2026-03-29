@@ -13,14 +13,28 @@
   </p-dialog>
 
   <p-dialog header="Tournament Pass" [(visible)]="showUnlockDialog" [modal]="true" [style]="{width: 'min(360px, 90vw)'}" [closable]="true" appendTo="body">
-    <p>Enter your tournament pass code to continue to game {{ lobbyState?.game?.gameIndex }}.</p>
-    <div class="unlock-form">
-      <label for="unlockCode">Pass Code</label>
-      <input pInputText id="unlockCode" [(ngModel)]="unlockCode" (keydown.enter)="submitUnlockCode()" autoFocus placeholder="Enter code" />
+    <p>A tournament pass is required to continue to game {{ lobbyState!.game.gameIndex }}.</p>
+
+    <div class="unlock-buy">
+      <p-button label="Buy Tournament Pass — €3.50" (onClick)="buyTournamentPass()" [loading]="buyingPass" [disabled]="unlocking" styleClass="p-button-lg" [style]="{'width':'100%'}"></p-button>
     </div>
+
+    <div class="unlock-code-toggle">
+      <a href="#" (click)="$event.preventDefault(); showCodeInput = !showCodeInput">I already have a code</a>
+    </div>
+
+    @if (showCodeInput) {
+      <div class="unlock-form">
+        <label for="unlockCode">Pass Code</label>
+        <input pInputText id="unlockCode" [(ngModel)]="unlockCode" (keydown.enter)="submitUnlockCode()" placeholder="Enter code" />
+      </div>
+    }
+
     <ng-template pTemplate="footer">
-      <p-button label="Cancel" (onClick)="showUnlockDialog = false" styleClass="p-button-text" [disabled]="unlocking"></p-button>
-      <p-button label="Unlock" (onClick)="submitUnlockCode()" [loading]="unlocking" [disabled]="!unlockCode.trim()"></p-button>
+      <p-button label="Cancel" (onClick)="showUnlockDialog = false" styleClass="p-button-text" [disabled]="unlocking || buyingPass"></p-button>
+      @if (showCodeInput) {
+        <p-button label="Unlock" (onClick)="submitUnlockCode()" [loading]="unlocking" [disabled]="!unlockCode.trim() || buyingPass"></p-button>
+      }
     </ng-template>
   </p-dialog>
 
@@ -100,19 +114,21 @@
           (onClick)="startGame()"
         ></p-button>
 
-        <div class="warning-box" *ngIf="lobbyState.hasDuplicateNames">
-           <i class="pi pi-exclamation-triangle"></i>
-           <span>Duplicate names detected!</span>
-        </div>
+        <div class="warning-area">
+          <div class="warning-box" *ngIf="lobbyState.hasDuplicateNames">
+             <i class="pi pi-exclamation-triangle"></i>
+             <span>Duplicate names detected!</span>
+          </div>
 
-        <div class="warning-box" *ngIf="!hasEnoughPlayers && !lobbyState.hasDuplicateNames">
-           <i class="pi pi-exclamation-triangle"></i>
-           <span>Need at least {{ lobbyState.game.minPlayers }} players to start ({{ activePlayers.length }}/{{ lobbyState.game.minPlayers }})</span>
-        </div>
+          <div class="warning-box" *ngIf="!hasEnoughPlayers && !lobbyState.hasDuplicateNames">
+             <i class="pi pi-exclamation-triangle"></i>
+             <span>Need at least {{ lobbyState.game.minPlayers }} players to start ({{ activePlayers.length }}/{{ lobbyState.game.minPlayers }})</span>
+          </div>
 
-        <div class="warning-box" *ngIf="hasEnoughPlayers && !lobbyState.hasDuplicateNames && !hasEnoughPlayersForSkills">
-           <i class="pi pi-exclamation-triangle"></i>
-           <span>Too many special roles for {{ activePlayers.length }} players. Need {{ lobbyState.game.numberOfWerewolves + enabledSkills.length }} players or disable some skills.</span>
+          <div class="warning-box" *ngIf="hasEnoughPlayers && !lobbyState.hasDuplicateNames && !hasEnoughPlayersForSkills">
+             <i class="pi pi-exclamation-triangle"></i>
+             <span>Too many special roles for {{ activePlayers.length }} players. Need {{ lobbyState.game.numberOfWerewolves + enabledSkills.length }} players or disable some skills.</span>
+          </div>
         </div>
       </div>
     </div>

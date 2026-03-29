@@ -116,7 +116,7 @@ describe('LobbyComponent', () => {
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: { get: () => 'game123' } } }
+          useValue: { snapshot: { paramMap: { get: () => 'game123' }, queryParamMap: { get: () => null } } }
         },
         MessageService,
         ConfirmationService

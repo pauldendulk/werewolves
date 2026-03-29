@@ -10,11 +10,13 @@ namespace WerewolvesAPI.Controllers;
 public class GameController : ControllerBase
 {
     private readonly IGameService _gameService;
+    private readonly IStripeService _stripeService;
     private readonly ILogger<GameController> _logger;
 
-    public GameController(IGameService gameService, ILogger<GameController> logger)
+    public GameController(IGameService gameService, IStripeService stripeService, ILogger<GameController> logger)
     {
         _gameService = gameService;
+        _stripeService = stripeService;
         _logger = logger;
     }
 
@@ -238,6 +240,21 @@ public class GameController : ControllerBase
         var (success, error) = _gameService.UnlockTournament(tournamentCode, request.Code);
         if (!success) return BadRequest(new { message = error });
         return Ok();
+    }
+
+    [HttpPost("{tournamentCode}/checkout")]
+    public async Task<ActionResult<CreateCheckoutSessionResponse>> CreateCheckoutSession(
+        string tournamentCode, [FromBody] CreateCheckoutSessionRequest request)
+    {
+        var game = _gameService.GetGame(tournamentCode);
+        if (game == null) return NotFound(new { message = "Game not found" });
+
+        var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(
+            tournamentCode,
+            request.SuccessUrl,
+            request.CancelUrl);
+
+        return Ok(new CreateCheckoutSessionResponse { CheckoutUrl = checkoutUrl });
     }
 
     [HttpGet("{tournamentCode}/role")]
