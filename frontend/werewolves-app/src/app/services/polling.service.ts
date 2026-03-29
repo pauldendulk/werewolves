@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, interval, switchMap, filter, map, tap, shareReplay } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, interval, switchMap, filter, map, tap, shareReplay, catchError, EMPTY } from 'rxjs';
 import { LobbyState } from '../models/game.models';
 import { environment } from '../../environments/environment';
 
@@ -22,7 +22,15 @@ export class PollingService {
         const url = lastVersion !== null
           ? `${this.apiUrl}/game/${gameId}?version=${lastVersion}`
           : `${this.apiUrl}/game/${gameId}`;
-        return this.http.get<LobbyState>(url, { observe: 'response' });
+        return this.http.get<LobbyState>(url, { observe: 'response' }).pipe(
+          catchError((err: HttpErrorResponse) => {
+            // 404 means the game is gone — propagate so callers can navigate away.
+            // All other errors (offline, 500, timeout) are transient: skip this
+            // tick and let the next interval tick retry automatically.
+            if (err.status === 404) throw err;
+            return EMPTY;
+          })
+        );
       }),
       filter(response => response.status === 200 && response.body !== null),
       map(response => response.body as LobbyState),

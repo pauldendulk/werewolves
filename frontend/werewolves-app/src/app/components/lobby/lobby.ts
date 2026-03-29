@@ -56,9 +56,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
   showRenameDialog: boolean = false;
   editedPlayerName: string = '';
 
-  // Unlock dialog state
-  showUnlockDialog: boolean = false;
-  unlockCode: string = '';
+  // Unlock state
+  unlockCode: string = ''
   unlocking: boolean = false;
   showCodeInput: boolean = false;
   buyingPass: boolean = false;
@@ -215,6 +214,16 @@ export class LobbyComponent implements OnInit, OnDestroy {
     return this.hasEnoughPlayers && !this.lobbyState?.hasDuplicateNames && this.hasEnoughPlayersForSkills;
   }
 
+  get needsTournamentPass(): boolean {
+    return !!this.lobbyState && this.lobbyState.game.gameIndex >= 2 && !this.lobbyState.game.isPremium;
+  }
+
+  get startGameIcon(): string {
+    if (this.needsTournamentPass) return 'pi pi-lock';
+    if (this.lobbyState?.game.isPremium) return 'pi pi-star-fill';
+    return '';
+  }
+
   get creatorName(): string {
     const creator = this.lobbyState?.players.find(p => p.playerId === this.lobbyState?.game.creatorId);
     return creator?.displayName || 'Unknown';
@@ -328,12 +337,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   startGame(): void {
-    if (this.lobbyState && this.lobbyState.game.gameIndex >= 2 && !this.lobbyState.game.isPremium) {
-      this.unlockCode = '';
-      this.showCodeInput = false;
-      this.showUnlockDialog = true;
-      return;
-    }
     this.audioService.unlock();
     this.gameService.startGame(this.gameId, this.playerId).subscribe({
       next: () => this.router.navigate(['/game', this.gameId, 'session'], { replaceUrl: true }),
@@ -350,7 +353,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
     this.unlocking = true;
     this.gameService.unlockTournament(this.gameId, this.unlockCode.trim()).subscribe({
       next: () => {
-        this.showUnlockDialog = false;
         this.unlocking = false;
         this.audioService.unlock();
         this.gameService.startGame(this.gameId, this.playerId).subscribe({

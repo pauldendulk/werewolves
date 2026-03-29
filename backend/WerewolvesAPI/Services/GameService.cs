@@ -901,10 +901,14 @@ public class GameService : IGameService
         JsonSerializer.Serialize(game, _jsonOptions);
 
     // Faults on the thread pool crash the process — we prefer that over silently swallowed errors.
-    private static void ThrowOnFailure(Task task) =>
+    private void ThrowOnFailure(Task task) =>
         task.ContinueWith(
-            t => System.Runtime.ExceptionServices.ExceptionDispatchInfo
-                     .Capture(t.Exception!.GetBaseException()).Throw(),
+            t =>
+            {
+                var ex = t.Exception!.GetBaseException();
+                _logger.LogCritical(ex, "Background task failed — crashing process");
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex).Throw();
+            },
             TaskContinuationOptions.OnlyOnFaulted);
 
     private async Task PersistGameResultsAsync(GameState game)

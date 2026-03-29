@@ -12,31 +12,7 @@
     </ng-template>
   </p-dialog>
 
-  <p-dialog header="Tournament Pass" [(visible)]="showUnlockDialog" [modal]="true" [style]="{width: 'min(360px, 90vw)'}" [closable]="true" appendTo="body">
-    <p>A tournament pass is required to continue to game {{ lobbyState!.game.gameIndex }}.</p>
 
-    <div class="unlock-buy">
-      <p-button label="Buy Tournament Pass — €3.50" (onClick)="buyTournamentPass()" [loading]="buyingPass" [disabled]="unlocking" styleClass="p-button-lg" [style]="{'width':'100%'}"></p-button>
-    </div>
-
-    <div class="unlock-code-toggle">
-      <a href="#" (click)="$event.preventDefault(); showCodeInput = !showCodeInput">I already have a code</a>
-    </div>
-
-    @if (showCodeInput) {
-      <div class="unlock-form">
-        <label for="unlockCode">Pass Code</label>
-        <input pInputText id="unlockCode" [(ngModel)]="unlockCode" (keydown.enter)="submitUnlockCode()" placeholder="Enter code" />
-      </div>
-    }
-
-    <ng-template pTemplate="footer">
-      <p-button label="Cancel" (onClick)="showUnlockDialog = false" styleClass="p-button-text" [disabled]="unlocking || buyingPass"></p-button>
-      @if (showCodeInput) {
-        <p-button label="Unlock" (onClick)="submitUnlockCode()" [loading]="unlocking" [disabled]="!unlockCode.trim() || buyingPass"></p-button>
-      }
-    </ng-template>
-  </p-dialog>
 
   <p-menu #playerMenu [model]="playerMenuItems" [popup]="true" appendTo="body"></p-menu>
 
@@ -106,13 +82,37 @@
       </div>
 
       <div class="action-footer">
-         <p-button
-          *ngIf="isCreator && lobbyState.game.status !== 'InProgress' && lobbyState.game.phase !== 'GameOver'"
-          label="Start Game"
-          styleClass="p-button-lg w-full"
-          [disabled]="!canStartGame"
-          (onClick)="startGame()"
-        ></p-button>
+        @if (isCreator && lobbyState.game.status !== 'InProgress' && lobbyState.game.phase !== 'GameOver') {
+          <p-button
+            label="Start Game"
+            [icon]="startGameIcon"
+            styleClass="p-button-lg w-full"
+            [disabled]="!canStartGame || needsTournamentPass"
+            (onClick)="startGame()"
+          ></p-button>
+          @if (needsTournamentPass) {
+            <div class="tournament-gate">
+              <small class="tournament-gate-explainer">Tournament pass required</small>
+              <p-button
+                label="Unlock Tournament Mode — €3.50"
+                icon="pi pi-external-link"
+                iconPos="right"
+                (onClick)="buyTournamentPass()"
+                [loading]="buyingPass"
+                styleClass="p-button-lg w-full p-button-outlined"
+              ></p-button>
+              <div class="unlock-code-toggle">
+                <a href="#" (click)="$event.preventDefault(); showCodeInput = !showCodeInput">I already have a code</a>
+              </div>
+              @if (showCodeInput) {
+                <div class="unlock-form">
+                  <input pInputText id="unlockCode" [(ngModel)]="unlockCode" (keydown.enter)="submitUnlockCode()" placeholder="Enter code" />
+                  <p-button label="Unlock" (onClick)="submitUnlockCode()" [loading]="unlocking" [disabled]="!unlockCode.trim()"></p-button>
+                </div>
+              }
+            </div>
+          }
+        }
 
         <div class="warning-area">
           <div class="warning-box" *ngIf="lobbyState.hasDuplicateNames">
