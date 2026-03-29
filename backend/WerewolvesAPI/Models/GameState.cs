@@ -18,7 +18,7 @@ public class GameState
     public int Version { get; set; } = 1;
     public int DiscussionDurationMinutes { get; set; } = 5;
     public int NumberOfWerewolves { get; set; } = 1;
-    public List<PlayerSkill> EnabledSkills { get; set; } = new() { PlayerSkill.Seer, PlayerSkill.Cupid, PlayerSkill.Witch, PlayerSkill.Hunter };
+    public List<PlayerSkill> EnabledSkills { get; set; } = new() { PlayerSkill.Seer };
 
     // Session state
     public GamePhase Phase { get; set; } = GamePhase.RoleReveal;

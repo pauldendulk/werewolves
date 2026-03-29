@@ -51,7 +51,6 @@ app.UseSwaggerUI();
 
 app.UseCors("AllowAngular");
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
