@@ -150,19 +150,19 @@ public class GameController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        bool maxUpdated      = _gameService.UpdateMaxPlayers(tournamentCode, request.MaxPlayers, request.CreatorId);
-        bool minUpdated      = _gameService.UpdateMinPlayers(tournamentCode, request.MinPlayers, request.CreatorId);
-        bool durationUpdated = _gameService.UpdateDiscussionDuration(tournamentCode, request.DiscussionDurationMinutes, request.CreatorId);
-        bool tiebreakUpdated = _gameService.UpdateTiebreakDiscussionDuration(tournamentCode, request.TiebreakDiscussionDurationSeconds, request.CreatorId);
-        bool wolvesUpdated   = _gameService.UpdateNumberOfWerewolves(tournamentCode, request.NumberOfWerewolves, request.CreatorId);
+        bool maxUpdated      = _gameService.UpdateMaxPlayers(tournamentCode, request.MaxPlayers, request.ModeratorId);
+        bool minUpdated      = _gameService.UpdateMinPlayers(tournamentCode, request.MinPlayers, request.ModeratorId);
+        bool durationUpdated = _gameService.UpdateDiscussionDuration(tournamentCode, request.DiscussionDurationMinutes, request.ModeratorId);
+        bool tiebreakUpdated = _gameService.UpdateTiebreakDiscussionDuration(tournamentCode, request.TiebreakDiscussionDurationSeconds, request.ModeratorId);
+        bool wolvesUpdated   = _gameService.UpdateNumberOfWerewolves(tournamentCode, request.NumberOfWerewolves, request.ModeratorId);
         bool skillsUpdated   = false;
         if (request.EnabledSkills != null)
-            skillsUpdated = _gameService.UpdateEnabledSkills(tournamentCode, request.EnabledSkills, request.CreatorId);
+            skillsUpdated = _gameService.UpdateEnabledSkills(tournamentCode, request.EnabledSkills, request.ModeratorId);
 
         if (maxUpdated || minUpdated || durationUpdated || tiebreakUpdated || wolvesUpdated || skillsUpdated)
             return Ok();
 
-        return Unauthorized(new { message = "Only the creator can update settings" });
+        return Unauthorized(new { message = "Only a moderator can update settings" });
     }
 
     [HttpPost("{tournamentCode}/player-name")]
@@ -175,7 +175,7 @@ public class GameController : ControllerBase
     [HttpPost("{tournamentCode}/start")]
     public ActionResult StartGame(string tournamentCode, [FromBody] StartGameRequest request)
     {
-        var (success, error) = _gameService.StartGame(tournamentCode, request.CreatorId);
+        var (success, error) = _gameService.StartGame(tournamentCode, request.ModeratorId);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }

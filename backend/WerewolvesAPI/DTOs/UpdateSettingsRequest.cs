@@ -4,7 +4,7 @@ namespace WerewolvesAPI.DTOs;
 
 public class UpdateSettingsRequest
 {
-    public string CreatorId { get; set; } = string.Empty;
+    public string ModeratorId { get; set; } = string.Empty;
 
     [Range(2, 40)]
     public int MinPlayers { get; set; }

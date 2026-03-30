@@ -51,7 +51,7 @@ describe('SessionComponent', () => {
         playerId: 'player1',
         displayName: 'Alice',
         isCreator: true,
-        isModerator: false,
+        isModerator: true,
         isConnected: true,
         participationStatus: 'Participating',
         role: null,
@@ -126,6 +126,10 @@ describe('SessionComponent', () => {
 
   it('should identify creator', () => {
     expect(component.isCreator).toBeTrue();
+  });
+
+  it('should identify moderator', () => {
+    expect(component.isModerator).toBeTrue();
   });
 
   it('should return phase from lobby state', () => {
@@ -243,7 +247,7 @@ describe('SessionComponent', () => {
         isPremium: false
       },
       players: [
-        { playerId: 'player1', displayName: 'Alice', isCreator: true, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0, totalScore: 0 },
+        { playerId: 'player1', displayName: 'Alice', isCreator: true, isModerator: true, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0, totalScore: 0 },
         { playerId: 'player2', displayName: 'Bob', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0, totalScore: 0 },
         { playerId: 'player3', displayName: 'Carol', isCreator: false, isModerator: false, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, score: 0, totalScore: 0 }
       ],

@@ -152,18 +152,18 @@ public class GameService : IGameService
         return false;
     }
 
-    public bool UpdateMaxPlayers(string gameId, int maxPlayers, string creatorId)
+    public bool UpdateMaxPlayers(string gameId, int maxPlayers, string moderatorId)
     {
-        if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
+        if (!_games.TryGetValue(gameId, out var game) || !game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return false;
         game.MaxPlayers = maxPlayers;
         RecalculateGameState(game);
         BumpVersion(game);
         return true;
     }
 
-    public bool UpdateMinPlayers(string gameId, int minPlayers, string creatorId)
+    public bool UpdateMinPlayers(string gameId, int minPlayers, string moderatorId)
     {
-        if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
+        if (!_games.TryGetValue(gameId, out var game) || !game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return false;
         game.MinPlayers = minPlayers;
         RecalculateGameState(game);
         BumpVersion(game);
@@ -191,25 +191,25 @@ public class GameService : IGameService
         return names.Count != names.Distinct(StringComparer.OrdinalIgnoreCase).Count();
     }
 
-    public bool UpdateDiscussionDuration(string gameId, int minutes, string creatorId)
+    public bool UpdateDiscussionDuration(string gameId, int minutes, string moderatorId)
     {
-        if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
+        if (!_games.TryGetValue(gameId, out var game) || !game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return false;
         game.DiscussionDurationMinutes = minutes;
         BumpVersion(game);
         return true;
     }
 
-    public bool UpdateTiebreakDiscussionDuration(string gameId, int seconds, string creatorId)
+    public bool UpdateTiebreakDiscussionDuration(string gameId, int seconds, string moderatorId)
     {
-        if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
+        if (!_games.TryGetValue(gameId, out var game) || !game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return false;
         game.TiebreakDiscussionDurationSeconds = seconds;
         BumpVersion(game);
         return true;
     }
 
-    public bool UpdateNumberOfWerewolves(string gameId, int count, string creatorId)
+    public bool UpdateNumberOfWerewolves(string gameId, int count, string moderatorId)
     {
-        if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
+        if (!_games.TryGetValue(gameId, out var game) || !game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return false;
         var activeCount = game.Players.Count(p => p.ParticipationStatus == ParticipationStatus.Participating);
         if (count < 1 || count >= activeCount) return false;
         game.NumberOfWerewolves = count;
@@ -217,9 +217,9 @@ public class GameService : IGameService
         return true;
     }
 
-    public bool UpdateEnabledSkills(string gameId, List<string> skillNames, string creatorId)
+    public bool UpdateEnabledSkills(string gameId, List<string> skillNames, string moderatorId)
     {
-        if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
+        if (!_games.TryGetValue(gameId, out var game) || !game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return false;
         game.EnabledSkills = skillNames
             .Where(s => Enum.TryParse<PlayerSkill>(s, true, out _))
             .Select(s => Enum.Parse<PlayerSkill>(s, true))
@@ -231,10 +231,10 @@ public class GameService : IGameService
 
     // ── Session phase logic ──────────────────────────────────────────────────
 
-    public (bool Success, string? Error) StartGame(string gameId, string creatorId)
+    public (bool Success, string? Error) StartGame(string gameId, string moderatorId)
     {
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
-        if (game.CreatorId != creatorId) return (false, "Only the creator can start the game");
+        if (!game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return (false, "Only a moderator can start the game");
         if (game.Status != GameStatus.ReadyToStart) return (false, "Not enough players to start");
         if (game.GameIndex >= 2 && !game.IsPremium) return (false, "A tournament pass is required to continue beyond game 1");
 
@@ -472,10 +472,10 @@ public class GameService : IGameService
         return (true, null);
     }
 
-    public (bool Success, string? Error) ForceAdvancePhase(string gameId, string creatorId)
+    public (bool Success, string? Error) ForceAdvancePhase(string gameId, string moderatorId)
     {
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
-        if (game.CreatorId != creatorId) return (false, "Only the creator can force advance");
+        if (!game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return (false, "Only a moderator can force advance");
         if (game.Status != GameStatus.InProgress) return (false, "Game is not in progress");
 
         lock (GetPhaseLock(gameId))

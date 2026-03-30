@@ -207,6 +207,10 @@ export class SessionComponent implements OnInit, OnDestroy {
     return this.lobbyState?.game.creatorId === this.playerId;
   }
 
+  get isModerator(): boolean {
+    return this.currentPlayer?.isModerator ?? false;
+  }
+
   get phase(): string {
     return this.lobbyState?.game.phase ?? '';
   }

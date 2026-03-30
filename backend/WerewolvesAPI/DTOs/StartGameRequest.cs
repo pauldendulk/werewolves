@@ -2,5 +2,5 @@ namespace WerewolvesAPI.DTOs;
 
 public class StartGameRequest
 {
-    public string CreatorId { get; set; } = string.Empty;
+    public string ModeratorId { get; set; } = string.Empty;
 }

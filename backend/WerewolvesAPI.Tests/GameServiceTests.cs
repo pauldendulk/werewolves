@@ -306,7 +306,7 @@ public class GameServiceTests
     }
 
     [Fact]
-    public void StartGame_ByNonCreator_ShouldFail()
+    public void StartGame_ByNonModerator_ShouldFail()
     {
         var game = CreateReadyGame();
         var (_, _, player) = _gameService.JoinGame(game.TournamentCode, "Extra");
@@ -314,7 +314,7 @@ public class GameServiceTests
         var (success, error) = _gameService.StartGame(game.TournamentCode, player!.PlayerId);
 
         success.Should().BeFalse();
-        error.Should().Contain("creator");
+        error.Should().Contain("moderator");
     }
 
     [Fact]

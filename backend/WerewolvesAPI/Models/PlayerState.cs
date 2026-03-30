@@ -4,7 +4,19 @@ public class PlayerState
 {
     public string PlayerId { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Identifies the player who created this tournament session.
+    /// This is a permanent, informational flag shown as the "HOST" badge in the lobby.
+    /// It does not grant any permissions by itself.
+    /// </summary>
     public bool IsCreator { get; set; }
+
+    /// <summary>
+    /// Grants moderation rights: starting the game, changing settings, removing players,
+    /// and force-advancing phases. The creator always starts as a moderator, but this flag
+    /// can in principle be granted to other players independently of who created the session.
+    /// </summary>
     public bool IsModerator { get; set; }
     public bool IsConnected { get; set; } = true;
     public ParticipationStatus ParticipationStatus { get; set; } = ParticipationStatus.Participating;

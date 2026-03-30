@@ -203,6 +203,19 @@ Before marking a task as complete:
 
 **Remember: Never stop work without ensuring the build is clean and all tests pass!**
 
+## Authorization Model
+
+**Do not conflate `IsCreator` and `IsModerator`.** These are distinct concepts on `PlayerState`:
+
+- `IsCreator` — informational only; shown as the HOST badge in the lobby. Grants no permissions.
+- `IsModerator` — the action gate for all privileged operations (start game, update settings, remove player, force-advance phase).
+
+The creator is automatically a moderator, but moderator rights are independent of who created the session.
+
+**Always gate privileged actions on `IsModerator`, never on `game.CreatorId`.**
+
+See [`docs-src/docs/authorization.md`](docs-src/docs/authorization.md) for the full design, code patterns, and the reasoning behind this separation.
+
 ## Skills
 
 The following skill files contain domain-specific knowledge. Read the relevant file when working on that topic.

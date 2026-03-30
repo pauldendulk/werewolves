@@ -52,7 +52,7 @@
         <i class="pi pi-check-circle"></i> Waiting for others...
       </div>
       <p-button
-        *ngIf="isCreator"
+        *ngIf="isModerator"
         label="Force start night"
         (onClick)="forceAdvance()"
         styleClass="p-button-text p-button-secondary mt-2 w-full">
@@ -87,7 +87,7 @@
     </div>
 
     <p-button
-      *ngIf="isCreator"
+      *ngIf="isModerator"
       label="Skip night"
       (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full">
@@ -123,7 +123,7 @@
       </p-button>
     </div>
     <p-button
-      *ngIf="isCreator"
+      *ngIf="isModerator"
       label="Skip night"
       (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full">
@@ -152,7 +152,7 @@
         [disabled]="!cupidLover1 || !cupidLover2" styleClass="mt-2 w-full"></p-button>
     </div>
     <p class="no-action-text" *ngIf="!canActAsCupid && !currentPlayer?.isEliminated">Cupid is choosing the lovers...</p>
-    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
@@ -178,7 +178,7 @@
       </div>
     </div>
 
-    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
@@ -207,7 +207,7 @@
     </div>
 
     <p class="no-action-text" *ngIf="!canActAsSeer && !currentPlayer?.isEliminated">The Seer is looking...</p>
-    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
@@ -236,7 +236,7 @@
     </div>
 
     <p class="no-action-text" *ngIf="!canActAsWitch && !currentPlayer?.isEliminated">The Witch is deciding...</p>
-    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
@@ -256,7 +256,7 @@
       <p-button label="🏹 Shoot" (onClick)="submitHunterAction()" [disabled]="!hunterTarget" styleClass="p-button-danger mt-2 w-full"></p-button>
     </div>
     <p class="no-action-text" *ngIf="!canActAsHunter">The Hunter is taking their final shot...</p>
-    <p-button *ngIf="isCreator" label="Skip" (onClick)="forceAdvance()"
+    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
@@ -278,7 +278,7 @@
       <i class="pi pi-spin pi-spinner"></i> Continuing...
     </div>
     <p-button
-      *ngIf="isCreator"
+      *ngIf="isModerator"
       label="Continue"
       (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full">
@@ -344,7 +344,7 @@
         <i class="pi pi-check-circle"></i> Waiting...
       </div>
       <p-button
-        *ngIf="isCreator"
+        *ngIf="isModerator"
         label="Force end discussion"
         (onClick)="forceAdvance()"
         styleClass="p-button-text p-button-secondary mt-2 w-full">
@@ -389,7 +389,7 @@
       <i class="pi pi-spin pi-spinner"></i> Continuing...
     </div>
     <p-button
-      *ngIf="isCreator"
+      *ngIf="isModerator"
       label="Continue"
       (onClick)="forceAdvance()"
       styleClass="p-button-text p-button-secondary mt-2 w-full">

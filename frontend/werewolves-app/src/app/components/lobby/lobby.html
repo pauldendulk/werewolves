@@ -73,7 +73,7 @@
            </div>
 
            <div class="player-actions">
-              <i *ngIf="player.playerId === playerId || isCreator"
+              <i *ngIf="player.playerId === playerId || isModerator"
                  class="pi pi-ellipsis-v action-trigger"
                  (click)="showPlayerMenu($event, player)">
               </i>
@@ -82,7 +82,7 @@
       </div>
 
       <div class="action-footer">
-        @if (isCreator && lobbyState.game.status !== 'InProgress' && lobbyState.game.phase !== 'FinalScoresReveal') {
+        @if (isModerator && lobbyState.game.status !== 'InProgress' && lobbyState.game.phase !== 'FinalScoresReveal') {
           <p-button
             label="Start Game"
             [icon]="startGameIcon"
@@ -163,7 +163,7 @@
                 [max]="20"
                 [showButtons]="true"
                 buttonLayout="horizontal"
-                [disabled]="!isCreator"
+                [disabled]="!isModerator"
                 inputStyleClass="w-4rem text-center"
                 decrementButtonClass="p-button-secondary p-button-outlined"
                 incrementButtonClass="p-button-secondary p-button-outlined"
@@ -184,7 +184,7 @@
                 [max]="20"
                 [showButtons]="true"
                 buttonLayout="horizontal"
-                [disabled]="!isCreator"
+                [disabled]="!isModerator"
                 inputStyleClass="w-4rem text-center"
                 decrementButtonClass="p-button-secondary p-button-outlined"
                 incrementButtonClass="p-button-secondary p-button-outlined"
@@ -205,7 +205,7 @@
                 [max]="30"
                 [showButtons]="true"
                 buttonLayout="horizontal"
-                [disabled]="!isCreator"
+                [disabled]="!isModerator"
                 inputStyleClass="w-4rem text-center"
                 decrementButtonClass="p-button-secondary p-button-outlined"
                 incrementButtonClass="p-button-secondary p-button-outlined"
@@ -227,7 +227,7 @@
                 [step]="10"
                 [showButtons]="true"
                 buttonLayout="horizontal"
-                [disabled]="!isCreator"
+                [disabled]="!isModerator"
                 inputStyleClass="w-4rem text-center"
                 decrementButtonClass="p-button-secondary p-button-outlined"
                 incrementButtonClass="p-button-secondary p-button-outlined"
@@ -248,7 +248,7 @@
                 [max]="10"
                 [showButtons]="true"
                 buttonLayout="horizontal"
-                [disabled]="!isCreator"
+                [disabled]="!isModerator"
                 inputStyleClass="w-4rem text-center"
                 decrementButtonClass="p-button-secondary p-button-outlined"
                 incrementButtonClass="p-button-secondary p-button-outlined"
@@ -265,7 +265,7 @@
               <p-toggleswitch
                 [ngModel]="isSkillEnabled(skill)"
                 (ngModelChange)="toggleSkill(skill)"
-                [disabled]="!isCreator">
+                [disabled]="!isModerator">
               </p-toggleswitch>
             </div>
          </div>

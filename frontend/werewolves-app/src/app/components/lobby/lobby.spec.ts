@@ -48,7 +48,7 @@ describe('LobbyComponent', () => {
         playerId: 'player1',
         displayName: 'Alice',
         isCreator: true,
-        isModerator: false,
+        isModerator: true,
         isConnected: true,
         participationStatus: 'Participating',
         role: null,
@@ -135,6 +135,10 @@ describe('LobbyComponent', () => {
 
   it('should identify creator correctly', () => {
     expect(component.isCreator).toBeTrue();
+  });
+
+  it('should identify moderator', () => {
+    expect(component.isModerator).toBeTrue();
   });
 
   it('should return active (participating) players', () => {

@@ -188,6 +188,10 @@ export class LobbyComponent implements OnInit, OnDestroy {
     return this.lobbyState?.game.creatorId === playerId;
   }
 
+  get isModerator(): boolean {
+    return this.currentPlayer?.isModerator ?? false;
+  }
+
   get currentPlayer(): PlayerState | undefined {
     const playerId = this.playerId || this.gameService.getPlayerId();
     return this.lobbyState?.players.find(p => p.playerId === playerId);

@@ -43,6 +43,7 @@ nav:
   - Technical:
       - Technology Overview: tech-overview.md
       - Architecture: architecture.md
+      - Authorization: authorization.md
       - Audio Narration: audio.md
   - Developer Guide:
       - Local Development: development.md

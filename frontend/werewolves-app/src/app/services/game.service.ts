@@ -32,16 +32,16 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/remove`, { playerId: targetPlayerId, moderatorId });
   }
 
-  updateSettings(gameId: string, creatorId: string, minPlayers: number, maxPlayers: number, discussionDurationMinutes: number, tiebreakDiscussionDurationSeconds: number, numberOfWerewolves: number, enabledSkills?: string[]): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { creatorId, minPlayers, maxPlayers, discussionDurationMinutes, tiebreakDiscussionDurationSeconds, numberOfWerewolves, enabledSkills });
+  updateSettings(gameId: string, moderatorId: string, minPlayers: number, maxPlayers: number, discussionDurationMinutes: number, tiebreakDiscussionDurationSeconds: number, numberOfWerewolves: number, enabledSkills?: string[]): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { moderatorId, minPlayers, maxPlayers, discussionDurationMinutes, tiebreakDiscussionDurationSeconds, numberOfWerewolves, enabledSkills });
   }
 
   updatePlayerName(gameId: string, playerId: string, displayName: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/player-name`, { playerId, displayName });
   }
 
-  startGame(gameId: string, creatorId: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/start`, { creatorId });
+  startGame(gameId: string, moderatorId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/start`, { moderatorId });
   }
 
   markDone(gameId: string, playerId: string): Observable<void> {
@@ -52,8 +52,8 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/vote`, { voterId, targetId });
   }
 
-  forceAdvancePhase(gameId: string, creatorId: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/force-advance`, { playerId: creatorId });
+  forceAdvancePhase(gameId: string, moderatorId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/force-advance`, { playerId: moderatorId });
   }
 
   getRole(gameId: string, playerId: string): Observable<PlayerRoleDto> {
