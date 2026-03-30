@@ -38,6 +38,7 @@
   flex-direction: column;
   min-height: 100vh;
   background-color: var(--surface-ground);
+  overflow-x: hidden; // Prevent horizontal scroll on iOS Safari (body overflow-x:hidden is unreliable there)
 }
 
 .header {
@@ -257,10 +258,13 @@
          align-items: center;
          gap: 0.5rem;
          font-size: 0.9rem;
+         min-width: 0;    // Allow flex item to shrink below its content size
+         overflow: hidden; // Clip any content that still escapes
 
          span {
             min-width: 0;
             overflow-wrap: break-word;
+            word-break: break-word;
          }
       }
    }

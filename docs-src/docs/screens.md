@@ -31,7 +31,7 @@ Pre-game screens (Create Game, Join Game, Lobby) are independent components with
 | **`Discussion`** | Day | All living | Players debate and cast votes | **Yes** | **Yes** |
 | **`TiebreakDiscussion`** | Day | All living | Same as Discussion; votes restricted to tied candidates | **Yes** | **Yes** |
 | **`DayElimination`** | Day | Passive | Verdict reveal: who the village eliminated; auto-advances | Built-in | N/A |
-| **`GameOver`** | Day | All players | Winner announced; full role summary | No | No |
+| **`GameOver`** | Day | All players | Winner announced; full role summary; auto-resets to lobby | **Yes** (60 s) | No |
 
 ---
 

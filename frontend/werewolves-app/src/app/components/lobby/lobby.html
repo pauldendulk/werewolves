@@ -1,5 +1,5 @@
 <div class="lobby-container" *ngIf="!loading && lobbyState">
-  <p-toast></p-toast>
+  <p-toast [style]="{'max-width': 'calc(100vw - 2rem)'}"></p-toast>
   <p-confirmDialog></p-confirmDialog>
   <p-dialog header="Rename" [(visible)]="showRenameDialog" [modal]="true" [style]="{width: '400px'}" appendTo="body">
     <div class="p-fluid">

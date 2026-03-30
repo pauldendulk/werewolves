@@ -590,7 +590,7 @@ public class GameService : IGameService
             case GamePhase.CupidTurn:
                 // If Cupid chose lovers show them; otherwise skip to discussion
                 if (game.Lover1Id != null && game.Lover2Id != null)
-                    BeginPhase(game, GamePhase.LoverReveal, TimeSpan.FromSeconds(20));
+                    BeginPhase(game, GamePhase.LoverReveal);
                 else
                     TransitionToDiscussion(game);
                 break;
@@ -611,7 +611,7 @@ public class GameService : IGameService
             case GamePhase.WitchTurn:
                 ResolveNightDeaths(game);
                 EvaluateWinCondition(game);
-                BeginPhase(game, GamePhase.NightElimination, TimeSpan.FromSeconds(10));
+                BeginPhase(game, GamePhase.NightElimination);
                 break;
 
             case GamePhase.NightElimination:
@@ -643,15 +643,10 @@ public class GameService : IGameService
                 var (winnerId, isTie, tiedIds) = ResolveDayVote(AliveVotes(game));
                 if (isTie && !game.DayTiebreakUsed)
                 {
-                    game.Phase = GamePhase.TiebreakDiscussion;
                     game.TiebreakCandidates = tiedIds;
                     game.DayTiebreakUsed = true;
                     game.DayVotes.Clear();
-                    game.PhaseEndsAt = DateTime.UtcNow.AddSeconds(60);
-                    game.PhaseStartedAt = DateTime.UtcNow;
-                    game.AudioPlayAt = DateTime.UtcNow.AddMilliseconds(3000);
-                    ResetDone(game);
-                    BumpVersion(game);
+                    BeginPhase(game, GamePhase.TiebreakDiscussion);
                 }
                 else
                 {
@@ -726,7 +721,7 @@ public class GameService : IGameService
         }
         ResolveNightDeaths(game);
         EvaluateWinCondition(game);
-        BeginPhase(game, GamePhase.NightElimination, TimeSpan.FromSeconds(10));
+        BeginPhase(game, GamePhase.NightElimination);
     }
 
     private void TransitionToDiscussion(GameState game)
@@ -735,7 +730,7 @@ public class GameService : IGameService
         game.DayDeaths.Clear();
         game.DayTiebreakUsed = false;
         game.TiebreakCandidates.Clear();
-        BeginPhase(game, GamePhase.Discussion, TimeSpan.FromMinutes(game.DiscussionDurationMinutes));
+        BeginPhase(game, GamePhase.Discussion);
         _logger.LogInformation("Game {GameId} → Discussion (round {Round})", game.GameId, game.RoundNumber);
     }
 
@@ -758,7 +753,7 @@ public class GameService : IGameService
         RecordDayVoteAccuracy(game);
 
         EvaluateWinCondition(game);
-        BeginPhase(game, GamePhase.DayElimination, TimeSpan.FromSeconds(10));
+        BeginPhase(game, GamePhase.DayElimination);
         _logger.LogInformation("Game {GameId} → DayElimination (eliminated: {Id}, winner: {Winner})", game.GameId, eliminatedId ?? "none", game.Winner ?? "none");
     }
 
@@ -854,10 +849,8 @@ public class GameService : IGameService
         if (game.Winner == null) return false;
         AwardTeamWinPoints(game);
         AccumulateTournamentScores(game);
-        game.Phase = GamePhase.GameOver;
-        game.PhaseEndsAt = DateTime.UtcNow.AddMinutes(1);
         game.Status = GameStatus.Ended;
-        BumpVersion(game);
+        BeginPhase(game, GamePhase.GameOver);
         ThrowOnFailure(PersistGameResultsAsync(game));
         return true;
     }
@@ -1051,25 +1044,8 @@ public class GameService : IGameService
             p.Score += WinPoints;
     }
 
-    private static IEnumerable<PlayerState> GetEligibleForMarkDone(GameState game)
-    {
-        var alive = game.Players.Where(p =>
-            p.ParticipationStatus == ParticipationStatus.Participating && !p.IsEliminated);
-
-        return game.Phase switch
-        {
-            GamePhase.RoleReveal         => alive,
-            GamePhase.CupidTurn          => alive.Where(p => p.Skill == PlayerSkill.Cupid),
-            GamePhase.LoverReveal        => alive.Where(p => p.PlayerId == game.Lover1Id || p.PlayerId == game.Lover2Id),
-            GamePhase.WerewolvesMeeting  => alive.Where(p => p.Role == PlayerRole.Werewolf),
-            GamePhase.WerewolvesTurn     => alive.Where(p => p.Role == PlayerRole.Werewolf),
-            GamePhase.SeerTurn           => alive.Where(p => p.Skill == PlayerSkill.Seer),
-            GamePhase.Discussion         => alive,
-            GamePhase.TiebreakDiscussion => alive,
-            GamePhase.GameOver           => game.Players.Where(p => p.ParticipationStatus == ParticipationStatus.Participating),
-            _                            => Enumerable.Empty<PlayerState>()
-        };
-    }
+    private static IEnumerable<PlayerState> GetEligibleForMarkDone(GameState game) =>
+        PhaseDescriptor.Get(game.Phase).EligibleForDone(game);
 
     private static bool HasLivingSkill(GameState game, PlayerSkill skill) =>
         game.EnabledSkills.Contains(skill) &&
@@ -1078,8 +1054,9 @@ public class GameService : IGameService
             !p.IsEliminated &&
             p.ParticipationStatus == ParticipationStatus.Participating);
 
-    private void BeginPhase(GameState game, GamePhase phase, TimeSpan? duration = null)
+    private void BeginPhase(GameState game, GamePhase phase)
     {
+        var duration = PhaseDescriptor.Get(phase).Duration(game);
         game.Phase = phase;
         game.PhaseStartedAt = DateTime.UtcNow;
         game.PhaseEndsAt = duration.HasValue ? DateTime.UtcNow.Add(duration.Value) : null;

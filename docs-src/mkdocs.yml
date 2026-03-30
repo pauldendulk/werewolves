@@ -38,6 +38,7 @@ markdown_extensions:
 nav:
   - Overview: index.md
   - Game Design:
+      - Terminology: terminology.md
       - Concept & Rules: game-concept.md
       - Screen Inventory: screens.md
       - Tournament Mode: tournament.md
