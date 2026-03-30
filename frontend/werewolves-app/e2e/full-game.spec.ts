@@ -212,8 +212,8 @@ test.describe('Full 6-player game – werewolves win', () => {
       await expect(creator.page.getByText(V3.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
-      // ── GAME OVER ─────────────────────────────────────────────────────────
-      for (const { page } of allPlayers) await waitForPhase(page, 'Game Over', 20_000);
+      // ── FINAL SCORES REVEAL ───────────────────────────────────────────────
+      for (const { page } of allPlayers) await waitForPhase(page, 'Final Scores Reveal', 20_000);
       for (const { page } of allPlayers) {
         await expect(page.locator('.winner-text')).toContainText('Werewolves Win!', { timeout: 10_000 });
       }

@@ -96,7 +96,7 @@ export class SessionComponent implements OnInit, OnDestroy {
 
     this.lobbyState = state;
 
-    if (state.game.phase === 'GameOver' && this.currentPlayer?.isDone) {
+    if (state.game.phase === 'FinalScoresReveal' && this.currentPlayer?.isDone) {
       this.goToLobby();
       return;
     }
@@ -173,9 +173,9 @@ export class SessionComponent implements OnInit, OnDestroy {
         }
         break;
       }
-      case 'GameOver': {
+      case 'FinalScoresReveal': {
         const winner = this.lobbyState?.game.winner;
-        this.audioService.schedulePlay(winner === 'Villagers' ? AudioKey.GameOverVillagers : AudioKey.GameOverWerewolves, playAt);
+        this.audioService.schedulePlay(winner === 'Villagers' ? AudioKey.FinalScoresRevealVillagers : AudioKey.FinalScoresRevealWerewolves, playAt);
         break;
       }
     }
@@ -223,7 +223,7 @@ export class SessionComponent implements OnInit, OnDestroy {
     ) ?? [];
   }
 
-  get sortedPlayersForGameOver(): PlayerState[] {
+  get sortedPlayersForFinalScoresReveal(): PlayerState[] {
     return [...(this.lobbyState?.players ?? [])]
       .filter(p => p.participationStatus === 'Participating')
       .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));

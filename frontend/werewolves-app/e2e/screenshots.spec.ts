@@ -495,7 +495,7 @@ test('21-day-elimination', async ({ page }) => {
   await shot(page, '21-day-elimination');
 });
 
-// ── 22 · Game Over — Villagers win ───────────────────────────────────────────
+// ── 22 · Final Scores Reveal — Villagers win ────────────────────────────────
 test('22-game-over', async ({ page }) => {
   const players = [
     makePlayer(HOST,  'Host',  true,  { role: 'Villager', isEliminated: false, score: 11 }),
@@ -507,16 +507,16 @@ test('22-game-over', async ({ page }) => {
     makePlayer(FRANK, 'Frank', false, { role: 'Villager', skill: 'Hunter', isEliminated: false, score: 9 }),
     makePlayer(GRACE, 'Grace', false, { role: 'Werewolf', isEliminated: true,  score: 0 }),
   ];
-  const state = makeGameState('GameOver', 3, { winner: 'Villagers' }, players);
+  const state = makeGameState('FinalScoresReveal', 3, { winner: 'Villagers' }, players);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
-  await page.waitForSelector('h2:has-text("Show Scores")');
+  await page.waitForSelector('h2:has-text("Final Scores Reveal")');
   await shot(page, '22-game-over');
 });
 
-// ── 23 · Game Over — after game 2, showing running totals ────────────────────
+// ── 23 · Final Scores Reveal — after game 2, showing running totals ──────────
 test('23-game-over-game2', async ({ page }) => {
   const players = [
     makePlayer(HOST,  'Host',  true,  { role: 'Villager', isEliminated: false, score: 9,  totalScore: 20 }),
@@ -528,12 +528,12 @@ test('23-game-over-game2', async ({ page }) => {
     makePlayer(FRANK, 'Frank', false, { role: 'Villager', skill: 'Hunter', isEliminated: false, score: 10, totalScore: 19 }),
     makePlayer(GRACE, 'Grace', false, { role: 'Werewolf', isEliminated: true,  score: 0,  totalScore: 9  }),
   ];
-  const state = makeGameState('GameOver', 2, { winner: 'Villagers', gameIndex: 2 }, players);
+  const state = makeGameState('FinalScoresReveal', 2, { winner: 'Villagers', gameIndex: 2 }, players);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
-  await page.waitForSelector('h2:has-text("Show Scores")');
+  await page.waitForSelector('h2:has-text("Final Scores Reveal")');
   await shot(page, '23-game-over-game2');
 });
 

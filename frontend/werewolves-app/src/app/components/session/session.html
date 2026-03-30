@@ -6,17 +6,13 @@
   <!-- Header -->
   <div class="session-header">
     <span class="game-name">Session: {{ lobbyState.game.tournamentCode }}</span>
+    <span class="header-timer" *ngIf="lobbyState.game.phaseEndsAt" [class.urgent]="secondsRemaining <= 10">{{ timerLabel }}</span>
     <span class="round-badge" *ngIf="lobbyState.game.roundNumber > 0">Round {{ lobbyState.game.roundNumber }}</span>
   </div>
 
   <!-- Eliminated banner (hidden during discussion where a richer inline notice is shown) -->
   <div class="eliminated-banner" *ngIf="currentPlayer?.isEliminated && phase !== 'Discussion' && phase !== 'TiebreakDiscussion'">
     <i class="pi pi-times-circle"></i> You are eliminated
-  </div>
-
-  <!-- Timer bar (shown for timed phases) -->
-  <div class="timer-bar" *ngIf="lobbyState.game.phaseEndsAt">
-    <span class="timer-label" [class.urgent]="secondsRemaining <= 10">{{ timerLabel }}</span>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -403,13 +399,13 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- SHOW SCORES                                              -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content game-over" *ngIf="phase === 'GameOver'">
-    <h2 class="phase-title">🎉 Show Scores</h2>
+  <div class="phase-content game-over" *ngIf="phase === 'FinalScoresReveal'">
+    <h2 class="phase-title">🎉 Final Scores Reveal</h2>
     <p class="winner-text" [class.villagers]="lobbyState.game.winner === 'Villagers'" [class.werewolves]="lobbyState.game.winner === 'Werewolves'">
       {{ lobbyState.game.winner }} Win!
     </p>
     <div class="player-roles-summary">
-      <div *ngFor="let p of sortedPlayersForGameOver" class="role-summary-row" [class.eliminated]="p.isEliminated">
+      <div *ngFor="let p of sortedPlayersForFinalScoresReveal" class="role-summary-row" [class.eliminated]="p.isEliminated">
         <span class="player-name">{{ p.displayName }}</span>
         <span class="eliminated-badge" *ngIf="p.isEliminated"> 💀 </span>
         <span class="role-tag" [class.wolf]="p.role === 'Werewolf'">{{ p.role ?? '?' }}</span>

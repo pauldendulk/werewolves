@@ -103,5 +103,5 @@ public enum GamePhase
     Discussion,
     TiebreakDiscussion,
     DayEliminationReveal,
-    GameOver
+    FinalScoresReveal
 }

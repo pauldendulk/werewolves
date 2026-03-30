@@ -82,7 +82,7 @@
       </div>
 
       <div class="action-footer">
-        @if (isCreator && lobbyState.game.status !== 'InProgress' && lobbyState.game.phase !== 'GameOver') {
+        @if (isCreator && lobbyState.game.status !== 'InProgress' && lobbyState.game.phase !== 'FinalScoresReveal') {
           <p-button
             label="Start Game"
             [icon]="startGameIcon"
@@ -140,7 +140,7 @@
     </div>
 
     <!-- CARD 2.6: Others still on Show Scores screen -->
-    <div class="card-section game-status-card" *ngIf="lobbyState.game.phase === 'GameOver'">
+    <div class="card-section game-status-card" *ngIf="lobbyState.game.phase === 'FinalScoresReveal'">
       <p>Others are still viewing results</p>
       <p *ngIf="secondsRemaining > 0"><strong>{{ timerLabel }}</strong></p>
     </div>

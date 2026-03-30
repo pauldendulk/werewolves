@@ -14,8 +14,8 @@ export const AudioKey = {
   TiebreakDiscussion:   'tiebreak-discussion',
   DayEliminationRevealTie: 'day-elimination-tie',
   DayEliminationReveal:    'day-elimination',
-  GameOverVillagers:    'game-over-villagers',
-  GameOverWerewolves:   'game-over-werewolves',
+  FinalScoresRevealVillagers: 'game-over-villagers',
+  FinalScoresRevealWerewolves:  'game-over-werewolves',
   NightWarning:         'night-warning',
 } as const;
 

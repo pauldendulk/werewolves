@@ -263,7 +263,7 @@ test.describe('Cupid skill', () => {
 
       // ── 8. Continue → Game Over: only Cupid survives → Villagers win ─────
       await creator.page.getByRole('button', { name: 'Continue' }).click();
-      await waitForPhase(creator.page, 'Game Over', 20_000);
+      await waitForPhase(creator.page, 'Final Scores Reveal', 20_000);
       await expect(creator.page.locator('.winner-text')).toContainText('Villagers', { timeout: 5_000 });
 
       for (const { context } of players) await context.close();
@@ -340,7 +340,7 @@ test.describe('Cupid skill', () => {
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
       // ── 8. Game Over: wolf cascade-died as lover → only Cupid survives ───
-      await waitForPhase(creator.page, 'Game Over', 20_000);
+      await waitForPhase(creator.page, 'Final Scores Reveal', 20_000);
       await expect(creator.page.locator('.winner-text')).toContainText('Villagers', { timeout: 5_000 });
       // Both lovers (plain-villager voted out + wolf cascade) show as eliminated
       await expect(

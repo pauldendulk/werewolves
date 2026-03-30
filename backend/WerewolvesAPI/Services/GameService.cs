@@ -284,7 +284,7 @@ public class GameService : IGameService
     public (bool Success, string? Error) MarkDone(string gameId, string playerId)
     {
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
-        var isGameOver = game.Status == GameStatus.Ended && game.Phase == GamePhase.GameOver;
+        var isGameOver = game.Status == GameStatus.Ended && game.Phase == GamePhase.FinalScoresReveal;
         if (game.Status != GameStatus.InProgress && !isGameOver) return (false, "Game is not in progress");
 
         var player = game.Players.FirstOrDefault(p => p.PlayerId == playerId);
@@ -517,8 +517,8 @@ public class GameService : IGameService
     {
         if (!_games.TryGetValue(gameId, out var game)) return;
 
-        // GameOver isn't a regular phase — the timer triggers a full game reset instead.
-        if (game.Phase == GamePhase.GameOver)
+        // FinalScoresReveal isn't a regular phase — the timer triggers a full game reset instead.
+        if (game.Phase == GamePhase.FinalScoresReveal)
         {
             if (game.PhaseEndsAt == null || DateTime.UtcNow < game.PhaseEndsAt.Value) return;
             lock (GetPhaseLock(gameId))
@@ -629,12 +629,12 @@ public class GameService : IGameService
                     BeginPhase(game, GamePhase.HunterTurn);
                     break;
                 }
-                if (TransitionToGameOverIfWon(game)) return;
+                if (TransitionToFinalScoresRevealIfWon(game)) return;
                 TransitionToDiscussion(game);
                 break;
 
             case GamePhase.HunterTurn:
-                if (TransitionToGameOverIfWon(game)) return;
+                if (TransitionToFinalScoresRevealIfWon(game)) return;
                 if (game.HunterEliminatedAtNight)
                 {
                     TransitionToDiscussion(game);
@@ -671,7 +671,7 @@ public class GameService : IGameService
             }
 
             case GamePhase.DayEliminationReveal:
-                if (TransitionToGameOverIfWon(game)) return;
+                if (TransitionToFinalScoresRevealIfWon(game)) return;
                 if (game.HunterMustShoot)
                 {
                     game.HunterEliminatedAtNight = false;
@@ -682,7 +682,7 @@ public class GameService : IGameService
                 TransitionToFirstNightStep(game);
                 break;
 
-            case GamePhase.GameOver:
+            case GamePhase.FinalScoresReveal:
                 ResetForNextGame(game);
                 break;
         }
@@ -852,13 +852,13 @@ public class GameService : IGameService
             game.Winner = "Werewolves";
     }
 
-    private bool TransitionToGameOverIfWon(GameState game)
+    private bool TransitionToFinalScoresRevealIfWon(GameState game)
     {
         if (game.Winner == null) return false;
         AwardTeamWinPoints(game);
         AccumulateTournamentScores(game);
         game.Status = GameStatus.Ended;
-        BeginPhase(game, GamePhase.GameOver);
+        BeginPhase(game, GamePhase.FinalScoresReveal);
         ThrowOnFailure(PersistGameResultsAsync(game));
         return true;
     }
@@ -889,7 +889,7 @@ public class GameService : IGameService
             var game = JsonSerializer.Deserialize<GameState>(json, _jsonOptions)!;
             _games[game.TournamentCode] = game;
             // Ensure results are persisted for any game that ended before the server restarted.
-            if (game.Phase == GamePhase.GameOver)
+            if (game.Phase == GamePhase.FinalScoresReveal)
                 await PersistGameResultsAsync(game);
             _logger.LogInformation("Restored game {TournamentCode} from live state (phase {Phase})", game.TournamentCode, game.Phase);
         }

@@ -33,7 +33,7 @@ Phase durations and eligible-for-done player sets are the authoritative source o
 | **`Discussion`** | Day | All living | Players debate and cast votes | 5 min (configurable) | No |
 | **`TiebreakDiscussion`** | Day | All living | Same as Discussion; votes restricted to tied candidates | 60 s (configurable) | No |
 | **`DayEliminationReveal`** | Day | Passive | Verdict reveal: who the village eliminated; auto-advances | 10 s | No |
-| **`GameOver`** | Day | All players | Winner announced; full role summary; auto-resets to lobby | 60 s | No |
+| **`FinalScoresReveal`** | Day | All players | Winner announced; full role summary; auto-resets to lobby | 60 s | No |
 
 ---
 

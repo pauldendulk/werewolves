@@ -37,7 +37,7 @@ Phase narration is delivered as **pre-generated MP3 files** synthesised via **Az
 The app covers **16 screens** across the full game lifecycle:
 
 - **3 pre-game screens** — Create Game, Join Game, Lobby
-- **13 timed in-game phases** — Role Reveal, Werewolves Meeting, Cupid Turn, Lover Reveal, Werewolves Turn, Seer Turn, Witch Turn, Hunter Turn, Night Elimination, Discussion, Tiebreak Discussion, Day Elimination, Game Over
+- **13 timed in-game phases** — Role Reveal, Werewolves Meeting, Cupid Turn, Lover Reveal, Werewolves Turn, Seer Turn, Witch Turn, Hunter Turn, Night Elimination, Discussion, Tiebreak Discussion, Day Elimination, Final Scores Reveal
 
 Each phase is an independent Angular component. Night-action phases include a **countdown timer with overtime** — once the clock hits zero, the display flips to an upward-counting red overtime indicator, applying social pressure while never forcing a player's hand. The phase architecture is designed so adding a new role means adding one new component and one new state transition, nothing more.
 
@@ -49,7 +49,7 @@ The full gameplay loop is covered by **Playwright** E2E tests running against Ch
 
 | Spec file | Coverage |
 |---|---|
-| `full-game.spec.ts` | Complete game from lobby to Game Over |
+| `full-game.spec.ts` | Complete game from lobby to Final Scores Reveal |
 | `seer.spec.ts` | Seer inspection and alignment reveal |
 | `witch.spec.ts` | Witch save and poison paths |
 | `hunter.spec.ts` | Hunter elimination and retaliation shot |

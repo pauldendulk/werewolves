@@ -47,7 +47,7 @@ frontend/
 4. **Role Reveal** – Each player privately views their assigned role (Werewolf or Villager)
 5. **Night Phase** – Werewolves secretly choose a victim
 6. **Day Phase** – Village discusses and votes to eliminate a suspect
-7. **Game Over** – Villagers win when all werewolves are eliminated; Werewolves win when no villagers remain
+7. **Final Scores Reveal** – Villagers win when all werewolves are eliminated; Werewolves win when no villagers remain
 
 ## Development
 

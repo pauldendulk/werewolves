@@ -60,7 +60,7 @@ public record PhaseDescriptor(
                 _ => TimeSpan.FromSeconds(10),
                 _ => []),
 
-            new(GamePhase.GameOver,
+            new(GamePhase.FinalScoresReveal,
                 _ => TimeSpan.FromMinutes(1),
                 game => game.Players.Where(p => p.ParticipationStatus == ParticipationStatus.Participating)),
         }.ToDictionary(d => d.Phase);

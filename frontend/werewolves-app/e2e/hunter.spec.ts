@@ -141,7 +141,7 @@ test.describe('Hunter skill', () => {
       await hunter.page.getByRole('button', { name: '🏹 Shoot' }).click();
 
       // ── 8. Game ends – Villagers win (wolf eliminated) ───────────────────
-      await waitForPhase(creator.page, 'Game Over', 20_000);
+      await waitForPhase(creator.page, 'Final Scores Reveal', 20_000);
       await expect(creator.page.locator('.winner-text')).toContainText('Villager');
 
       for (const { context } of players) await context.close();

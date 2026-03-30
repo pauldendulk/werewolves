@@ -495,7 +495,7 @@ public class GameServiceTests
         afterNight.Winner.Should().Be("Werewolves");
 
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → GameOver
-        _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.GameOver);
+        _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.FinalScoresReveal);
     }
 
     [Fact]
@@ -529,7 +529,7 @@ public class GameServiceTests
     }
 
     [Fact]
-    public void GameOver_VersionIsBumped_SoPollingClientsReceiveTheTransition()
+    public void FinalScoresReveal_VersionIsBumped_SoPollingClientsReceiveTheTransition()
     {
         var game = CreateReadyGame(2); // 3 total: 1W + 2V
         _gameService.StartGame(game.TournamentCode, game.CreatorId);
@@ -554,7 +554,7 @@ public class GameServiceTests
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → GameOver
         var afterGameOver = _gameService.GetGame(game.TournamentCode)!;
 
-        afterGameOver.Phase.Should().Be(Models.GamePhase.GameOver);
+        afterGameOver.Phase.Should().Be(Models.GamePhase.FinalScoresReveal);
         afterGameOver.Winner.Should().Be("Werewolves");
         afterGameOver.Version.Should().BeGreaterThan(vAtNightElim);
     }
@@ -652,7 +652,7 @@ public class GameServiceTests
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → GameOver
 
         var final = _gameService.GetGame(game.TournamentCode)!;
-        final.Phase.Should().Be(Models.GamePhase.GameOver);
+        final.Phase.Should().Be(Models.GamePhase.FinalScoresReveal);
         final.Status.Should().Be(Models.GameStatus.Ended);
         final.Winner.Should().Be("Werewolves");
         final.Version.Should().BeGreaterThan(vAtFinalNight);
@@ -809,7 +809,7 @@ public class GameServiceTests
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → GameOver
 
         var result = _gameService.GetGame(game.TournamentCode)!;
-        result.Phase.Should().Be(Models.GamePhase.GameOver);
+        result.Phase.Should().Be(Models.GamePhase.FinalScoresReveal);
         result.Winner.Should().Be("Villagers");
 
         // Villagers: 1 point (correct vote) + 8 points (team win) = 9
@@ -910,7 +910,7 @@ public class GameServiceTests
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // DayEliminationReveal → GameOver
 
         var gameOver1 = _gameService.GetGame(tc)!;
-        gameOver1.Phase.Should().Be(Models.GamePhase.GameOver);
+        gameOver1.Phase.Should().Be(Models.GamePhase.FinalScoresReveal);
         gameOver1.Status.Should().Be(Models.GameStatus.Ended);
         gameOver1.PhaseEndsAt.Should().NotBeNull("1-minute auto-reset timer must be set");
 
@@ -968,7 +968,7 @@ public class GameServiceTests
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
 
         var gameOver2 = _gameService.GetGame(tc)!;
-        gameOver2.Phase.Should().Be(Models.GamePhase.GameOver);
+        gameOver2.Phase.Should().Be(Models.GamePhase.FinalScoresReveal);
         gameOver2.Status.Should().Be(Models.GameStatus.Ended);
         gameOver2.TournamentCode.Should().Be(tc, "tournament code survives both games");
         gameOver2.GameId.Should().NotBe(g1GameId, "game 2 has its own per-game ID");
@@ -1031,7 +1031,7 @@ public class GameServiceTests
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
 
         var gameOver = _gameService.GetGame(tc)!;
-        gameOver.Phase.Should().Be(Models.GamePhase.GameOver);
+        gameOver.Phase.Should().Be(Models.GamePhase.FinalScoresReveal);
 
         // Trigger reset
         gameOver.PhaseEndsAt = DateTime.UtcNow.AddSeconds(-1);
@@ -1272,14 +1272,14 @@ public class GameServiceTests
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
 
         var gameOver = _gameService.GetGame(tc)!;
-        gameOver.Phase.Should().Be(Models.GamePhase.GameOver);
+        gameOver.Phase.Should().Be(Models.GamePhase.FinalScoresReveal);
 
         // All participating players mark done (including the eliminated wolf) — no timer manipulation
         foreach (var p in gameOver.Players.Where(p => p.ParticipationStatus == Models.ParticipationStatus.Participating))
             _gameService.MarkDone(tc, p.PlayerId);
 
         var afterDone = _gameService.GetGame(tc)!;
-        afterDone.Phase.Should().NotBe(Models.GamePhase.GameOver,
+        afterDone.Phase.Should().NotBe(Models.GamePhase.FinalScoresReveal,
             "early reset must fire as soon as all participating players are done, without waiting for the timer");
         afterDone.Status.Should().Be(Models.GameStatus.ReadyToStart);
         afterDone.Winner.Should().BeNull("reset must clear the winner");

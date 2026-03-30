@@ -10,6 +10,7 @@
 }
 
 .session-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -30,6 +31,22 @@
     padding: 0.2rem 0.75rem;
     font-size: 0.8rem;
     color: #94a3b8;
+  }
+
+  .header-timer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #60a5fa;
+    letter-spacing: 0.05em;
+
+    &.urgent {
+      color: #f87171;
+      animation: pulse 1s infinite;
+    }
   }
 }
 
@@ -54,24 +71,6 @@
   background: #fee2e2;
   color: #b91c1c;
   border-color: #fca5a5;
-}
-
-.timer-bar {
-  text-align: center;
-  margin-bottom: 1.25rem;
-
-  .timer-label {
-    font-size: 2rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: #60a5fa;
-    display: block;
-
-    &.urgent {
-      color: #f87171;
-      animation: pulse 1s infinite;
-    }
-  }
 }
 
 @keyframes pulse {
@@ -403,11 +402,10 @@
       border-color: #cbd5e1;
       color: #475569;
     }
-  }
-
-  .timer-bar .timer-label {
-    color: #2563eb;
-    &.urgent { color: #dc2626; }
+    .header-timer {
+      color: #2563eb;
+      &.urgent { color: #dc2626; }
+    }
   }
 
   .phase-title { color: #1e293b; }

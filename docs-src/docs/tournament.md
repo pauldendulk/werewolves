@@ -43,10 +43,10 @@ Once started, all players see the same screen. The backend drives a shared phase
 
 When one side wins:
 
-1. `Winner` is set and the phase advances to `GameOver`.
+1. `Winner` is set and the phase advances to `FinalScoresReveal`.
 2. Per-player scores are shown on the **Show Scores** screen.
 3. Each player taps **Done — back to lobby** to set `IsDone = true`.
-4. A countdown timer runs in the background (GameOver phase timer).
+4. A countdown timer runs in the background (FinalScoresReveal phase timer).
 5. When **all** participating players have set `IsDone = true`, or the timer expires, `ResetForNextGame` fires.
 6. Game results (`games` + `game_players` rows) are persisted to the database.
 
@@ -104,7 +104,7 @@ All live game state (phases, votes, player roles, timers) is held **in memory on
 If a player arrives while a game is in progress:
 
 - `ParticipationStatus = Spectating`.
-- `IsDone = true` (so they don't block the GameOver transition).
+- `IsDone = true` (so they don't block the FinalScoresReveal transition).
 - They are shown the lobby (not the game session) while waiting.
 - When the game resets they become active participants in the next game.
 
@@ -180,4 +180,4 @@ Write the serialised `GameState` on every phase transition (already a natural sy
 
 This gives recovery from server restarts for free without changing the polling architecture, and keeps the normalised columns (`status`, `winner`, `settings`, `ended_at`) accurate for reporting queries.
 
-The column can be cleared (set to `NULL`) once the game reaches `GameOver` and results are persisted, since it is only needed for recovery, not long-term storage.
+The column can be cleared (set to `NULL`) once the game reaches `FinalScoresReveal` and results are persisted, since it is only needed for recovery, not long-term storage.

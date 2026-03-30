@@ -42,7 +42,7 @@ The core purpose is to facilitate and manage a complete Werewolf game without ne
    - **Villagers win** when all werewolves have been eliminated
    - **Werewolves win** when no villagers remain alive
 
-8. **Game over**
+8. **Final Scores Reveal**
    - All roles are revealed
    - Players can return to the home screen to start a new game
 
