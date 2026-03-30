@@ -125,6 +125,13 @@ jobs:
         run: npm ci
         working-directory: frontend/werewolves-app
 
+      - name: Install MkDocs
+        run: pip install mkdocs-material
+
+      - name: Build docs
+        run: mkdocs build
+        working-directory: docs-src
+
       - name: Build Angular app
         run: npm run build -- --configuration production
         working-directory: frontend/werewolves-app
