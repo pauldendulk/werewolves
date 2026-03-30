@@ -344,7 +344,7 @@ test('10-night-cupid-turn-cupid', async ({ page }) => {
 
 // ── 11 · Lover Reveal — card revealed with lover name ────────────────────────
 test('11-lover-reveal', async ({ page }) => {
-  const state = makeGameState('LoverReveal', 1);
+  const state = makeGameState('LoverReveal', 1, { phaseEndsAt: new Date(Date.now() + 15 * 1000).toISOString() });
   const role = makeRoleDto('Villager', null, { loverName: 'Dave' });
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
@@ -428,6 +428,7 @@ test('17-night-hunter-turn-hunter', async ({ page }) => {
 test('18-dawn-night-elimination', async ({ page }) => {
   const state = makeGameState('NightEliminationReveal', 2, {
     nightDeaths: [{ playerId: ALICE, playerName: 'Alice', cause: 'WerewolfKill' }],
+    phaseEndsAt: new Date(Date.now() + 7 * 1000).toISOString(),
   });
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
@@ -439,7 +440,7 @@ test('18-dawn-night-elimination', async ({ page }) => {
 
 // ── 19 · Discussion — alive player with vote selector ────────────────────────
 test('19-discussion', async ({ page }) => {
-  const state = makeGameState('Discussion', 2);
+  const state = makeGameState('Discussion', 2, { phaseEndsAt: new Date(Date.now() + 154 * 1000).toISOString() });
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
@@ -453,7 +454,7 @@ test('19b-discussion-eliminated', async ({ page }) => {
   const players = BASE_PLAYERS.map(p =>
     p.playerId === ALICE ? { ...p, isEliminated: true } : p
   );
-  const state = makeGameState('Discussion', 2, {}, players);
+  const state = makeGameState('Discussion', 2, { phaseEndsAt: new Date(Date.now() + 154 * 1000).toISOString() }, players);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
@@ -466,6 +467,7 @@ test('19b-discussion-eliminated', async ({ page }) => {
 test('20-tiebreak-discussion', async ({ page }) => {
   const state = makeGameState('TiebreakDiscussion', 2, {
     tiebreakCandidates: [BOB, CAROL],
+    phaseEndsAt: new Date(Date.now() + 42 * 1000).toISOString(),
   });
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
@@ -484,7 +486,7 @@ test('21-day-elimination', async ({ page }) => {
   const state = makeGameState(
     'DayEliminationReveal',
     2,
-    { dayDeaths: [{ playerId: BOB, playerName: 'Bob', cause: 'DayVote' }] },
+    { dayDeaths: [{ playerId: BOB, playerName: 'Bob', cause: 'DayVote' }], phaseEndsAt: new Date(Date.now() + 7 * 1000).toISOString() },
     players
   );
   const role = makeRoleDto('Villager');
@@ -507,7 +509,7 @@ test('22-game-over', async ({ page }) => {
     makePlayer(FRANK, 'Frank', false, { role: 'Villager', skill: 'Hunter', isEliminated: false, score: 9 }),
     makePlayer(GRACE, 'Grace', false, { role: 'Werewolf', isEliminated: true,  score: 0 }),
   ];
-  const state = makeGameState('FinalScoresReveal', 3, { winner: 'Villagers' }, players);
+  const state = makeGameState('FinalScoresReveal', 3, { winner: 'Villagers', phaseEndsAt: new Date(Date.now() + 47 * 1000).toISOString() }, players);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
@@ -528,7 +530,7 @@ test('23-game-over-game2', async ({ page }) => {
     makePlayer(FRANK, 'Frank', false, { role: 'Villager', skill: 'Hunter', isEliminated: false, score: 10, totalScore: 19 }),
     makePlayer(GRACE, 'Grace', false, { role: 'Werewolf', isEliminated: true,  score: 0,  totalScore: 9  }),
   ];
-  const state = makeGameState('FinalScoresReveal', 2, { winner: 'Villagers', gameIndex: 2 }, players);
+  const state = makeGameState('FinalScoresReveal', 2, { winner: 'Villagers', gameIndex: 2, phaseEndsAt: new Date(Date.now() + 47 * 1000).toISOString() }, players);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
