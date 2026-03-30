@@ -289,8 +289,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (this.isCreator && this.lobbyState) {
       const minPlayers = this.lobbyState.game.minPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
+      const tiebreak = this.lobbyState.game.tiebreakDiscussionDurationSeconds;
       const werewolves = this.lobbyState.game.numberOfWerewolves;
-      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, value, duration, werewolves, this.enabledSkills).subscribe();
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, value, duration, tiebreak, werewolves, this.enabledSkills).subscribe();
     }
   }
 
@@ -298,8 +299,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (this.isCreator && this.lobbyState) {
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
+      const tiebreak = this.lobbyState.game.tiebreakDiscussionDurationSeconds;
       const werewolves = this.lobbyState.game.numberOfWerewolves;
-      this.gameService.updateSettings(this.gameId, this.playerId, value, maxPlayers, duration, werewolves, this.enabledSkills).subscribe();
+      this.gameService.updateSettings(this.gameId, this.playerId, value, maxPlayers, duration, tiebreak, werewolves, this.enabledSkills).subscribe();
     }
   }
 
@@ -307,8 +309,19 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (this.isCreator && this.lobbyState) {
       const minPlayers = this.lobbyState.game.minPlayers;
       const maxPlayers = this.lobbyState.game.maxPlayers;
+      const tiebreak = this.lobbyState.game.tiebreakDiscussionDurationSeconds;
       const werewolves = this.lobbyState.game.numberOfWerewolves;
-      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, value, werewolves, this.enabledSkills).subscribe();
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, value, tiebreak, werewolves, this.enabledSkills).subscribe();
+    }
+  }
+
+  updateTiebreakDiscussionDuration(value: number): void {
+    if (this.isCreator && this.lobbyState) {
+      const minPlayers = this.lobbyState.game.minPlayers;
+      const maxPlayers = this.lobbyState.game.maxPlayers;
+      const duration = this.lobbyState.game.discussionDurationMinutes;
+      const werewolves = this.lobbyState.game.numberOfWerewolves;
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, duration, value, werewolves, this.enabledSkills).subscribe();
     }
   }
 
@@ -317,7 +330,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
       const minPlayers = this.lobbyState.game.minPlayers;
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
-      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, duration, value, this.enabledSkills).subscribe();
+      const tiebreak = this.lobbyState.game.tiebreakDiscussionDurationSeconds;
+      this.gameService.updateSettings(this.gameId, this.playerId, minPlayers, maxPlayers, duration, tiebreak, value, this.enabledSkills).subscribe();
     }
   }
 
@@ -333,7 +347,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
     else skills.push(skill);
     this.enabledSkills = skills;
     const g = this.lobbyState.game;
-    this.gameService.updateSettings(this.gameId, this.playerId, g.minPlayers, g.maxPlayers, g.discussionDurationMinutes, g.numberOfWerewolves, this.enabledSkills).subscribe();
+    this.gameService.updateSettings(this.gameId, this.playerId, g.minPlayers, g.maxPlayers, g.discussionDurationMinutes, g.tiebreakDiscussionDurationSeconds, g.numberOfWerewolves, this.enabledSkills).subscribe();
   }
 
   startGame(): void {

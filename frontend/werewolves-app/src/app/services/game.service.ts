@@ -32,8 +32,8 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/remove`, { playerId: targetPlayerId, moderatorId });
   }
 
-  updateSettings(gameId: string, creatorId: string, minPlayers: number, maxPlayers: number, discussionDurationMinutes: number, numberOfWerewolves: number, enabledSkills?: string[]): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { creatorId, minPlayers, maxPlayers, discussionDurationMinutes, numberOfWerewolves, enabledSkills });
+  updateSettings(gameId: string, creatorId: string, minPlayers: number, maxPlayers: number, discussionDurationMinutes: number, tiebreakDiscussionDurationSeconds: number, numberOfWerewolves: number, enabledSkills?: string[]): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/settings`, { creatorId, minPlayers, maxPlayers, discussionDurationMinutes, tiebreakDiscussionDurationSeconds, numberOfWerewolves, enabledSkills });
   }
 
   updatePlayerName(gameId: string, playerId: string, displayName: string): Observable<void> {

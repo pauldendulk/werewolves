@@ -99,7 +99,7 @@ test.describe('Full 6-player game – werewolves win', () => {
       const creatorId = await creator.page.evaluate(() => localStorage.getItem('playerId'));
       const settingsResp = await creator.page.request.post(
         `http://localhost:5000/api/game/${gameId}/settings`,
-        { data: { creatorId, minPlayers: 3, maxPlayers: 20, discussionDurationMinutes: 5, numberOfWerewolves: 2, enabledSkills: [] } },
+        { data: { creatorId, minPlayers: 3, maxPlayers: 20, discussionDurationMinutes: 5, tiebreakDiscussionDurationSeconds: 60, numberOfWerewolves: 2, enabledSkills: [] } },
       );
       expect(settingsResp.ok()).toBeTruthy();
       // Wait for lobby poll to reflect the change before starting

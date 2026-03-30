@@ -110,7 +110,7 @@ test.describe('Game session – role reveal', () => {
     const creatorId = await creator.page.evaluate(() => localStorage.getItem('playerId'));
     await creator.page.request.post(
       `http://localhost:5000/api/game/${gameId}/settings`,
-      { data: { creatorId, minPlayers: 3, maxPlayers: 20, discussionDurationMinutes: 5, numberOfWerewolves: 1, enabledSkills: [] } },
+      { data: { creatorId, minPlayers: 3, maxPlayers: 20, discussionDurationMinutes: 5, tiebreakDiscussionDurationSeconds: 60, numberOfWerewolves: 1, enabledSkills: [] } },
     );
 
     await creator.page.getByRole('button', { name: 'Start Game' }).click();

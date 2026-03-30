@@ -14,10 +14,8 @@ theme:
     primary: blue
     accent: blue
   features:
-    - navigation.tabs
     - navigation.sections
     - navigation.top
-    - toc.integrate
     - search.suggest
     - search.highlight
     - content.code.copy
@@ -40,7 +38,7 @@ nav:
   - Game Design:
       - Terminology: terminology.md
       - Concept & Rules: game-concept.md
-      - Screen Inventory: screens.md
+      - Phase Inventory: phases.md
       - Tournament Mode: tournament.md
   - Technical:
       - Technology Overview: tech-overview.md

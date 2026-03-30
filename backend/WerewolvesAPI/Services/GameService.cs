@@ -199,6 +199,14 @@ public class GameService : IGameService
         return true;
     }
 
+    public bool UpdateTiebreakDiscussionDuration(string gameId, int seconds, string creatorId)
+    {
+        if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
+        game.TiebreakDiscussionDurationSeconds = seconds;
+        BumpVersion(game);
+        return true;
+    }
+
     public bool UpdateNumberOfWerewolves(string gameId, int count, string creatorId)
     {
         if (!_games.TryGetValue(gameId, out var game) || game.CreatorId != creatorId) return false;
@@ -611,10 +619,10 @@ public class GameService : IGameService
             case GamePhase.WitchTurn:
                 ResolveNightDeaths(game);
                 EvaluateWinCondition(game);
-                BeginPhase(game, GamePhase.NightElimination);
+                BeginPhase(game, GamePhase.NightEliminationReveal);
                 break;
 
-            case GamePhase.NightElimination:
+            case GamePhase.NightEliminationReveal:
                 if (game.HunterMustShoot)
                 {
                     game.HunterEliminatedAtNight = true;
@@ -650,7 +658,7 @@ public class GameService : IGameService
                 }
                 else
                 {
-                    FinalizeDayElimination(game, winnerId);
+                    FinalizeDayEliminationReveal(game, winnerId);
                 }
                 break;
             }
@@ -658,11 +666,11 @@ public class GameService : IGameService
             case GamePhase.TiebreakDiscussion:
             {
                 var (tbWinner, tbIsTie, _) = ResolveDayVote(AliveVotes(game));
-                FinalizeDayElimination(game, tbIsTie ? null : tbWinner);
+                FinalizeDayEliminationReveal(game, tbIsTie ? null : tbWinner);
                 break;
             }
 
-            case GamePhase.DayElimination:
+            case GamePhase.DayEliminationReveal:
                 if (TransitionToGameOverIfWon(game)) return;
                 if (game.HunterMustShoot)
                 {
@@ -721,7 +729,7 @@ public class GameService : IGameService
         }
         ResolveNightDeaths(game);
         EvaluateWinCondition(game);
-        BeginPhase(game, GamePhase.NightElimination);
+        BeginPhase(game, GamePhase.NightEliminationReveal);
     }
 
     private void TransitionToDiscussion(GameState game)
@@ -734,7 +742,7 @@ public class GameService : IGameService
         _logger.LogInformation("Game {GameId} → Discussion (round {Round})", game.GameId, game.RoundNumber);
     }
 
-    private void FinalizeDayElimination(GameState game, string? eliminatedId)
+    private void FinalizeDayEliminationReveal(GameState game, string? eliminatedId)
     {
         game.DayDeaths.Clear();
         var killedIds = new HashSet<string>();
@@ -753,8 +761,8 @@ public class GameService : IGameService
         RecordDayVoteAccuracy(game);
 
         EvaluateWinCondition(game);
-        BeginPhase(game, GamePhase.DayElimination);
-        _logger.LogInformation("Game {GameId} → DayElimination (eliminated: {Id}, winner: {Winner})", game.GameId, eliminatedId ?? "none", game.Winner ?? "none");
+        BeginPhase(game, GamePhase.DayEliminationReveal);
+        _logger.LogInformation("Game {GameId} → DayEliminationReveal (eliminated: {Id}, winner: {Winner})", game.GameId, eliminatedId ?? "none", game.Winner ?? "none");
     }
 
     private static void ResolveNightDeaths(GameState game)

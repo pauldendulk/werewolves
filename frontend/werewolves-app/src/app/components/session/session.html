@@ -1,5 +1,5 @@
 <div class="session-container" *ngIf="lobbyState"
-     [class.night-theme]="phase === 'WerewolvesMeeting' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'SeerTurn' || phase === 'WitchTurn' || phase === 'HunterTurn' || phase === 'NightElimination'"
+     [class.night-theme]="phase === 'WerewolvesMeeting' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'SeerTurn' || phase === 'WitchTurn' || phase === 'HunterTurn' || phase === 'NightEliminationReveal'"
      [class.day-theme]="phase !== 'WerewolvesMeeting' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'SeerTurn' && phase !== 'WitchTurn' && phase !== 'HunterTurn' && phase !== 'NightElimination'">
   <p-toast></p-toast>
 
@@ -267,7 +267,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- NIGHT ELIMINATION phase                                  -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content elimination-phase" *ngIf="phase === 'NightElimination'">
+  <div class="phase-content elimination-phase" *ngIf="phase === 'NightEliminationReveal'">
     <h2 class="phase-title">🌅 Dawn</h2>
     <ng-container *ngIf="lobbyState.game.nightDeaths.length > 0; else noNightKill">
       <p class="elimination-text" *ngFor="let d of lobbyState.game.nightDeaths">
@@ -375,7 +375,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- DAY ELIMINATION phase                                    -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content elimination-phase" *ngIf="phase === 'DayElimination'">
+  <div class="phase-content elimination-phase" *ngIf="phase === 'DayEliminationReveal'">
     <h2 class="phase-title">⚖️ Village Verdict</h2>
     <ng-container *ngIf="lobbyState.game.dayDeaths.length > 0; else noKill">
       <p class="elimination-text">

@@ -216,6 +216,28 @@
          </div>
 
          <div class="setting-item">
+            <label for="tiebreakDiscussionDuration">Tiebreak (sec)</label>
+            <div class="setting-input-wrapper">
+              <p-inputNumber
+                inputId="tiebreakDiscussionDuration"
+                [ngModel]="lobbyState.game.tiebreakDiscussionDurationSeconds"
+                (ngModelChange)="updateTiebreakDiscussionDuration($event)"
+                [min]="10"
+                [max]="300"
+                [step]="10"
+                [showButtons]="true"
+                buttonLayout="horizontal"
+                [disabled]="!isCreator"
+                inputStyleClass="w-4rem text-center"
+                decrementButtonClass="p-button-secondary p-button-outlined"
+                incrementButtonClass="p-button-secondary p-button-outlined"
+                incrementButtonIcon="pi pi-plus"
+                decrementButtonIcon="pi pi-minus">
+              </p-inputNumber>
+            </div>
+         </div>
+
+         <div class="setting-item">
             <label for="numberOfWerewolves">Werewolves</label>
             <div class="setting-input-wrapper">
               <p-inputNumber

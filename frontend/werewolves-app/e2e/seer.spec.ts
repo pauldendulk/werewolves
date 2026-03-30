@@ -123,7 +123,7 @@ test.describe('Seer skill', () => {
       await waitForPhase(creator.page, 'Discussion');
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
-      // ── 7. DayElimination: no one eliminated (tied/empty votes) ─────────
+      // ── 7. DayEliminationReveal: no one eliminated (tied/empty votes) ─────────
       await waitForPhase(creator.page, 'Village Verdict');
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
@@ -145,7 +145,7 @@ test.describe('Seer skill', () => {
       await expect(seer.page.locator('.seer-result .seer-verdict')).toBeVisible({ timeout: 10_000 });
       await expect(seer.page.locator('.seer-result .seer-verdict')).toContainText('Werewolf');
 
-      // ── 11. Seer marks done → NightElimination shows the victim ────────
+      // ── 11. Seer marks done → NightEliminationReveal shows the victim ────────
       await seer.page.getByRole('button', { name: 'Done' }).click();
       for (const { page } of players) await waitForPhase(page, 'Dawn', 20_000);
       await expect(creator.page.getByText(other.name)).toBeVisible({ timeout: 5_000 });

@@ -19,6 +19,7 @@ public class GameInfoDto
     public string Status { get; set; } = string.Empty;
     public int Version { get; set; }
     public int DiscussionDurationMinutes { get; set; }
+    public int TiebreakDiscussionDurationSeconds { get; set; }
     public int NumberOfWerewolves { get; set; }
     public List<string> EnabledSkills { get; set; } = new();
     // Session state

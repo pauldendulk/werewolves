@@ -17,6 +17,7 @@ public class GameState
     public List<PlayerState> Players { get; set; } = new();
     public int Version { get; set; } = 1;
     public int DiscussionDurationMinutes { get; set; } = 5;
+    public int TiebreakDiscussionDurationSeconds { get; set; } = 60;
     public int NumberOfWerewolves { get; set; } = 1;
     public List<PlayerSkill> EnabledSkills { get; set; } = new() { PlayerSkill.Seer };
 
@@ -97,10 +98,10 @@ public enum GamePhase
     SeerTurn,
     WerewolvesTurn,
     WitchTurn,
-    NightElimination,
+    NightEliminationReveal,
     HunterTurn,
     Discussion,
     TiebreakDiscussion,
-    DayElimination,
+    DayEliminationReveal,
     GameOver
 }

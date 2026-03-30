@@ -44,7 +44,7 @@ public record PhaseDescriptor(
                 _ => null,
                 _ => []),
 
-            new(GamePhase.NightElimination,
+            new(GamePhase.NightEliminationReveal,
                 _ => TimeSpan.FromSeconds(10),
                 _ => []),
 
@@ -53,10 +53,10 @@ public record PhaseDescriptor(
                 Alive),
 
             new(GamePhase.TiebreakDiscussion,
-                _ => TimeSpan.FromSeconds(60),
+                game => TimeSpan.FromSeconds(game.TiebreakDiscussionDurationSeconds),
                 Alive),
 
-            new(GamePhase.DayElimination,
+            new(GamePhase.DayEliminationReveal,
                 _ => TimeSpan.FromSeconds(10),
                 _ => []),
 

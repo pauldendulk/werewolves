@@ -15,6 +15,7 @@ export interface GameState {
   status: string;
   version: number;
   discussionDurationMinutes: number;
+  tiebreakDiscussionDurationSeconds: number;
   numberOfWerewolves: number;
   enabledSkills: string[];
   phaseStartedAt: string | null;

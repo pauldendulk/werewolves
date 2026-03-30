@@ -149,7 +149,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       case 'HunterTurn':
         this.audioService.schedulePlay(AudioKey.HunterTurn, playAt);
         break;
-      case 'NightElimination': {
+      case 'NightEliminationReveal': {
         const deaths = this.lobbyState?.game.nightDeaths ?? [];
         if (deaths.length === 0) {
           this.audioService.schedulePlay(AudioKey.NightEndNoDeaths, playAt);
@@ -164,12 +164,12 @@ export class SessionComponent implements OnInit, OnDestroy {
       case 'TiebreakDiscussion':
         this.audioService.schedulePlay(AudioKey.TiebreakDiscussion, playAt);
         break;
-      case 'DayElimination': {
+      case 'DayEliminationReveal': {
         const dayDeaths = this.lobbyState?.game.dayDeaths ?? [];
         if (dayDeaths.length === 0) {
-          this.audioService.schedulePlay(AudioKey.DayEliminationTie, playAt);
+          this.audioService.schedulePlay(AudioKey.DayEliminationRevealTie, playAt);
         } else {
-          this.audioService.schedulePlay(AudioKey.DayElimination, playAt);
+          this.audioService.schedulePlay(AudioKey.DayEliminationReveal, playAt);
         }
         break;
       }

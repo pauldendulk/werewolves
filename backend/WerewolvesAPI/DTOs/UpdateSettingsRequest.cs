@@ -15,6 +15,9 @@ public class UpdateSettingsRequest
     [Range(1, 30)]
     public int DiscussionDurationMinutes { get; set; } = 5;
 
+    [Range(10, 300)]
+    public int TiebreakDiscussionDurationSeconds { get; set; } = 60;
+
     [Range(1, 40)]
     public int NumberOfWerewolves { get; set; } = 1;
 

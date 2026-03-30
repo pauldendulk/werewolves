@@ -103,6 +103,7 @@ function makeGameState(
       status: 'InGame',
       version: 1,
       discussionDurationMinutes: 3,
+      tiebreakDiscussionDurationSeconds: 60,
       numberOfWerewolves: 2,
       enabledSkills: ['Seer', 'Cupid', 'Witch', 'Hunter'],
       phaseStartedAt: '2026-03-17T10:00:00Z',
@@ -135,6 +136,7 @@ function makeLobbyState(players = BASE_PLAYERS) {
       status: 'WaitingForPlayers',
       version: 1,
       discussionDurationMinutes: 3,
+      tiebreakDiscussionDurationSeconds: 60,
       numberOfWerewolves: 2,
       enabledSkills: ['Seer', 'Cupid', 'Witch', 'Hunter'],
       phaseStartedAt: null,
@@ -424,7 +426,7 @@ test('17-night-hunter-turn-hunter', async ({ page }) => {
 
 // ── 18 · Dawn — someone was taken in the night ───────────────────────────────
 test('18-dawn-night-elimination', async ({ page }) => {
-  const state = makeGameState('NightElimination', 2, {
+  const state = makeGameState('NightEliminationReveal', 2, {
     nightDeaths: [{ playerId: ALICE, playerName: 'Alice', cause: 'WerewolfKill' }],
   });
   const role = makeRoleDto('Villager');
@@ -480,7 +482,7 @@ test('21-day-elimination', async ({ page }) => {
     p.playerId === BOB ? { ...p, role: 'Werewolf', isEliminated: true } : p
   );
   const state = makeGameState(
-    'DayElimination',
+    'DayEliminationReveal',
     2,
     { dayDeaths: [{ playerId: BOB, playerName: 'Bob', cause: 'DayVote' }] },
     players
@@ -549,6 +551,7 @@ test('24-tournament-unlock', async ({ page }) => {
       status: 'ReadyToStart',
       version: 1,
       discussionDurationMinutes: 3,
+      tiebreakDiscussionDurationSeconds: 60,
       numberOfWerewolves: 2,
       enabledSkills: ['Seer', 'Cupid', 'Witch', 'Hunter'],
       phaseStartedAt: null,

@@ -268,7 +268,7 @@ public class GameServiceTests
     //
     // CreateReadyGame disables all skills so the night flow is:
     //   Round 1 : RoleReveal → WerewolvesMeeting → Discussion
-    //   Round 2+: DayElimination → WerewolvesTurn → NightElimination → Discussion
+    //   Round 2+: DayEliminationReveal → WerewolvesTurn → NightEliminationReveal → Discussion
 
     private Models.GameState CreateReadyGame(int extraPlayers = 3)
     {
@@ -385,7 +385,7 @@ public class GameServiceTests
 
         foreach (var voter in updated.Players.Where(p => p.PlayerId != villagers[0].PlayerId))
             _gameService.CastVote(game.TournamentCode, voter.PlayerId, villagers[0].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn (round 2)
 
         var before = _gameService.GetGame(game.TournamentCode)!;
@@ -415,7 +415,7 @@ public class GameServiceTests
         foreach (var voter in updated.Players.Where(p => p.PlayerId != sacrificeVillager.PlayerId))
             _gameService.CastVote(game.TournamentCode, voter.PlayerId, sacrificeVillager.PlayerId);
         // All votes go to one player — no tiebreak — advance
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn (round 2)
 
         var state = _gameService.GetGame(game.TournamentCode)!;
@@ -455,10 +455,10 @@ public class GameServiceTests
         foreach (var voter in updated.Players.Where(p => p.PlayerId != werewolf.PlayerId))
             _gameService.CastVote(game.TournamentCode, voter.PlayerId, werewolf.PlayerId);
 
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
 
         var final = _gameService.GetGame(game.TournamentCode)!;
-        final.Phase.Should().Be(Models.GamePhase.DayElimination);
+        final.Phase.Should().Be(Models.GamePhase.DayEliminationReveal);
         final.DayDeaths.Should().ContainSingle(e => e.PlayerId == werewolf.PlayerId);
         final.Winner.Should().Be("Villagers");
     }
@@ -479,7 +479,7 @@ public class GameServiceTests
         // Day 1: vote out V[0]
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId, villagers[0].PlayerId);
         _gameService.CastVote(game.TournamentCode, villagers[1].PlayerId, villagers[0].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
 
         _gameService.GetGame(game.TournamentCode)!.Winner.Should().BeNull("1W + 1V is not a win yet");
 
@@ -487,10 +487,10 @@ public class GameServiceTests
 
         // Night 2: wolf kills last villager
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId, villagers[1].PlayerId);
-        // CastVote auto-advances to NightElimination when all wolves have voted
+        // CastVote auto-advances to NightEliminationReveal when all wolves have voted
 
         var afterNight = _gameService.GetGame(game.TournamentCode)!;
-        afterNight.Phase.Should().Be(Models.GamePhase.NightElimination);
+        afterNight.Phase.Should().Be(Models.GamePhase.NightEliminationReveal);
         afterNight.NightDeaths.Should().ContainSingle(e => e.PlayerId == villagers[1].PlayerId);
         afterNight.Winner.Should().Be("Werewolves");
 
@@ -515,9 +515,9 @@ public class GameServiceTests
         foreach (var voter in started.Players.Where(p => p.PlayerId != villagers[0].PlayerId))
             _gameService.CastVote(game.TournamentCode, voter.PlayerId, villagers[0].PlayerId);
 
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn
-        _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → NightElimination (no wolf vote)
+        _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → NightEliminationReveal (no wolf vote)
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → Discussion
 
         _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.Discussion);
@@ -543,11 +543,11 @@ public class GameServiceTests
 
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId, villagers[0].PlayerId);
         _gameService.CastVote(game.TournamentCode, villagers[1].PlayerId, villagers[0].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn round 2
 
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId, villagers[1].PlayerId);
-        // CastVote auto-advances to NightElimination when all wolves have voted
+        // CastVote auto-advances to NightEliminationReveal when all wolves have voted
 
         var vAtNightElim = _gameService.GetGame(game.TournamentCode)!.Version;
 
@@ -579,7 +579,7 @@ public class GameServiceTests
         // Day 1: eliminate V[0]
         foreach (var p in state.Players.Where(p => p.PlayerId != V[0].PlayerId))
             _gameService.CastVote(game.TournamentCode, p.PlayerId, V[0].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
 
         state = _gameService.GetGame(game.TournamentCode)!;
         state.DayDeaths.Should().ContainSingle(e => e.PlayerId == V[0].PlayerId);
@@ -590,7 +590,7 @@ public class GameServiceTests
         // ── Round 2 ──────────────────────────────────────────────────────────
         _gameService.CastVote(game.TournamentCode, W[0].PlayerId, V[1].PlayerId);
         _gameService.CastVote(game.TournamentCode, W[1].PlayerId, V[1].PlayerId);
-        // CastVote auto-advances to NightElimination when all wolves have voted
+        // CastVote auto-advances to NightEliminationReveal when all wolves have voted
 
         state = _gameService.GetGame(game.TournamentCode)!;
         state.NightDeaths.Should().ContainSingle(e => e.PlayerId == V[1].PlayerId);
@@ -603,7 +603,7 @@ public class GameServiceTests
         _gameService.CastVote(game.TournamentCode, W[1].PlayerId, V[3].PlayerId);
         _gameService.CastVote(game.TournamentCode, V[2].PlayerId, W[0].PlayerId);
         _gameService.CastVote(game.TournamentCode, V[3].PlayerId, W[0].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
 
         state = _gameService.GetGame(game.TournamentCode)!;
         state.DayDeaths.Should().ContainSingle(e => e.PlayerId == W[0].PlayerId);
@@ -613,7 +613,7 @@ public class GameServiceTests
 
         // ── Round 3 ──────────────────────────────────────────────────────────
         _gameService.CastVote(game.TournamentCode, W[1].PlayerId, V[2].PlayerId);
-        // CastVote auto-advances to NightElimination when all wolves have voted
+        // CastVote auto-advances to NightEliminationReveal when all wolves have voted
 
         state = _gameService.GetGame(game.TournamentCode)!;
         state.NightDeaths.Should().ContainSingle(e => e.PlayerId == V[2].PlayerId);
@@ -631,7 +631,7 @@ public class GameServiceTests
         // Tiebreak: tie again → no elimination
         _gameService.CastVote(game.TournamentCode, W[1].PlayerId, V[3].PlayerId);
         _gameService.CastVote(game.TournamentCode, V[3].PlayerId, W[1].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
 
         state = _gameService.GetGame(game.TournamentCode)!;
         state.DayDeaths.Should().BeEmpty("double tie = no elimination");
@@ -641,10 +641,10 @@ public class GameServiceTests
 
         // ── Round 4 ──────────────────────────────────────────────────────────
         _gameService.CastVote(game.TournamentCode, W[1].PlayerId, V[3].PlayerId);
-        // CastVote auto-advances to NightElimination when all wolves have voted
+        // CastVote auto-advances to NightEliminationReveal when all wolves have voted
 
         state = _gameService.GetGame(game.TournamentCode)!;
-        state.Phase.Should().Be(Models.GamePhase.NightElimination);
+        state.Phase.Should().Be(Models.GamePhase.NightEliminationReveal);
         state.NightDeaths.Should().ContainSingle(e => e.PlayerId == V[3].PlayerId);
         state.Winner.Should().Be("Werewolves");
 
@@ -777,7 +777,7 @@ public class GameServiceTests
         foreach (var v in villagers)
             _gameService.CastVote(game.TournamentCode, v.PlayerId, werewolf.PlayerId);
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId, villagers[0].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
 
         var result = _gameService.GetGame(game.TournamentCode)!;
         result.DayDeaths.Should().ContainSingle(e => e.PlayerId == werewolf.PlayerId);
@@ -804,7 +804,7 @@ public class GameServiceTests
         foreach (var v in villagers)
             _gameService.CastVote(game.TournamentCode, v.PlayerId, werewolf.PlayerId);
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId, villagers[0].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination (Villagers win)
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal (Villagers win)
 
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → GameOver
 
@@ -842,13 +842,13 @@ public class GameServiceTests
         _gameService.CastVote(game.TournamentCode, villagers[1].PlayerId, villagers[0].PlayerId);
         _gameService.CastVote(game.TournamentCode, villagers[2].PlayerId, villagers[0].PlayerId);
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId,     villagers[0].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
 
         _gameService.GetGame(game.TournamentCode)!.Players
             .First(p => p.PlayerId == villagers[0].PlayerId).IsEliminated.Should().BeTrue();
 
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn
-        _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → NightElimination
+        _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → NightEliminationReveal
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → Discussion (round 2)
 
         // Round 2: dead V[0] votes for V[1] (this would cause a tie if counted)
@@ -856,7 +856,7 @@ public class GameServiceTests
         _gameService.CastVote(game.TournamentCode, villagers[1].PlayerId, werewolf.PlayerId);
         _gameService.CastVote(game.TournamentCode, villagers[2].PlayerId, werewolf.PlayerId);
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId,     villagers[1].PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
 
         var result = _gameService.GetGame(game.TournamentCode)!;
 
@@ -901,13 +901,13 @@ public class GameServiceTests
         foreach (var v in vills1)
             _gameService.CastVote(tc, v.PlayerId, wolf1.PlayerId);
         _gameService.CastVote(tc, wolf1.PlayerId, vills1[0].PlayerId);
-        MarkAllAliveDone(tc); // Discussion → DayElimination (Villagers win)
+        MarkAllAliveDone(tc); // Discussion → DayEliminationReveal (Villagers win)
 
         var afterElim1 = _gameService.GetGame(tc)!;
-        afterElim1.Phase.Should().Be(Models.GamePhase.DayElimination);
+        afterElim1.Phase.Should().Be(Models.GamePhase.DayEliminationReveal);
         afterElim1.Winner.Should().Be("Villagers");
 
-        _gameService.ForceAdvancePhase(tc, game.CreatorId); // DayElimination → GameOver
+        _gameService.ForceAdvancePhase(tc, game.CreatorId); // DayEliminationReveal → GameOver
 
         var gameOver1 = _gameService.GetGame(tc)!;
         gameOver1.Phase.Should().Be(Models.GamePhase.GameOver);
@@ -959,10 +959,10 @@ public class GameServiceTests
         foreach (var v in vills2)
             _gameService.CastVote(tc, v.PlayerId, wolf2.PlayerId);
         _gameService.CastVote(tc, wolf2.PlayerId, vills2[0].PlayerId);
-        MarkAllAliveDone(tc); // Discussion → DayElimination (Villagers win)
+        MarkAllAliveDone(tc); // Discussion → DayEliminationReveal (Villagers win)
 
         var afterElim2 = _gameService.GetGame(tc)!;
-        afterElim2.Phase.Should().Be(Models.GamePhase.DayElimination);
+        afterElim2.Phase.Should().Be(Models.GamePhase.DayEliminationReveal);
         afterElim2.Winner.Should().Be("Villagers");
 
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
@@ -1008,13 +1008,13 @@ public class GameServiceTests
         // Day 1: everyone votes to eliminate extra
         foreach (var p in state.Players.Where(p => p.PlayerId != extra.PlayerId))
             _gameService.CastVote(tc, p.PlayerId, extra.PlayerId);
-        MarkAllAliveDone(tc); // → DayElimination (extra out)
+        MarkAllAliveDone(tc); // → DayEliminationReveal (extra out)
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // → WerewolvesTurn round 2
 
         // Night 2: wolf kills cupid; witch saves cupid (WitchHealUsed = true)
         _gameService.CastVote(tc, wolf.PlayerId, cupid.PlayerId);
         // CastVote auto-advances to WitchTurn when all wolves have voted
-        _gameService.WitchAction(tc, witch.PlayerId, "save", null); // → NightElimination (cupid saved)
+        _gameService.WitchAction(tc, witch.PlayerId, "save", null); // → NightEliminationReveal (cupid saved)
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // → Discussion round 2
 
         // Sanity: skill state is active before reset
@@ -1027,7 +1027,7 @@ public class GameServiceTests
         _gameService.CastVote(tc, cupid.PlayerId, wolf.PlayerId);
         _gameService.CastVote(tc, witch.PlayerId, wolf.PlayerId);
         _gameService.CastVote(tc, wolf.PlayerId, cupid.PlayerId);
-        MarkAllAliveDone(tc); // → DayElimination (wolf + witch out, Villagers win)
+        MarkAllAliveDone(tc); // → DayEliminationReveal (wolf + witch out, Villagers win)
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
 
         var gameOver = _gameService.GetGame(tc)!;
@@ -1067,7 +1067,7 @@ public class GameServiceTests
         foreach (var v in vills)
             _gameService.CastVote(tc, v.PlayerId, wolf.PlayerId);
         _gameService.CastVote(tc, wolf.PlayerId, vills[0].PlayerId);
-        MarkAllAliveDone(tc);    // → DayElimination (Villagers win)
+        MarkAllAliveDone(tc);    // → DayEliminationReveal (Villagers win)
         _gameService.ForceAdvancePhase(tc, game.CreatorId); // → GameOver
 
         var gameOver = _gameService.GetGame(tc)!;
@@ -1411,7 +1411,7 @@ public class GameServiceTests
 
         foreach (var v in state.Players.Where(p => p.PlayerId != toElim.PlayerId))
             _gameService.CastVote(game.TournamentCode, v.PlayerId, toElim.PlayerId);
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn round 2
 
         // Wolf votes
@@ -1445,7 +1445,7 @@ public class GameServiceTests
         MarkAliveWolvesDone(game.TournamentCode); // → Discussion
 
         // Survive round 1 discussion without elimination: all players mark done, no winner
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination (no votes)
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal (no votes)
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn round 2
 
         // Wolf votes for victim
@@ -1460,7 +1460,7 @@ public class GameServiceTests
 
         success.Should().BeTrue();
         var updated = _gameService.GetGame(game.TournamentCode)!;
-        updated.Phase.Should().Be(Models.GamePhase.NightElimination);
+        updated.Phase.Should().Be(Models.GamePhase.NightEliminationReveal);
         updated.NightDeaths.Should().BeEmpty("witch saved the victim");
         updated.WitchHealUsed.Should().BeTrue();
 
@@ -1482,7 +1482,7 @@ public class GameServiceTests
 
         MarkAllAliveDone(game.TournamentCode); // → WerewolvesMeeting
         MarkAliveWolvesDone(game.TournamentCode); // → Discussion
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination (no kill)
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal (no kill)
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn round 2
 
         // Wolf votes anyone else
@@ -1514,15 +1514,15 @@ public class GameServiceTests
         // Get to WerewolvesTurn round 2
         MarkAllAliveDone(game.TournamentCode); // → WerewolvesMeeting
         MarkAliveWolvesDone(game.TournamentCode); // → Discussion
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination (no kill)
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal (no kill)
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn round 2
 
         // Wolf kills the Hunter
         _gameService.CastVote(game.TournamentCode, wolf.PlayerId, hunter.PlayerId);
-        // CastVote auto-advances to NightElimination when all wolves have voted
+        // CastVote auto-advances to NightEliminationReveal when all wolves have voted
 
         var afterNight = _gameService.GetGame(game.TournamentCode)!;
-        afterNight.Phase.Should().Be(Models.GamePhase.NightElimination);
+        afterNight.Phase.Should().Be(Models.GamePhase.NightEliminationReveal);
         afterNight.HunterMustShoot.Should().BeTrue();
 
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → HunterTurn
@@ -1573,13 +1573,13 @@ public class GameServiceTests
             if (alive.Count <= 2) break;
             foreach (var voter in alive.Where(p => p.PlayerId != target.PlayerId))
                 _gameService.CastVote(game.TournamentCode, voter.PlayerId, target.PlayerId);
-            MarkAllAliveDone(game.TournamentCode); // → DayElimination
+            MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal
             _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn or Discussion
             // If we hit WerewolvesTurn, advance past it
             var g2 = _gameService.GetGame(game.TournamentCode)!;
             if (g2.Phase == Models.GamePhase.WerewolvesTurn)
             {
-                _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → NightElimination (no kill)
+                _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → NightEliminationReveal (no kill)
                 _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → Discussion
             }
         }
@@ -1606,12 +1606,12 @@ public class GameServiceTests
         // Link two villagers as lovers
         _gameService.CupidAction(game.TournamentCode, cupid.PlayerId, loverVillager1.PlayerId, loverVillager2.PlayerId);
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // LoverReveal → Discussion
-        MarkAllAliveDone(game.TournamentCode); // → DayElimination (no kill)
+        MarkAllAliveDone(game.TournamentCode); // → DayEliminationReveal (no kill)
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → WerewolvesTurn round 2
 
         // Wolf kills loverVillager1 — loverVillager2 should die in cascade
         _gameService.CastVote(game.TournamentCode, wolf.PlayerId, loverVillager1.PlayerId);
-        // CastVote auto-advances to NightElimination when all wolves have voted
+        // CastVote auto-advances to NightEliminationReveal when all wolves have voted
 
         var final = _gameService.GetGame(game.TournamentCode)!;
         final.NightDeaths.Should().Contain(e => e.PlayerId == loverVillager1.PlayerId);

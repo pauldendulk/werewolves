@@ -86,6 +86,7 @@ public class GameController : ControllerBase
                 Status = game.Status.ToString(),
                 Version = game.Version,
                 DiscussionDurationMinutes = game.DiscussionDurationMinutes,
+                TiebreakDiscussionDurationSeconds = game.TiebreakDiscussionDurationSeconds,
                 NumberOfWerewolves = game.NumberOfWerewolves,
                 EnabledSkills = game.EnabledSkills.Select(s => s.ToString()).ToList(),
                 Phase = game.Phase.ToString(),
@@ -152,12 +153,13 @@ public class GameController : ControllerBase
         bool maxUpdated      = _gameService.UpdateMaxPlayers(tournamentCode, request.MaxPlayers, request.CreatorId);
         bool minUpdated      = _gameService.UpdateMinPlayers(tournamentCode, request.MinPlayers, request.CreatorId);
         bool durationUpdated = _gameService.UpdateDiscussionDuration(tournamentCode, request.DiscussionDurationMinutes, request.CreatorId);
+        bool tiebreakUpdated = _gameService.UpdateTiebreakDiscussionDuration(tournamentCode, request.TiebreakDiscussionDurationSeconds, request.CreatorId);
         bool wolvesUpdated   = _gameService.UpdateNumberOfWerewolves(tournamentCode, request.NumberOfWerewolves, request.CreatorId);
         bool skillsUpdated   = false;
         if (request.EnabledSkills != null)
             skillsUpdated = _gameService.UpdateEnabledSkills(tournamentCode, request.EnabledSkills, request.CreatorId);
 
-        if (maxUpdated || minUpdated || durationUpdated || wolvesUpdated || skillsUpdated)
+        if (maxUpdated || minUpdated || durationUpdated || tiebreakUpdated || wolvesUpdated || skillsUpdated)
             return Ok();
 
         return Unauthorized(new { message = "Only the creator can update settings" });

@@ -16,6 +16,7 @@ public interface IGameService
     bool UpdatePlayerName(string tournamentCode, string playerId, string displayName);
     bool HasDuplicateNames(string tournamentCode);
     bool UpdateDiscussionDuration(string tournamentCode, int minutes, string creatorId);
+    bool UpdateTiebreakDiscussionDuration(string tournamentCode, int seconds, string creatorId);
     bool UpdateNumberOfWerewolves(string tournamentCode, int count, string creatorId);
     bool UpdateEnabledSkills(string tournamentCode, List<string> skillNames, string creatorId);
     (bool Success, string? Error) StartGame(string tournamentCode, string creatorId);

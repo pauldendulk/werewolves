@@ -28,10 +28,10 @@ Pre-game screens (Create Game, Join Game, Lobby) do not use the session shell an
 | **`SeerTurn`** | Night | Seer only | Seer inspects one player's alignment | **Yes** — secret action should not drag | **Yes** — village is waiting; subtle overtime pressure fits the theme |
 | **`WitchTurn`** | Night | Witch only | Witch saves victim, poisons a target, or does nothing | **Yes** — meaningful decision | **Yes** — pressure to choose; "do nothing" is always available as quick escape |
 | **`HunterTurn`** | Night | Hunter only | Eliminated Hunter shoots one player | **Yes** — dramatic final act | **Yes** — the shot hangs dramatically; overtime heightens tension |
-| **`NightElimination`** | Night | Passive (auto-advance) | Dawn reveal: who died in the night | Built-in — auto-advance with numeric countdown | N/A — auto-advances; no overtime needed |
+| **`NightEliminationReveal`** | Night | Passive (auto-advance) | Dawn reveal: who died in the night | Built-in — auto-advance with numeric countdown | N/A — auto-advances; no overtime needed |
 | **`Discussion`** | Day | All living players | Players debate, cast votes, signal ready | **Yes — primary use case** | **Yes** — overtime is natural: discussion ran long, village must still vote |
 | **`TiebreakDiscussion`** | Day | All living players | Same as Discussion; votes restricted to tied candidates | **Yes** | **Yes** — same reasoning |
-| **`DayElimination`** | Day | Passive (auto-advance) | Verdict reveal: who the village eliminated | Built-in — auto-advance with numeric countdown | N/A — auto-advances; no overtime needed |
+| **`DayEliminationReveal`** | Day | Passive (auto-advance) | Verdict reveal: who the village eliminated | Built-in — auto-advance with numeric countdown | N/A — auto-advances; no overtime needed |
 | **`GameOver`** | Day | All players | Winner announced; full role summary shown | No — game is over | No |
 
 ---

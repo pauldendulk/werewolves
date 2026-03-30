@@ -126,7 +126,7 @@ test.describe('Hunter skill', () => {
       // Creator force-advances so we don't wait for the night timer
       await creator.page.getByRole('button', { name: 'Skip night' }).click();
 
-      // ── 6. NightElimination: Hunter is shown as eliminated ───────────────
+      // ── 6. NightEliminationReveal: Hunter is shown as eliminated ───────────────
       for (const p of allPages) await waitForPhase(p, 'Dawn', 20_000);
       await expect(creator.page.getByText(hunter.name)).toBeVisible({ timeout: 5_000 });
       await creator.page.getByRole('button', { name: 'Continue' }).click();
@@ -208,7 +208,7 @@ test.describe('Hunter skill', () => {
       }
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
-      // ── 5. DayElimination: Hunter is eliminated ─────────────────────────
+      // ── 5. DayEliminationReveal: Hunter is eliminated ─────────────────────────
       await waitForPhase(creator.page, 'Village Verdict');
       await expect(creator.page.getByText(hunter.name)).toBeVisible({ timeout: 5_000 });
       await creator.page.getByRole('button', { name: 'Continue' }).click();

@@ -28,6 +28,7 @@ describe('LobbyComponent', () => {
       status: 'WaitingForPlayers',
       version: 1,
       discussionDurationMinutes: 5,
+      tiebreakDiscussionDurationSeconds: 60,
       numberOfWerewolves: 1,
       enabledSkills: [],
       phaseStartedAt: null,

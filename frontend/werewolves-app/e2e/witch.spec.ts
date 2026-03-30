@@ -56,7 +56,7 @@ async function enableSkill(page: Page, skill: string): Promise<void> {
   await page.locator('.skill-toggle').filter({ hasText: skill }).locator('[role="switch"]').click({ force: true });
 }
 
-/** Navigate round 1: skip WerewolvesMeeting + force-end Discussion + continue DayElimination. */
+/** Navigate round 1: skip WerewolvesMeeting + force-end Discussion + continue DayEliminationReveal. */
 async function skipRound1(creatorPage: Page, allPages: Page[]): Promise<void> {
   for (const p of allPages) await waitForPhase(p, 'Night');
   await creatorPage.getByRole('button', { name: 'Skip night' }).click();
@@ -139,7 +139,7 @@ test.describe('Witch skill', () => {
       // Click "Save victim"
       await witch.page.getByRole('button', { name: '🧴 Save victim' }).click();
 
-      // ── 7. NightElimination: nobody was taken ────────────────────────────
+      // ── 7. NightEliminationReveal: nobody was taken ────────────────────────────
       for (const p of allPages) await waitForPhase(p, 'Dawn', 20_000);
       await expect(creator.page.getByText('No one was taken last night')).toBeVisible({ timeout: 5_000 });
 
@@ -210,7 +210,7 @@ test.describe('Witch skill', () => {
       await selectDropdownOption(witch.page, '.action-row', poisonTarget.name);
       await witch.page.getByRole('button', { name: '☠️ Poison' }).click();
 
-      // ── 6. NightElimination: both poison target AND wolf victim appear ────
+      // ── 6. NightEliminationReveal: both poison target AND wolf victim appear ────
       for (const p of allPages) await waitForPhase(p, 'Dawn', 20_000);
       await expect(creator.page.getByText(poisonTarget.name)).toBeVisible({ timeout: 5_000 });
       await expect(creator.page.getByText(wolfVictim.name)).toBeVisible({ timeout: 5_000 });
