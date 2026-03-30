@@ -236,6 +236,14 @@ public class GameController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("{tournamentCode}/extend-discussion")]
+    public ActionResult ExtendDiscussion(string tournamentCode, [FromBody] PlayerActionRequest request)
+    {
+        var (success, error) = _gameService.ExtendDiscussion(tournamentCode, request.PlayerId);
+        if (!success) return BadRequest(new { message = error });
+        return Ok();
+    }
+
     [HttpPost("{tournamentCode}/unlock")]
     public ActionResult UnlockTournament(string tournamentCode, [FromBody] UnlockTournamentRequest request)
     {

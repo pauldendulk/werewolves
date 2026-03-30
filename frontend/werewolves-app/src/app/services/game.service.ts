@@ -56,6 +56,10 @@ export class GameService {
     return this.http.post<void>(`${this.apiUrl}/game/${gameId}/force-advance`, { playerId: moderatorId });
   }
 
+  extendDiscussion(gameId: string, moderatorId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/game/${gameId}/extend-discussion`, { playerId: moderatorId });
+  }
+
   getRole(gameId: string, playerId: string): Observable<PlayerRoleDto> {
     return this.http.get<PlayerRoleDto>(`${this.apiUrl}/game/${gameId}/role`, { params: { playerId } });
   }

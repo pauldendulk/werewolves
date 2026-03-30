@@ -51,12 +51,6 @@
       <div class="done-badge" *ngIf="currentPlayer?.isDone">
         <i class="pi pi-check-circle"></i> Waiting for others...
       </div>
-      <p-button
-        *ngIf="isModerator"
-        label="Force start night"
-        (onClick)="forceAdvance()"
-        styleClass="p-button-text p-button-secondary mt-2 w-full">
-      </p-button>
     </div>
   </div>
 
@@ -86,12 +80,6 @@
       </div>
     </div>
 
-    <p-button
-      *ngIf="isModerator"
-      label="Skip night"
-      (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full">
-    </p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -122,12 +110,6 @@
         styleClass="p-button-danger mt-2">
       </p-button>
     </div>
-    <p-button
-      *ngIf="isModerator"
-      label="Skip night"
-      (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full">
-    </p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -152,8 +134,6 @@
         [disabled]="!cupidLover1 || !cupidLover2" styleClass="mt-2 w-full"></p-button>
     </div>
     <p class="no-action-text" *ngIf="!canActAsCupid && !currentPlayer?.isEliminated">Cupid is choosing the lovers...</p>
-    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -178,8 +158,6 @@
       </div>
     </div>
 
-    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -207,8 +185,6 @@
     </div>
 
     <p class="no-action-text" *ngIf="!canActAsSeer && !currentPlayer?.isEliminated">The Seer is looking...</p>
-    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -236,8 +212,6 @@
     </div>
 
     <p class="no-action-text" *ngIf="!canActAsWitch && !currentPlayer?.isEliminated">The Witch is deciding...</p>
-    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -256,8 +230,6 @@
       <p-button label="🏹 Shoot" (onClick)="submitHunterAction()" [disabled]="!hunterTarget" styleClass="p-button-danger mt-2 w-full"></p-button>
     </div>
     <p class="no-action-text" *ngIf="!canActAsHunter">The Hunter is taking their final shot...</p>
-    <p-button *ngIf="isModerator" label="Skip" (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full"></p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -277,12 +249,6 @@
     <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
       <i class="pi pi-spin pi-spinner"></i> Continuing...
     </div>
-    <p-button
-      *ngIf="isModerator"
-      label="Continue"
-      (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full">
-    </p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -343,12 +309,6 @@
       <div class="done-badge" *ngIf="currentPlayer?.isDone">
         <i class="pi pi-check-circle"></i> Waiting...
       </div>
-      <p-button
-        *ngIf="isModerator"
-        label="Force end discussion"
-        (onClick)="forceAdvance()"
-        styleClass="p-button-text p-button-secondary mt-2 w-full">
-      </p-button>
     </div>
 
     <!-- Role card -->
@@ -388,12 +348,6 @@
     <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
       <i class="pi pi-spin pi-spinner"></i> Continuing...
     </div>
-    <p-button
-      *ngIf="isModerator"
-      label="Continue"
-      (onClick)="forceAdvance()"
-      styleClass="p-button-text p-button-secondary mt-2 w-full">
-    </p-button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -422,6 +376,26 @@
     <div class="done-badge" *ngIf="currentPlayer?.isDone">
       <i class="pi pi-check-circle"></i> Heading to lobby...
     </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- MODERATOR PANEL (visible only to moderators)             -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="moderator-panel" *ngIf="isModerator && (moderatorActionLabel || showExtendButton)">
+    <span class="moderator-panel-label"><i class="pi pi-shield"></i> Moderator</span>
+    <p-button
+      *ngIf="showExtendButton"
+      label="+1 min"
+      (onClick)="extendDiscussion()"
+      styleClass="p-button-text p-button-secondary w-full">
+    </p-button>
+    <p-button
+      *ngIf="moderatorActionLabel"
+      [label]="moderatorActionLabel"
+      (onClick)="forceAdvance()"
+      styleClass="p-button-text p-button-secondary w-full">
+    </p-button>
   </div>
 
 </div>

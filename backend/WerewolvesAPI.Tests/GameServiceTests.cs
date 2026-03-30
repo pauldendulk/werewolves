@@ -328,6 +328,54 @@ public class GameServiceTests
     }
 
     [Fact]
+    public void ExtendDiscussion_AddsSixtySeconds()
+    {
+        var game = CreateReadyGame();
+        _gameService.StartGame(game.TournamentCode, game.CreatorId);
+        MarkAllAliveDone(game.TournamentCode); // → WerewolvesMeeting
+        MarkAliveWolvesDone(game.TournamentCode); // → Discussion
+
+        var before = _gameService.GetGame(game.TournamentCode)!;
+        before.Phase.Should().Be(Models.GamePhase.Discussion);
+        var originalDeadline = before.PhaseEndsAt!.Value;
+
+        var (success, error) = _gameService.ExtendDiscussion(game.TournamentCode, game.CreatorId);
+
+        success.Should().BeTrue();
+        error.Should().BeNull();
+        var after = _gameService.GetGame(game.TournamentCode)!;
+        after.PhaseEndsAt.Should().BeCloseTo(originalDeadline.AddSeconds(60), TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
+    public void ExtendDiscussion_ByNonModerator_ShouldFail()
+    {
+        var game = CreateReadyGame();
+        _gameService.StartGame(game.TournamentCode, game.CreatorId);
+        MarkAllAliveDone(game.TournamentCode); // → WerewolvesMeeting
+        MarkAliveWolvesDone(game.TournamentCode); // → Discussion
+
+        var nonModerator = game.Players.First(p => !p.IsModerator);
+        var (success, error) = _gameService.ExtendDiscussion(game.TournamentCode, nonModerator.PlayerId);
+
+        success.Should().BeFalse();
+        error.Should().Contain("moderator");
+    }
+
+    [Fact]
+    public void ExtendDiscussion_OutsideDiscussion_ShouldFail()
+    {
+        var game = CreateReadyGame();
+        _gameService.StartGame(game.TournamentCode, game.CreatorId);
+        // Still in RoleReveal — not a discussion phase
+
+        var (success, error) = _gameService.ExtendDiscussion(game.TournamentCode, game.CreatorId);
+
+        success.Should().BeFalse();
+        error.Should().Contain("extend");
+    }
+
+    [Fact]
     public void ForceAdvancePhase_FromRoleReveal_ShouldTransitionToWerewolvesMeeting()
     {
         var game = CreateReadyGame();

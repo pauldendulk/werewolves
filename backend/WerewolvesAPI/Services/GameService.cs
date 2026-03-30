@@ -484,6 +484,23 @@ public class GameService : IGameService
         return (true, null);
     }
 
+    public (bool Success, string? Error) ExtendDiscussion(string gameId, string moderatorId)
+    {
+        if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
+        if (!game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return (false, "Only a moderator can extend the discussion");
+        if (game.Phase != GamePhase.Discussion && game.Phase != GamePhase.TiebreakDiscussion)
+            return (false, "Can only extend during Discussion or Tiebreak Discussion");
+
+        // Extend from the current deadline (or now, if it has already passed)
+        var baseline = game.PhaseEndsAt.HasValue && game.PhaseEndsAt.Value > DateTime.UtcNow
+            ? game.PhaseEndsAt.Value
+            : DateTime.UtcNow;
+        game.PhaseEndsAt = baseline.AddSeconds(60);
+        BumpVersion(game);
+        ThrowOnFailure(UpsertLiveStateAsync(game));
+        return (true, null);
+    }
+
     public (bool Success, string? Error) UnlockTournament(string tournamentCode, string code)
     {
         if (!_games.TryGetValue(tournamentCode, out var game)) return (false, "Game not found");

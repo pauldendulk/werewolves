@@ -82,6 +82,11 @@ const BASE_PLAYERS = [
   makePlayer(GRACE, 'Grace', false),
 ];
 
+// Same roster but Alice (the viewer in most tests) is also moderator — used for moderator panel screenshots
+const MODERATOR_PLAYERS = BASE_PLAYERS.map(p =>
+  p.playerId === ALICE ? { ...p, isModerator: true } : p
+);
+
 // Small base64 QR placeholder (5×5 white PNG) so the <img> renders
 const QR_PLACEHOLDER =
   'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAADklEQVQI12NgYGD4DwABBAEAWB/aHQAAAABJRU5ErkJggg==';
@@ -537,6 +542,28 @@ test('23-game-over-game2', async ({ page }) => {
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Final Scores Reveal")');
   await shot(page, '23-game-over-game2');
+});
+
+// ── 25 · Moderator panel — night theme (Werewolves Turn, "Skip night") ────────
+test('25-moderator-night', async ({ page }) => {
+  const state = makeGameState('WerewolvesTurn', 2, {}, MODERATOR_PLAYERS);
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('.moderator-panel');
+  await shot(page, '25-moderator-night');
+});
+
+// ── 26 · Moderator panel — day theme (Discussion, "Force end discussion") ─────
+test('26-moderator-day', async ({ page }) => {
+  const state = makeGameState('Discussion', 2, { phaseEndsAt: new Date(Date.now() + 154 * 1000).toISOString() }, MODERATOR_PLAYERS);
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('.moderator-panel');
+  await shot(page, '26-moderator-day');
 });
 
 // ── 24 · Tournament Unlock — pass code dialog ─────────────────────────────────

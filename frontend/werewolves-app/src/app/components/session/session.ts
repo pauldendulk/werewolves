@@ -211,6 +211,24 @@ export class SessionComponent implements OnInit, OnDestroy {
     return this.currentPlayer?.isModerator ?? false;
   }
 
+  get moderatorActionLabel(): string | null {
+    switch (this.phase) {
+      case 'RoleReveal':            return 'Force start night';
+      case 'WerewolvesMeeting':
+      case 'WerewolvesTurn':        return 'Skip night';
+      case 'CupidTurn':
+      case 'LoverReveal':
+      case 'SeerTurn':
+      case 'WitchTurn':
+      case 'HunterTurn':            return 'Skip';
+      case 'NightEliminationReveal':
+      case 'DayEliminationReveal':  return 'Continue';
+      case 'Discussion':
+      case 'TiebreakDiscussion':    return 'Force end discussion';
+      default:                       return null;
+    }
+  }
+
   get phase(): string {
     return this.lobbyState?.game.phase ?? '';
   }
@@ -354,9 +372,19 @@ export class SessionComponent implements OnInit, OnDestroy {
     });
   }
 
+  get showExtendButton(): boolean {
+    return this.phase === 'Discussion' || this.phase === 'TiebreakDiscussion';
+  }
+
   forceAdvance(): void {
     this.gameService.forceAdvancePhase(this.gameId, this.playerId).subscribe({
       error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to advance phase' })
+    });
+  }
+
+  extendDiscussion(): void {
+    this.gameService.extendDiscussion(this.gameId, this.playerId).subscribe({
+      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to extend discussion' })
     });
   }
 

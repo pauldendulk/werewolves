@@ -27,6 +27,7 @@ public interface IGameService
     (bool Success, string? Error) WitchAction(string tournamentCode, string witchId, string choice, string? poisonTargetId);
     (bool Success, string? Error) HunterAction(string tournamentCode, string hunterId, string targetId);
     (bool Success, string? Error) ForceAdvancePhase(string tournamentCode, string moderatorId);
+    (bool Success, string? Error) ExtendDiscussion(string tournamentCode, string moderatorId);
     void TryAdvancePhaseIfExpired(string tournamentCode);
     (bool Success, string? Error) UnlockTournament(string tournamentCode, string code);
     bool SetPremium(string tournamentCode);

@@ -81,7 +81,7 @@ describe('SessionComponent', () => {
 
   beforeEach(async () => {
     gameServiceSpy = jasmine.createSpyObj('GameService', [
-      'getPlayerId', 'getRole', 'markDone', 'castVote', 'forceAdvancePhase', 'getGameState'
+      'getPlayerId', 'getRole', 'markDone', 'castVote', 'forceAdvancePhase', 'extendDiscussion', 'getGameState'
     ]);
     gameServiceSpy.getPlayerId.and.returnValue('player1');
     gameServiceSpy.getRole.and.returnValue(of({ role: 'Villager', skill: null, fellowWerewolves: [], loverName: null, nightKillTargetName: null, witchHealUsed: false, witchPoisonUsed: false }));
@@ -178,6 +178,27 @@ describe('SessionComponent', () => {
     gameServiceSpy.forceAdvancePhase.and.returnValue(of(void 0));
     component.forceAdvance();
     expect(gameServiceSpy.forceAdvancePhase).toHaveBeenCalledWith('game123', 'player1');
+  });
+
+  it('should call extendDiscussion', () => {
+    gameServiceSpy.extendDiscussion.and.returnValue(of(void 0));
+    component.extendDiscussion();
+    expect(gameServiceSpy.extendDiscussion).toHaveBeenCalledWith('game123', 'player1');
+  });
+
+  it('showExtendButton should be true during Discussion', () => {
+    component.lobbyState = makeLobbyState({ phase: 'Discussion' });
+    expect(component.showExtendButton).toBeTrue();
+  });
+
+  it('showExtendButton should be true during TiebreakDiscussion', () => {
+    component.lobbyState = makeLobbyState({ phase: 'TiebreakDiscussion' });
+    expect(component.showExtendButton).toBeTrue();
+  });
+
+  it('showExtendButton should be false outside discussion', () => {
+    component.lobbyState = makeLobbyState({ phase: 'RoleReveal' });
+    expect(component.showExtendButton).toBeFalse();
   });
 
   it('canVoteNight should be false for villagers', () => {
