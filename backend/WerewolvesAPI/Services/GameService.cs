@@ -601,23 +601,23 @@ public class GameService : IGameService
         switch (game.Phase)
         {
             case GamePhase.RoleReveal:
-                TransitionToFirstNightStep(game);
+                BeginNightSequence(game);
+                break;
+
+            case GamePhase.NightAnnouncement:
+                BeginPhase(game, game.RoundNumber == 1 ? GamePhase.WerewolvesMeeting : GamePhase.WerewolvesTurn);
                 break;
 
             case GamePhase.WerewolvesMeeting:
-                // After wolves meet, let Cupid act (if present), else go to discussion
+                // After wolves meet, let Cupid act (if present), else open the day
                 if (HasLivingSkill(game, PlayerSkill.Cupid))
                     BeginPhase(game, GamePhase.CupidTurn);
                 else
-                    TransitionToDiscussion(game);
+                    BeginDaySequence(game);
                 break;
 
             case GamePhase.CupidTurn:
-                // If Cupid chose lovers show them; otherwise skip to discussion
-                if (game.Lover1Id != null && game.Lover2Id != null)
-                    BeginPhase(game, GamePhase.LoverReveal);
-                else
-                    TransitionToDiscussion(game);
+                BeginDaySequence(game);
                 break;
 
             case GamePhase.LoverReveal:
@@ -636,7 +636,17 @@ public class GameService : IGameService
             case GamePhase.WitchTurn:
                 ResolveNightDeaths(game);
                 EvaluateWinCondition(game);
-                BeginPhase(game, GamePhase.NightEliminationReveal);
+                BeginDaySequence(game);
+                break;
+
+            case GamePhase.DayAnnouncement:
+                // Round 1 had no wolf-kill cycle. If Cupid was in play, show LoverReveal before discussion.
+                if (game.RoundNumber == 1 && game.Players.Any(p => p.Skill == PlayerSkill.Cupid))
+                    BeginPhase(game, GamePhase.LoverReveal);
+                else if (game.RoundNumber == 1)
+                    TransitionToDiscussion(game);
+                else
+                    BeginPhase(game, GamePhase.NightEliminationReveal);
                 break;
 
             case GamePhase.NightEliminationReveal:
@@ -659,7 +669,7 @@ public class GameService : IGameService
                 else
                 {
                     game.RoundNumber++;
-                    TransitionToFirstNightStep(game);
+                    BeginNightSequence(game);
                 }
                 break;
 
@@ -696,7 +706,7 @@ public class GameService : IGameService
                     break;
                 }
                 game.RoundNumber++;
-                TransitionToFirstNightStep(game);
+                BeginNightSequence(game);
                 break;
 
             case GamePhase.FinalScoresReveal:
@@ -705,7 +715,7 @@ public class GameService : IGameService
         }
     }
 
-    private void TransitionToFirstNightStep(GameState game)
+    private void BeginNightSequence(GameState game)
     {
         game.NightVotes.Clear();
         game.NightDeaths.Clear();
@@ -715,16 +725,14 @@ public class GameService : IGameService
         game.HunterMustShoot = false;
         game.DayTiebreakUsed = false;
         game.TiebreakCandidates.Clear();
+        BeginPhase(game, GamePhase.NightAnnouncement);
+        _logger.LogInformation("Game {GameId} → NightAnnouncement (round {Round})", game.GameId, game.RoundNumber);
+    }
 
-        if (game.RoundNumber == 1)
-        {
-            BeginPhase(game, GamePhase.WerewolvesMeeting);
-        }
-        else
-        {
-            BeginPhase(game, GamePhase.WerewolvesTurn);
-        }
-        _logger.LogInformation("Game {GameId} → {Phase} (round {Round})", game.GameId, game.Phase, game.RoundNumber);
+    private void BeginDaySequence(GameState game)
+    {
+        BeginPhase(game, GamePhase.DayAnnouncement);
+        _logger.LogInformation("Game {GameId} → DayAnnouncement (round {Round})", game.GameId, game.RoundNumber);
     }
 
     private void TransitionToNextAfterWerewolves(GameState game)
@@ -746,7 +754,7 @@ public class GameService : IGameService
         }
         ResolveNightDeaths(game);
         EvaluateWinCondition(game);
-        BeginPhase(game, GamePhase.NightEliminationReveal);
+        BeginDaySequence(game);
     }
 
     private void TransitionToDiscussion(GameState game)

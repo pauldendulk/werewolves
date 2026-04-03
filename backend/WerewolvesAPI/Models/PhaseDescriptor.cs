@@ -16,6 +16,10 @@ public record PhaseDescriptor(
                 _ => null,
                 Alive),
 
+            new(GamePhase.NightAnnouncement,
+                _ => TimeSpan.FromSeconds(8),
+                _ => []),
+
             new(GamePhase.WerewolvesMeeting,
                 _ => null,
                 game => Alive(game).Where(p => p.Role == PlayerRole.Werewolf)),
@@ -38,6 +42,10 @@ public record PhaseDescriptor(
 
             new(GamePhase.WitchTurn,
                 _ => null,
+                _ => []),
+
+            new(GamePhase.DayAnnouncement,
+                _ => TimeSpan.FromSeconds(8),
                 _ => []),
 
             new(GamePhase.HunterTurn,

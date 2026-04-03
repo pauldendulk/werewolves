@@ -23,7 +23,11 @@ theme:
 markdown_extensions:
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
@@ -38,7 +42,7 @@ nav:
   - Game Design:
       - Terminology: terminology.md
       - Concept & Rules: game-concept.md
-      - Phase Inventory: phases.md
+      - Phases: phases.md
       - Tournament Mode: tournament.md
   - Technical:
       - Technology Overview: tech-overview.md

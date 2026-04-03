@@ -92,12 +92,14 @@ public enum GameStatus
 public enum GamePhase
 {
     RoleReveal,
+    NightAnnouncement,
     CupidTurn,
     LoverReveal,
     WerewolvesMeeting,
     SeerTurn,
     WerewolvesTurn,
     WitchTurn,
+    DayAnnouncement,
     NightEliminationReveal,
     HunterTurn,
     Discussion,

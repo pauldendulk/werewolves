@@ -1,5 +1,13 @@
 # Development Instructions for GitHub Copilot
 
+## Speech-to-Text Corrections
+
+The user dictates via speech-to-text. Apply these corrections silently when interpreting requests:
+
+- **"faces"** → **"phases"** — e.g. "the night faces" means "the night phases", "LoverReveal face" means "LoverReveal phase"
+
+---
+
 ## Project Overview
 
 **Werewolves App** is a mobile companion for playing the in-person game of Werewolf without a human moderator. Players join a shared session on their phones, receive secret roles (Werewolves or Villagers), and progress through voting phases to eliminate suspects. The app manages game flow, timing, and voting via text-to-speech narration.
@@ -223,3 +231,5 @@ The following skill files contain domain-specific knowledge. Read the relevant f
 | Skill | When to use |
 |---|---|
 | [gcp-cloud-sql](.github/skills/gcp-cloud-sql/SKILL.md) | Setting up or modifying GCP infrastructure: Cloud Run, Cloud SQL, Secret Manager, Terraform, GitHub Actions CI/CD |
+| [localization](.github/skills/localization/SKILL.md) | Working with translatables, or understanding the localization architecture |
+| [audio](.github/skills/audio/SKILL.md) | Working with audio translatables, narration.json, AudioKey constants, NarrationStudio, or writing `description` fields for audio entries |

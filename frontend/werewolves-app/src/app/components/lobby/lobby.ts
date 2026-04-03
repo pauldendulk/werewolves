@@ -290,7 +290,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   updateMaxPlayers(value: number): void {
-    if (this.isCreator && this.lobbyState) {
+    if (this.isModerator && this.lobbyState) {
       const minPlayers = this.lobbyState.game.minPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
       const tiebreak = this.lobbyState.game.tiebreakDiscussionDurationSeconds;
@@ -300,7 +300,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   updateMinPlayers(value: number): void {
-    if (this.isCreator && this.lobbyState) {
+    if (this.isModerator && this.lobbyState) {
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
       const tiebreak = this.lobbyState.game.tiebreakDiscussionDurationSeconds;
@@ -310,7 +310,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   updateDiscussionDuration(value: number): void {
-    if (this.isCreator && this.lobbyState) {
+    if (this.isModerator && this.lobbyState) {
       const minPlayers = this.lobbyState.game.minPlayers;
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const tiebreak = this.lobbyState.game.tiebreakDiscussionDurationSeconds;
@@ -320,7 +320,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   updateTiebreakDiscussionDuration(value: number): void {
-    if (this.isCreator && this.lobbyState) {
+    if (this.isModerator && this.lobbyState) {
       const minPlayers = this.lobbyState.game.minPlayers;
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
@@ -330,7 +330,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   updateNumberOfWerewolves(value: number): void {
-    if (this.isCreator && this.lobbyState) {
+    if (this.isModerator && this.lobbyState) {
       const minPlayers = this.lobbyState.game.minPlayers;
       const maxPlayers = this.lobbyState.game.maxPlayers;
       const duration = this.lobbyState.game.discussionDurationMinutes;
@@ -344,7 +344,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   toggleSkill(skill: string): void {
-    if (!this.isCreator || !this.lobbyState) return;
+    if (!this.isModerator || !this.lobbyState) return;
     const skills = [...this.enabledSkills];
     const idx = skills.indexOf(skill);
     if (idx >= 0) skills.splice(idx, 1);

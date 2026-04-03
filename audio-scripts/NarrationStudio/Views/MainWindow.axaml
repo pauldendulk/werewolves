@@ -1,0 +1,133 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="NarrationStudio.Views.MainWindow"
+        Title="Narration Studio"
+        Width="960" Height="700"
+        MinWidth="720" MinHeight="520"
+        Opened="OnWindowOpened">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="12 8 12 12">
+
+        <!-- ── Settings panel ── -->
+        <StackPanel Grid.Row="0" Spacing="6" Margin="0 0 0 8">
+
+            <!-- narration.json path + Reload button -->
+            <DockPanel LastChildFill="True">
+                <Button DockPanel.Dock="Right" Content="⟳  Reload" Click="OnReload"
+                        Padding="10 3" Margin="8 0 0 0" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Text="narration.json:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding NarrationJsonPath}" Foreground="Gray"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </DockPanel>
+
+            <!-- Language · Voice · Style · Degree -->
+            <WrapPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0 0 16 4">
+                    <TextBlock Text="Language:" VerticalAlignment="Center" />
+                    <ComboBox ItemsSource="{Binding Languages}"
+                              SelectedItem="{Binding SelectedLanguage}"
+                              MinWidth="260">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding Locale}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding LocaleName}" Foreground="Gray" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0 0 16 4">
+                    <TextBlock Text="Voice:" VerticalAlignment="Center" />
+                    <ComboBox ItemsSource="{Binding Voices}"
+                              SelectedItem="{Binding SelectedVoice}"
+                              MinWidth="230" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0 0 16 4">
+                    <TextBlock Text="Style:" VerticalAlignment="Center" />
+                    <ComboBox ItemsSource="{Binding Styles}"
+                              SelectedItem="{Binding SelectedStyle}"
+                              MinWidth="190" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="4" Margin="0 0 0 4">
+                    <TextBlock Text="Degree:" VerticalAlignment="Center" />
+                    <NumericUpDown Value="{Binding StyleDegree}"
+                                   Minimum="0.01" Maximum="2.00"
+                                   Increment="0.1" FormatString="F1"
+                                   Width="95" />
+                </StackPanel>
+            </WrapPanel>
+
+            <!-- API Key · Region -->
+            <Grid ColumnDefinitions="Auto,*,Auto,130">
+                <TextBlock Grid.Column="0" Text="API Key:" VerticalAlignment="Center" Margin="0 0 8 0" />
+                <TextBox   Grid.Column="1" Text="{Binding ApiKey}" PasswordChar="*" Margin="0 0 16 0" />
+                <TextBlock Grid.Column="2" Text="Region:"  VerticalAlignment="Center" Margin="0 0 8 0" />
+                <TextBox   Grid.Column="3" Text="{Binding Region}" />
+            </Grid>
+
+        </StackPanel>
+
+        <!-- ── Entry list ── -->
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding Entries}"
+                 SelectedItem="{Binding SelectedEntry}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="210,*">
+                        <TextBlock Grid.Column="0" Text="{Binding Key}"
+                                   FontWeight="SemiBold" Margin="0 0 8 0" />
+                        <TextBlock Grid.Column="1" Text="{Binding Description}"
+                                   TextTrimming="CharacterEllipsis" Foreground="Gray" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- ── Preview ── -->
+        <Border Grid.Row="2" Margin="0 6 0 0" Padding="8 6"
+                BorderBrush="#CCC" BorderThickness="1" CornerRadius="4">
+            <Grid RowDefinitions="Auto,6,*">
+                <TextBox Grid.Row="0"
+                         Text="{Binding EditableDescription}"
+                         Watermark="Description"
+                         FontStyle="Italic"
+                         IsEnabled="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <TextBox Grid.Row="2"
+                         Text="{Binding EditableText}"
+                         Watermark="Narration text"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         MinHeight="60"
+                         IsEnabled="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </Grid>
+        </Border>
+
+        <!-- ── Action bar ── -->
+        <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="0 8 0 0">
+            <Button Grid.Column="0" Content="▶  Play" Click="OnPlay"
+                    IsEnabled="{Binding IsNotBusy}"
+                    Padding="18 8" Margin="0 0 8 0"
+                    ToolTip.Tip="Play existing saved audio (no API key needed)" />
+            <Button Grid.Column="1" Content="⚡  Generate" Click="OnGenerate"
+                    IsEnabled="{Binding IsNotBusy}"
+                    Padding="18 8" Margin="0 0 8 0"
+                    ToolTip.Tip="Synthesise new audio via Azure TTS (requires API key), then play it" />
+            <Button Grid.Column="2" Content="💾  Save to Assets" Click="OnSave"
+                    IsEnabled="{Binding IsNotBusy}"
+                    Padding="18 8" Margin="0 0 8 0" />
+            <Button Grid.Column="3" Content="✏️  Save This Entry" Click="OnSaveEntry"
+                    IsEnabled="{Binding IsNotBusy}"
+                    Padding="18 8"
+                    ToolTip.Tip="Save description and narration text edits back to narration.json" />
+            <TextBlock Grid.Column="5" Text="{Binding Status}"
+                       VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="440" />
+        </Grid>
+
+    </Grid>
+</Window>

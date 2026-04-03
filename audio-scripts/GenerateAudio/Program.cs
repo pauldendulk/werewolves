@@ -14,10 +14,10 @@
 // Version tracking:
 //   ../generated.json  — records the last-generated version per lang/key
 
-using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 // Load .env file if present (one KEY=VALUE per line, # for comments)
 var envFile = Path.Combine(AppContext.BaseDirectory, ".env");
@@ -64,6 +64,22 @@ using var http = new HttpClient();
 http.DefaultRequestHeaders.Add("User-Agent", "GenerateAudio/1.0");
 int generated = 0, skipped = 0;
 
+static string PrepareTextForTts(string text)
+{
+    text = text.Replace("&", "&amp;");
+    text = Regex.Replace(text, @"([.!?])(?!\s*<break)(?=\s|$)", "$1 <break time=\"1000ms\" />");
+    text = Regex.Replace(text, @",(?!\s*<break)", ", <break time=\"1000ms\" />");
+    return $"<prosody rate=\"-10%\">{text}</prosody>";
+}
+
+static int GeneratedVersion(JsonObject generatedLang, string key)
+{
+    if (!generatedLang.ContainsKey(key)) return -1;
+    var node = generatedLang[key];
+    if (node is JsonObject obj) return obj["version"]?.GetValue<int>() ?? -1;
+    return node?.GetValue<int>() ?? -1;
+}
+
 foreach (var (lang, textsNode) in entries)
 {
     var outputDir = Path.Combine(outputBase, lang);
@@ -78,11 +94,12 @@ foreach (var (lang, textsNode) in entries)
         var entry   = entryNode!.AsObject();
         var text    = entry["text"]!.GetValue<string>();
         var version = entry["version"]!.GetValue<int>();
+        var style   = entry["style"]?.GetValue<string>() ?? defaultStyle;
 
         // Skip if version unchanged and no explicit filter for this key
         if (filterKey == null)
         {
-            var lastVersion = generatedLang.ContainsKey(key) ? generatedLang[key]!.GetValue<int>() : -1;
+            var lastVersion = GeneratedVersion(generatedLang, key);
             if (lastVersion == version)
             {
                 Console.WriteLine($"  {lang}/{key}.mp3 ... skipped (v{version} up to date)");
@@ -101,8 +118,8 @@ foreach (var (lang, textsNode) in entries)
                    xmlns:mstts='http://www.w3.org/2001/mstts'
                    xml:lang='{lang}'>
               <voice name='{voice}'>
-                <mstts:express-as style='{defaultStyle}' styledegree='{defaultDegree}'>
-                  {WebUtility.HtmlEncode(text)}
+                <mstts:express-as style='{style}' styledegree='{defaultDegree}'>
+                  {PrepareTextForTts(text)}
                 </mstts:express-as>
               </voice>
             </speak>
@@ -119,16 +136,21 @@ foreach (var (lang, textsNode) in entries)
         var bytes = await response.Content.ReadAsByteArrayAsync();
         await File.WriteAllBytesAsync(outputPath, bytes);
 
-        // Record new version in sidecar
-        generatedLang[key] = version;
+        generatedLang[key] = new JsonObject { ["version"] = version };
 
         Console.WriteLine($"OK ({bytes.Length / 1024} KB)");
         generated++;
     }
 }
 
-// Save updated sidecar
+// Save updated sidecar to audio-scripts/ and copy to frontend assets
 var sidecarOptions = new JsonSerializerOptions { WriteIndented = true };
-await File.WriteAllTextAsync(generatedPath, generatedJson.ToJsonString(sidecarOptions));
+var sidecarJson = generatedJson.ToJsonString(sidecarOptions);
+await File.WriteAllTextAsync(generatedPath, sidecarJson);
+var frontendGeneratedPath = Path.Combine(outputBase, "generated.json");
+Directory.CreateDirectory(outputBase);
+await File.WriteAllTextAsync(frontendGeneratedPath, sidecarJson);
+Console.WriteLine($"Wrote generated.json → {generatedPath}");
+Console.WriteLine($"Wrote generated.json → {frontendGeneratedPath}");
 
 Console.WriteLine($"\nDone. Generated {generated} files, skipped {skipped}.");

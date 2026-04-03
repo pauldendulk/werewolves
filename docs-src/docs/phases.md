@@ -1,4 +1,4 @@
-# Phase Inventory & Timer Design
+# Phases
 
 ## Session Shell
 
@@ -21,19 +21,21 @@ Phase durations and eligible-for-done player sets are the authoritative source o
 | **Create Game** | Pre-game | Host | Enter name and settings, create game | — | — |
 | **Join Game** | Pre-game | Joining player | Enter name, join via link or QR | — | — |
 | **Lobby** | Pre-game | All / host | Wait for players; host starts game | — | — |
-| **`RoleReveal`** | Day | All players | Press-and-hold card to peek at role; confirm ready | None | — |
-| **`WerewolvesMeeting`** | Night | Werewolves | Wolves identify each other; others wait with eyes closed | None | — |
-| **`CupidTurn`** | Night | Cupid | Cupid links two players as lovers | None | — |
-| **`LoverReveal`** | Night | Passive | Everyone checks role card for lover name; auto-advances | 20 s | No |
-| **`WerewolvesTurn`** | Night | Werewolves | Wolves pick a victim; others wait | None | — |
-| **`SeerTurn`** | Night | Seer | Seer inspects one player's alignment | None | — |
-| **`WitchTurn`** | Night | Witch | Save the victim, poison a target, or pass | None | — |
-| **`HunterTurn`** | Night | Hunter | Eliminated Hunter shoots one player | None | — |
-| **`NightEliminationReveal`** | Night | Passive | Dawn reveal: who died in the night; auto-advances | 10 s | No |
-| **`Discussion`** | Day | All living | Players debate and cast votes | 5 min (configurable) | No |
-| **`TiebreakDiscussion`** | Day | All living | Same as Discussion; votes restricted to tied candidates | 60 s (configurable) | No |
-| **`DayEliminationReveal`** | Day | Passive | Verdict reveal: who the village eliminated; auto-advances | 10 s | No |
-| **`FinalScoresReveal`** | Day | All players | Winner announced; full role summary; auto-resets to lobby | 60 s | No |
+| **`RoleReveal`** | ☀️ Day | All players | Press-and-hold card to peek at role; confirm ready | None | — |
+| **`NightAnnouncement`** | 🌑 Night | Passive | Night begins; everyone closes their eyes; auto-advances | 8 s | No |
+| **`WerewolvesMeeting`** | 🌑 Night | Werewolves | Wolves identify each other; others wait with eyes closed | None | — |
+| **`CupidTurn`** | 🌑 Night | Cupid | Cupid links two players as lovers | None | — |
+| **`LoverReveal`** | ☀️ Day | Passive | Everyone checks role card for lover name; auto-advances | 20 s | No |
+| **`WerewolvesTurn`** | 🌑 Night | Werewolves | Wolves pick a victim; others wait | None | — |
+| **`SeerTurn`** | 🌑 Night | Seer | Seer inspects one player's alignment | None | — |
+| **`WitchTurn`** | 🌑 Night | Witch | Save the victim, poison a target, or pass | None | — |
+| **`DayAnnouncement`** | ☀️ Day | Passive | Dawn; everyone opens their eyes; auto-advances | 8 s | No |
+| **`NightEliminationReveal`** | ☀️ Day | Passive | Dawn reveal: who died in the night; auto-advances | 10 s | No |
+| **`HunterTurn`** | ☀️ Day | Hunter | Eliminated Hunter shoots one player | None | — |
+| **`Discussion`** | ☀️ Day | All living | Players debate and cast votes | 5 min (configurable) | No |
+| **`TiebreakDiscussion`** | ☀️ Day | All living | Same as Discussion; votes restricted to tied candidates | 60 s (configurable) | No |
+| **`DayEliminationReveal`** | ☀️ Day | Passive | Verdict reveal: who the village eliminated; auto-advances | 10 s | No |
+| **`FinalScoresReveal`** | ☀️ Day | All players | Winner announced; full role summary; auto-resets to lobby | 60 s | No |
 
 ---
 
@@ -64,3 +66,85 @@ When a timed phase expires the server advances to the next phase automatically o
 **Alternative considered**: Move into the header's unused center slot — cleaner hierarchy but a busier header.
 
 **Recommendation**: Extend the existing timer bar (current approach). Revisit placement if the UI feels crowded.
+
+---
+
+## Phase State Machine
+
+The diagram below shows every valid phase transition. Edge labels describe the condition under which that path is taken; unlabelled edges are unconditional.
+
+```mermaid
+stateDiagram-v2
+    [*] --> RoleReveal
+
+    RoleReveal --> NightAnnouncement
+
+    NightAnnouncement --> WerewolvesMeeting : round 1
+    NightAnnouncement --> WerewolvesTurn : round 2+
+
+    WerewolvesMeeting --> CupidTurn : Cupid in game
+    WerewolvesMeeting --> DayAnnouncement : no Cupid
+
+    CupidTurn --> DayAnnouncement
+
+    LoverReveal --> Discussion
+
+    WerewolvesTurn --> SeerTurn : Seer alive
+    WerewolvesTurn --> WitchTurn : Witch alive (no Seer)
+    WerewolvesTurn --> DayAnnouncement : no night skills
+
+    SeerTurn --> WitchTurn : Witch alive
+    SeerTurn --> DayAnnouncement : no Witch
+
+    WitchTurn --> DayAnnouncement
+
+    DayAnnouncement --> LoverReveal : round 1, Cupid in game
+    DayAnnouncement --> NightEliminationReveal : round 2+
+    DayAnnouncement --> Discussion : round 1, no Cupid
+
+    NightEliminationReveal --> HunterTurn : Hunter killed
+    NightEliminationReveal --> Discussion
+    NightEliminationReveal --> FinalScoresReveal : game over
+
+    HunterTurn --> Discussion : triggered by night kill
+    HunterTurn --> NightAnnouncement : triggered by day vote
+    HunterTurn --> FinalScoresReveal : game over
+
+    Discussion --> TiebreakDiscussion : tied vote
+    Discussion --> DayEliminationReveal
+
+    TiebreakDiscussion --> DayEliminationReveal
+
+    DayEliminationReveal --> HunterTurn : Hunter eliminated
+    DayEliminationReveal --> NightAnnouncement : next round
+    DayEliminationReveal --> FinalScoresReveal : game over
+
+    FinalScoresReveal --> [*]
+```
+
+---
+
+## Narration
+
+| Narration key | Phase | Position | Condition |
+|---|---|---|---|
+| `role-reveal` | `RoleReveal` | Start | — |
+| `werewolves-meeting-close-eyes` | `WerewolvesMeeting` | Start | — |
+| `night-announcement` | `NightAnnouncement` | Start | — |
+| `cupid-turn` | `CupidTurn` | Start | — |
+| `day-announcement` | `DayAnnouncement` | Start | — |
+| `lover-reveal` | `LoverReveal` | Start | — |
+| `werewolves-turn` | `WerewolvesTurn` | Start | — |
+| `night-warning` | `WerewolvesMeeting` / `WerewolvesTurn` | During (≤ 3 s remaining) | — |
+| `seer-turn` | `SeerTurn` | Start | — |
+| `witch-turn` | `WitchTurn` | Start | — |
+| `night-end-no-deaths` | `NightEliminationReveal` | Start | 0 night eliminations |
+| `night-end-one-death` | `NightEliminationReveal` | Start | 1 night elimination |
+| `night-end-many-deaths` | `NightEliminationReveal` | Start | 2+ night eliminations |
+| `discussion` | `Discussion` | Start | — |
+| `tiebreak-discussion` | `TiebreakDiscussion` | Start | — |
+| `hunter-turn` | `HunterTurn` | Start | — |
+| `day-elimination-tie` | `DayEliminationReveal` | Start | Vote tied, no elimination |
+| `day-elimination` | `DayEliminationReveal` | Start | 1 player eliminated |
+| `game-over-villagers` | `FinalScoresReveal` | Start | Villagers win |
+| `game-over-werewolves` | `FinalScoresReveal` | Start | Werewolves win |

@@ -1,0 +1,76 @@
+{
+  "en-US": {
+    "role-reveal": {
+      "version": 8,
+      "durationMs": 7176
+    },
+    "werewolves-meeting-close-eyes": {
+      "version": 4,
+      "durationMs": 13152
+    },
+    "werewolves-turn": {
+      "version": 5,
+      "durationMs": 8424
+    },
+    "cupid-turn": {
+      "version": 3,
+      "durationMs": 7152
+    },
+    "lover-reveal": {
+      "version": 4,
+      "durationMs": 6864
+    },
+    "seer-turn": {
+      "version": 4,
+      "durationMs": 7320
+    },
+    "witch-turn": {
+      "version": 3,
+      "durationMs": 6264
+    },
+    "hunter-turn": {
+      "version": 3,
+      "durationMs": 7392
+    },
+    "night-end-no-deaths": {
+      "version": 3,
+      "durationMs": 8352
+    },
+    "night-end-one-death": {
+      "version": 4,
+      "durationMs": 8832
+    },
+    "night-end-many-deaths": {
+      "version": 4,
+      "durationMs": 8928
+    },
+    "discussion": {
+      "version": 4,
+      "durationMs": 9600
+    },
+    "tiebreak-discussion": {
+      "version": 3,
+      "durationMs": 5448
+    },
+    "day-elimination-tie": {
+      "version": 2,
+      "durationMs": 4872
+    },
+    "day-elimination": {
+      "version": 2,
+      "durationMs": 5376
+    },
+    "game-over-villagers": {
+      "version": 2,
+      "durationMs": 4968
+    },
+    "game-over-werewolves": {
+      "version": 2,
+      "durationMs": 7512
+    },
+    "night-warning": {
+      "version": 3,
+      "durationMs": 9912
+    }
+  }
+}

@@ -1,6 +1,6 @@
 <div class="session-container" *ngIf="lobbyState"
-     [class.night-theme]="phase === 'WerewolvesMeeting' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'SeerTurn' || phase === 'WitchTurn' || phase === 'HunterTurn' || phase === 'NightEliminationReveal'"
-     [class.day-theme]="phase !== 'WerewolvesMeeting' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'SeerTurn' && phase !== 'WitchTurn' && phase !== 'HunterTurn' && phase !== 'NightElimination'">
+     [class.night-theme]="phase === 'NightAnnouncement' || phase === 'WerewolvesMeeting' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'SeerTurn' || phase === 'WitchTurn'"
+     [class.day-theme]="phase !== 'NightAnnouncement' && phase !== 'WerewolvesMeeting' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'SeerTurn' && phase !== 'WitchTurn'">
   <p-toast></p-toast>
 
   <!-- Header -->
@@ -51,6 +51,19 @@
       <div class="done-badge" *ngIf="currentPlayer?.isDone">
         <i class="pi pi-check-circle"></i> Waiting for others...
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- NIGHT ANNOUNCEMENT phase                                 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content announcement-phase" *ngIf="phase === 'NightAnnouncement'">
+    <div class="announcement-icon">🌙</div>
+    <h2 class="phase-title night-title">The Night Has Fallen</h2>
+    <p class="phase-subtitle">Close your eyes. The night is beginning.</p>
+    <div class="phase-countdown" *ngIf="secondsRemaining > 0">{{ secondsRemaining }}</div>
+    <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
+      <i class="pi pi-spin pi-spinner"></i> Continuing...
     </div>
   </div>
 
@@ -230,6 +243,19 @@
       <p-button label="🏹 Shoot" (onClick)="submitHunterAction()" [disabled]="!hunterTarget" styleClass="p-button-danger mt-2 w-full"></p-button>
     </div>
     <p class="no-action-text" *ngIf="!canActAsHunter">The Hunter is taking their final shot...</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- DAY ANNOUNCEMENT phase                                   -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="phase-content announcement-phase" *ngIf="phase === 'DayAnnouncement'">
+    <div class="announcement-icon">🌅</div>
+    <h2 class="phase-title">The Night Has Ended</h2>
+    <p class="phase-subtitle">Open your eyes.</p>
+    <div class="phase-countdown" *ngIf="secondsRemaining > 0">{{ secondsRemaining }}</div>
+    <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
+      <i class="pi pi-spin pi-spinner"></i> Continuing...
+    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->

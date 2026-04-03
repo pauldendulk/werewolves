@@ -1,27 +1,130 @@
 {
   "voice": "en-US-AriaNeural",
-  "defaultStyle": "whispering",
+  "defaultStyle": "narration",
   "defaultStyledegree": 1.5,
   "entries": {
     "en-US": {
-      "role-reveal":           { "version": 1, "text": "Everyone may now look at their role cards. Press and hold your card to reveal your role. Confirm that you have seen it." },
-      "werewolves-meeting":    { "version": 1, "text": "Close your eyes. The night begins. Werewolves, open your eyes and look around. Now you can see who the other werewolves are. On the first night, the werewolves cannot eliminate anyone." },
-      "werewolves-turn":       { "version": 1, "text": "Close your eyes. The night begins. Werewolves, open your eyes and silently decide who to eliminate." },
-      "cupid-turn":            { "version": 1, "text": "Cupid, wake up. Point to two players to link as lovers." },
-      "lover-reveal":          { "version": 2, "text": "Everyone, open your eyes. Check your role card to find out if you are one of the lovers." },
-      "seer-turn":             { "version": 1, "text": "Seer, wake up. Point to a player to reveal their role." },
-      "witch-turn":            { "version": 1, "text": "Witch, wake up. You may use your potions." },
-      "hunter-turn":           { "version": 1, "text": "Hunter, you have been eliminated. But before you go, you may take one player with you." },
-      "night-end-no-deaths":   { "version": 1, "text": "The night has ended. No one was taken." },
-      "night-end-one-death":   { "version": 1, "text": "The night has ended. Someone was taken in the night." },
-      "night-end-many-deaths": { "version": 1, "text": "The night has ended. Some villagers were taken in the night." },
-      "discussion":            { "version": 1, "text": "The village wakes up. Discuss who you believe is a werewolf. Vote before time runs out." },
-      "tiebreak-discussion":   { "version": 1, "text": "There is a tie! One more minute to revote between the tied players." },
-      "day-elimination-tie":   { "version": 1, "text": "The votes are tied. No one was eliminated." },
-      "day-elimination":       { "version": 1, "text": "The village has decided. Someone has been eliminated." },
-      "game-over-villagers":   { "version": 1, "text": "The werewolves have been found! The villagers win!" },
-      "game-over-werewolves":  { "version": 1, "text": "The werewolves have taken over the village! The werewolves win! Game over." },
-      "night-warning":         { "version": 1, "text": "Werewolves, close your eyes. Everyone has closed their eyes. It is now morning and everyone can open their eyes." }
+      "role-reveal": {
+        "version": 9,
+        "description": "RoleReveal phase opens: instructs all players to look at their role card",
+        "text": "Everyone, look at your role card.",
+        "style": "narration"
+      },
+      "werewolves-meeting-close-eyes": {
+        "version": 5,
+        "description": "WerewolvesMeeting phase opens: forCreatorOnly, instructs everyone to close their eyes then werewolves to open theirs",
+        "text": "The night has fallen. Everyone, close your eyes. Close your eyes now! Werewolves, you may open your eyes.",
+        "style": "whispering",
+        "forCreatorOnly": true
+      },
+      "night-announcement": {
+        "version": 2,
+        "description": "NightAnnouncement phase opens: instructs everyone to close their eyes; the night is beginning",
+        "text": "The night has fallen. Everyone, close your eyes.",
+        "style": "whispering"
+      },
+      "day-announcement": {
+        "version": 2,
+        "description": "DayAnnouncement phase opens: instructs everyone to open their eyes; the night has ended",
+        "text": "The night has ended. Everyone, open your eyes.",
+        "style": "narration"
+      },
+      "werewolves-turn": {
+        "version": 7,
+        "description": "WerewolvesTurn phase opens: instructs werewolves to open their eyes and silently pick a victim",
+        "text": "Werewolves, open your eyes. Silently decide who to eliminate.",
+        "style": "whispering"
+      },
+      "cupid-turn": {
+        "version": 5,
+        "description": "CupidTurn phase opens: instructs Cupid to open their eyes and point to two players to link as lovers",
+        "text": "Cupid, open your eyes. Select two players to link as lovers.",
+        "style": "whispering"
+      },
+      "lover-reveal": {
+        "version": 5,
+        "description": "LoverReveal phase opens: instructs everyone to open their eyes and check if they are a lover",
+        "text": "Everyone, open your eyes. Check if you are one of the lovers.",
+        "style": "narration"
+      },
+      "seer-turn": {
+        "version": 5,
+        "description": "SeerTurn phase opens: instructs the Seer to open their eyes and point to a player to inspect",
+        "text": "Seer, open your eyes. Select a player to reveal their role.",
+        "style": "whispering"
+      },
+      "witch-turn": {
+        "version": 4,
+        "description": "WitchTurn phase opens: instructs the Witch to open their eyes and optionally use a potion",
+        "text": "Witch, open your eyes. You may use your potions.",
+        "style": "whispering"
+      },
+      "hunter-turn": {
+        "version": 4,
+        "description": "HunterTurn phase opens (triggered when the Hunter is eliminated): instructs the Hunter to shoot one player",
+        "text": "Hunter, you have been eliminated. You can select someone to take with you.",
+        "style": "narration"
+      },
+      "night-end-no-deaths": {
+        "version": 6,
+        "description": "NightEliminationReveal phase opens, nightDeaths is empty: announces no one was taken during the night",
+        "text": "No one was taken.",
+        "style": "narration"
+      },
+      "night-end-one-death": {
+        "version": 7,
+        "description": "NightEliminationReveal phase opens, nightDeaths has 1 entry: announces one player was taken during the night",
+        "text": "Someone was eliminated.",
+        "style": "narration"
+      },
+      "night-end-many-deaths": {
+        "version": 7,
+        "description": "NightEliminationReveal phase opens, nightDeaths has 2+ entries: announces multiple players were taken during the night",
+        "text": "Some of you were eliminated.",
+        "style": "narration"
+      },
+      "discussion": {
+        "version": 6,
+        "description": "Discussion phase opens: instructs all players to discuss and vote before the timer runs out",
+        "text": "Discuss who you believe is a werewolf.",
+        "style": "narration"
+      },
+      "tiebreak-discussion": {
+        "version": 4,
+        "description": "TiebreakDiscussion phase opens: instructs all players to revote between the tied candidates",
+        "text": "There is a tie! Revote between the tied players.",
+        "style": "narration"
+      },
+      "day-elimination-tie": {
+        "version": 3,
+        "description": "DayEliminationReveal phase opens, dayDeaths is empty: announces that the vote was tied and no one was eliminated",
+        "text": "The votes are tied. No one was eliminated.",
+        "style": "narration"
+      },
+      "day-elimination": {
+        "version": 3,
+        "description": "DayEliminationReveal phase opens, dayDeaths has 1 entry: announces that the village has eliminated a player",
+        "text": "The village has decided. Someone has been eliminated.",
+        "style": "narration"
+      },
+      "game-over-villagers": {
+        "version": 3,
+        "description": "FinalScoresReveal phase opens, winner is Villagers: announces that the villagers win",
+        "text": "The werewolves have been found! The villagers win!",
+        "style": "narration"
+      },
+      "game-over-werewolves": {
+        "version": 3,
+        "description": "FinalScoresReveal phase opens, winner is Werewolves: announces that the werewolves win",
+        "text": "The werewolves have taken over the village! The werewolves win! Game over.",
+        "style": "narration"
+      },
+      "night-warning": {
+        "version": 5,
+        "description": "WerewolvesTurn or WerewolvesMeeting phase, triggered at <=3s remaining: instructs werewolves to close their eyes before auto-advance",
+        "text": "Werewolves, close your eyes.",
+        "style": "whispering"
+      }
     }
   }
 }

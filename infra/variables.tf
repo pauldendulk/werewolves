@@ -15,3 +15,20 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "stripe_secret_key" {
+  description = "Stripe secret API key (sk_live_... or sk_test_...)"
+  type        = string
+  sensitive   = true
+}
+
+variable "stripe_webhook_secret" {
+  description = "Stripe webhook signing secret (whsec_...)"
+  type        = string
+  sensitive   = true
+}
+
+variable "stripe_price_id" {
+  description = "Stripe Price ID for the tournament pass product"
+  type        = string
+}

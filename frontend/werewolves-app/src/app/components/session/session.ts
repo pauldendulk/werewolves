@@ -11,7 +11,7 @@ import { GameService } from '../../services/game.service';
 import { PollingService } from '../../services/polling.service';
 import { AudioService } from '../../services/audio.service';
 import { ClockSyncService } from '../../services/clock-sync.service';
-import { AudioKey } from '../../models/audio-keys';
+import { AudioKey, AudioClipConfig, PhaseAudio } from '../../models/audio-keys';
 import { LobbyState, PlayerState, PlayerRoleDto, SeerActionResponse } from '../../models/game.models';
 
 @Component({
@@ -124,59 +124,50 @@ export class SessionComponent implements OnInit, OnDestroy {
   private onPhaseEntered(phase: string, round: number, audioPlayAt: string | null): void {
     this.nightWarningSpoken = false;
     const playAt = audioPlayAt ? this.clockSyncService.serverIsoToLocal(audioPlayAt) : new Date();
+
+    const clips = PhaseAudio[phase];
+    if (clips) {
+      this.schedulePhaseAudio(clips, playAt);
+      return;
+    }
+
     switch (phase) {
-      case 'RoleReveal':
-        this.audioService.schedulePlay(AudioKey.RoleReveal, playAt);
-        break;
-      case 'WerewolvesMeeting':
-        this.audioService.schedulePlay(AudioKey.WerewolvesMeeting, playAt);
-        break;
-      case 'WerewolvesTurn':
-        this.audioService.schedulePlay(AudioKey.WerewolvesTurn, playAt);
-        break;
-      case 'CupidTurn':
-        this.audioService.schedulePlay(AudioKey.CupidTurn, playAt);
-        break;
-      case 'LoverReveal':
-        this.audioService.schedulePlay(AudioKey.LoverReveal, playAt);
-        break;
-      case 'SeerTurn':
-        this.audioService.schedulePlay(AudioKey.SeerTurn, playAt);
-        break;
-      case 'WitchTurn':
-        this.audioService.schedulePlay(AudioKey.WitchTurn, playAt);
-        break;
-      case 'HunterTurn':
-        this.audioService.schedulePlay(AudioKey.HunterTurn, playAt);
-        break;
       case 'NightEliminationReveal': {
-        const deaths = this.lobbyState?.game.nightDeaths ?? [];
-        if (deaths.length === 0) {
-          this.audioService.schedulePlay(AudioKey.NightEndNoDeaths, playAt);
-        } else {
-          this.audioService.schedulePlay(deaths.length === 1 ? AudioKey.NightEndOneDeath : AudioKey.NightEndManyDeaths, playAt);
+        if (this.isModerator) {
+          const deaths = this.lobbyState?.game.nightDeaths ?? [];
+          if (deaths.length === 0) {
+            this.audioService.schedulePlay(AudioKey.NightEndNoDeaths, playAt);
+          } else {
+            this.audioService.schedulePlay(deaths.length === 1 ? AudioKey.NightEndOneDeath : AudioKey.NightEndManyDeaths, playAt);
+          }
         }
         break;
       }
-      case 'Discussion':
-        this.audioService.schedulePlay(AudioKey.Discussion, playAt);
-        break;
-      case 'TiebreakDiscussion':
-        this.audioService.schedulePlay(AudioKey.TiebreakDiscussion, playAt);
-        break;
       case 'DayEliminationReveal': {
-        const dayDeaths = this.lobbyState?.game.dayDeaths ?? [];
-        if (dayDeaths.length === 0) {
-          this.audioService.schedulePlay(AudioKey.DayEliminationRevealTie, playAt);
-        } else {
-          this.audioService.schedulePlay(AudioKey.DayEliminationReveal, playAt);
+        if (this.isModerator) {
+          const dayDeaths = this.lobbyState?.game.dayDeaths ?? [];
+          if (dayDeaths.length === 0) {
+            this.audioService.schedulePlay(AudioKey.DayEliminationRevealTie, playAt);
+          } else {
+            this.audioService.schedulePlay(AudioKey.DayEliminationReveal, playAt);
+          }
         }
         break;
       }
       case 'FinalScoresReveal': {
-        const winner = this.lobbyState?.game.winner;
-        this.audioService.schedulePlay(winner === 'Villagers' ? AudioKey.FinalScoresRevealVillagers : AudioKey.FinalScoresRevealWerewolves, playAt);
+        if (this.isModerator) {
+          const winner = this.lobbyState?.game.winner;
+          this.audioService.schedulePlay(winner === 'Villagers' ? AudioKey.FinalScoresRevealVillagers : AudioKey.FinalScoresRevealWerewolves, playAt);
+        }
         break;
+      }
+    }
+  }
+
+  private schedulePhaseAudio(clips: AudioClipConfig[], playAt: Date): void {
+    for (const clip of clips) {
+      if (!clip.forCreatorOnly || this.isModerator) {
+        this.audioService.schedulePlay(clip.key, playAt);
       }
     }
   }
@@ -214,6 +205,7 @@ export class SessionComponent implements OnInit, OnDestroy {
   get moderatorActionLabel(): string | null {
     switch (this.phase) {
       case 'RoleReveal':            return 'Force start night';
+      case 'NightAnnouncement':     return 'Skip';
       case 'WerewolvesMeeting':
       case 'WerewolvesTurn':        return 'Skip night';
       case 'CupidTurn':
@@ -221,6 +213,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       case 'SeerTurn':
       case 'WitchTurn':
       case 'HunterTurn':            return 'Skip';
+      case 'DayAnnouncement':       return 'Skip';
       case 'NightEliminationReveal':
       case 'DayEliminationReveal':  return 'Continue';
       case 'Discussion':
