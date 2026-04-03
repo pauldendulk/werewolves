@@ -24,9 +24,17 @@ public record PhaseDescriptor(
                 _ => null,
                 game => Alive(game).Where(p => p.Role == PlayerRole.Werewolf)),
 
+            new(GamePhase.WolvesCloseEyes,
+                _ => TimeSpan.FromSeconds(6),
+                _ => []),
+
             new(GamePhase.CupidTurn,
                 _ => null,
                 game => Alive(game).Where(p => p.Skill == PlayerSkill.Cupid)),
+
+            new(GamePhase.CupidCloseEyes,
+                _ => TimeSpan.FromSeconds(6),
+                _ => []),
 
             new(GamePhase.LoverReveal,
                 _ => TimeSpan.FromSeconds(20),
@@ -40,8 +48,16 @@ public record PhaseDescriptor(
                 _ => null,
                 game => Alive(game).Where(p => p.Skill == PlayerSkill.Seer)),
 
+            new(GamePhase.SeerCloseEyes,
+                _ => TimeSpan.FromSeconds(6),
+                _ => []),
+
             new(GamePhase.WitchTurn,
                 _ => null,
+                _ => []),
+
+            new(GamePhase.WitchCloseEyes,
+                _ => TimeSpan.FromSeconds(6),
                 _ => []),
 
             new(GamePhase.DayAnnouncement,

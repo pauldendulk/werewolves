@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, interval, switchMap, filter, map, tap, shareReplay, catchError, EMPTY } from 'rxjs';
+import { Observable, interval, exhaustMap, filter, map, tap, shareReplay, catchError, EMPTY } from 'rxjs';
 import { LobbyState } from '../models/game.models';
 import { environment } from '../../environments/environment';
 
@@ -18,7 +18,7 @@ export class PollingService {
     // don't clobber each other's version state.
     let lastVersion: number | null = null;
     return interval(this.pollIntervalMs).pipe(
-      switchMap(() => {
+      exhaustMap(() => {
         const url = lastVersion !== null
           ? `${this.apiUrl}/game/${gameId}?version=${lastVersion}`
           : `${this.apiUrl}/game/${gameId}`;

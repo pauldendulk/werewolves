@@ -18,7 +18,7 @@ const AUDIO_KEYS = [
   'day-elimination',
   'game-over-villagers',
   'game-over-werewolves',
-  'night-warning',
+  'wolves-close-eyes',
 ];
 
 test.describe('Audio assets', () => {

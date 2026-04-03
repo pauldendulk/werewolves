@@ -13,8 +13,9 @@ export class ClockSyncService {
 
   constructor(private http: HttpClient) {}
 
-  /** Start syncing. Call once when the player joins a game. */
+  /** Start syncing. Safe to call multiple times — subsequent calls are no-ops. */
   start(): void {
+    if (this.syncTimer !== null) return;
     this.sync();
     this.syncTimer = setInterval(() => this.sync(), SYNC_INTERVAL_MS);
   }
@@ -58,7 +59,11 @@ export class ClockSyncService {
           },
           error: () => {
             remaining--;
-            if (remaining > 0) setTimeout(ping, 100);
+            if (remaining > 0) {
+              setTimeout(ping, 100);
+            } else {
+              this.applyOffset(samples);
+            }
           }
         });
     };

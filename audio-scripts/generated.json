@@ -1,58 +1,73 @@
 {
   "en-US": {
     "role-reveal": {
-      "version": 8
+      "version": 10
     },
     "werewolves-meeting-close-eyes": {
-      "version": 4
+      "version": 7
     },
     "werewolves-turn": {
-      "version": 5
+      "version": 8
     },
     "cupid-turn": {
-      "version": 3
+      "version": 6
     },
     "lover-reveal": {
-      "version": 4
+      "version": 8
     },
     "seer-turn": {
-      "version": 4
+      "version": 6
     },
     "witch-turn": {
-      "version": 3
+      "version": 5
     },
     "hunter-turn": {
-      "version": 3
+      "version": 5
     },
     "night-end-no-deaths": {
-      "version": 3
+      "version": 7
     },
     "night-end-one-death": {
-      "version": 4
+      "version": 8
     },
     "night-end-many-deaths": {
-      "version": 4
+      "version": 8
     },
     "discussion": {
-      "version": 4
+      "version": 8
     },
     "tiebreak-discussion": {
-      "version": 3
+      "version": 5
     },
     "day-elimination-tie": {
-      "version": 2
+      "version": 4
     },
     "day-elimination": {
-      "version": 2
+      "version": 4
     },
     "game-over-villagers": {
-      "version": 2
+      "version": 4
     },
     "game-over-werewolves": {
-      "version": 2
+      "version": 5
     },
-    "night-warning": {
+    "night-announcement": {
       "version": 3
+    },
+    "day-announcement": {
+      "version": 3
+    },
+    "wolves-close-eyes": {
+      "version": 7
+    },
+    "cupid-close-eyes": {
+      "version": 1
+    },
+    "seer-close-eyes": {
+      "version": 1
+    },
+    "witch-close-eyes": {
+      "version": 1
     }
   }
 }

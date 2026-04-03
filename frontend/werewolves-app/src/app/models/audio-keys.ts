@@ -4,9 +4,12 @@ export const AudioKey = {
   WerewolvesMeetingCloseEyes:       'werewolves-meeting-close-eyes',
   WerewolvesTurn:                   'werewolves-turn',
   CupidTurn:                        'cupid-turn',
+  CupidCloseEyes:                   'cupid-close-eyes',
   LoverReveal:                      'lover-reveal',
   SeerTurn:                         'seer-turn',
+  SeerCloseEyes:                    'seer-close-eyes',
   WitchTurn:                        'witch-turn',
+  WitchCloseEyes:                   'witch-close-eyes',
   DayAnnouncement:                  'day-announcement',
   HunterTurn:                       'hunter-turn',
   NightEndNoDeaths:                 'night-end-no-deaths',
@@ -18,7 +21,7 @@ export const AudioKey = {
   DayEliminationReveal:             'day-elimination',
   FinalScoresRevealVillagers:       'game-over-villagers',
   FinalScoresRevealWerewolves:      'game-over-werewolves',
-  NightWarning:                     'night-warning',
+  WolvesCloseEyes:                  'wolves-close-eyes',
 } as const;
 
 export type AudioKey = typeof AudioKey[keyof typeof AudioKey];
@@ -44,14 +47,23 @@ export const PhaseAudio: { [phase: string]: AudioClipConfig[] } = {
   CupidTurn: [
     { key: AudioKey.CupidTurn, forCreatorOnly: true },
   ],
+  CupidCloseEyes: [
+    { key: AudioKey.CupidCloseEyes, forCreatorOnly: true },
+  ],
   LoverReveal: [
     { key: AudioKey.LoverReveal, forCreatorOnly: false },
   ],
   SeerTurn: [
     { key: AudioKey.SeerTurn, forCreatorOnly: true },
   ],
+  SeerCloseEyes: [
+    { key: AudioKey.SeerCloseEyes, forCreatorOnly: true },
+  ],
   WitchTurn: [
     { key: AudioKey.WitchTurn, forCreatorOnly: true },
+  ],
+  WitchCloseEyes: [
+    { key: AudioKey.WitchCloseEyes, forCreatorOnly: true },
   ],
   DayAnnouncement: [
     { key: AudioKey.DayAnnouncement, forCreatorOnly: false },
@@ -64,5 +76,8 @@ export const PhaseAudio: { [phase: string]: AudioClipConfig[] } = {
   ],
   TiebreakDiscussion: [
     { key: AudioKey.TiebreakDiscussion, forCreatorOnly: true },
+  ],
+  WolvesCloseEyes: [
+    { key: AudioKey.WolvesCloseEyes, forCreatorOnly: true },
   ],
 };

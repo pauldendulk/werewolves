@@ -90,6 +90,29 @@
   gap: 0.75rem;
 }
 
+.seer-result {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: center;
+
+  .seer-player-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .seer-verdict {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+    &.wolf { color: #ef4444; }
+    &.villager { color: #22c55e; }
+  }
+}
+
 .skill-action {
   display: flex;
   flex-direction: column;

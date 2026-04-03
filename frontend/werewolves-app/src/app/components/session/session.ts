@@ -35,6 +35,7 @@ export class SessionComponent implements OnInit, OnDestroy {
   cupidLover1: string | null = null;
   cupidLover2: string | null = null;
   seerTarget: string | null = null;
+  seerTargetName: string | null = null;
   seerResult?: SeerActionResponse;
   witchPoisonTarget: string | null = null;
   hunterTarget: string | null = null;
@@ -43,7 +44,6 @@ export class SessionComponent implements OnInit, OnDestroy {
   private lastRound = 0;
   secondsRemaining = 0;
   private timerHandle?: ReturnType<typeof setInterval>;
-  private nightWarningSpoken = false;
 
   constructor(
     private gameService: GameService,
@@ -122,7 +122,6 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   private onPhaseEntered(phase: string, round: number, audioPlayAt: string | null): void {
-    this.nightWarningSpoken = false;
     const playAt = audioPlayAt ? this.clockSyncService.serverIsoToLocal(audioPlayAt) : new Date();
 
     const clips = PhaseAudio[phase];
@@ -179,12 +178,6 @@ export class SessionComponent implements OnInit, OnDestroy {
     const update = () => {
       const diff = new Date(phaseEndsAt).getTime() - Date.now();
       this.secondsRemaining = Math.max(0, Math.ceil(diff / 1000));
-
-      // 3-second warning before night ends
-      if (!this.nightWarningSpoken && (this.phase === 'WerewolvesMeeting' || this.phase === 'WerewolvesTurn') && this.secondsRemaining <= 3 && this.secondsRemaining > 0) {
-        this.nightWarningSpoken = true;
-        this.audioService.play(AudioKey.NightWarning);
-      }
     };
     update();
     this.timerHandle = setInterval(update, 500);
@@ -208,10 +201,14 @@ export class SessionComponent implements OnInit, OnDestroy {
       case 'NightAnnouncement':     return 'Skip';
       case 'WerewolvesMeeting':
       case 'WerewolvesTurn':        return 'Skip night';
+      case 'WolvesCloseEyes':
       case 'CupidTurn':
+      case 'CupidCloseEyes':
       case 'LoverReveal':
       case 'SeerTurn':
+      case 'SeerCloseEyes':
       case 'WitchTurn':
+      case 'WitchCloseEyes':
       case 'HunterTurn':            return 'Skip';
       case 'DayAnnouncement':       return 'Skip';
       case 'NightEliminationReveal':
@@ -317,6 +314,7 @@ export class SessionComponent implements OnInit, OnDestroy {
 
   submitSeerAction(): void {
     if (!this.seerTarget) return;
+    this.seerTargetName = this.allPlayers.find(p => p.value === this.seerTarget)?.label ?? null;
     this.gameService.seerAction(this.gameId, this.playerId, this.seerTarget).subscribe({
       next: result => {
         this.seerResult = result;

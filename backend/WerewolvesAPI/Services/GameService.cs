@@ -568,7 +568,7 @@ public class GameService : IGameService
         // Fellow werewolves visible during werewolf phases
         var fellows = new List<string>();
         if (player.Role == PlayerRole.Werewolf &&
-            (game.Phase == GamePhase.WerewolvesMeeting || game.Phase == GamePhase.WerewolvesTurn))
+            (game.Phase == GamePhase.WerewolvesMeeting || game.Phase == GamePhase.WerewolvesTurn || game.Phase == GamePhase.WolvesCloseEyes))
         {
             fellows = game.Players
                 .Where(p => p.Role == PlayerRole.Werewolf && p.PlayerId != playerId && !p.IsEliminated)
@@ -578,7 +578,7 @@ public class GameService : IGameService
 
         // Lover name (always visible once revealed)
         string? loverName = null;
-        if (game.Phase != GamePhase.RoleReveal && game.Phase != GamePhase.CupidTurn)
+        if (game.Phase != GamePhase.RoleReveal && game.Phase != GamePhase.CupidTurn && game.Phase != GamePhase.CupidCloseEyes)
         {
             if (player.PlayerId == game.Lover1Id)
                 loverName = game.Players.FirstOrDefault(p => p.PlayerId == game.Lover2Id)?.DisplayName;
@@ -609,14 +609,29 @@ public class GameService : IGameService
                 break;
 
             case GamePhase.WerewolvesMeeting:
-                // After wolves meet, let Cupid act (if present), else open the day
-                if (HasLivingSkill(game, PlayerSkill.Cupid))
-                    BeginPhase(game, GamePhase.CupidTurn);
+                BeginPhase(game, GamePhase.WolvesCloseEyes);
+                break;
+
+            case GamePhase.WolvesCloseEyes:
+                if (game.RoundNumber == 1)
+                {
+                    if (HasLivingSkill(game, PlayerSkill.Cupid))
+                        BeginPhase(game, GamePhase.CupidTurn);
+                    else
+                        BeginDaySequence(game);
+                }
                 else
-                    BeginDaySequence(game);
+                {
+                    game.NightKillTargetId = ResolveNightVote(game);
+                    TransitionToNextAfterWerewolves(game);
+                }
                 break;
 
             case GamePhase.CupidTurn:
+                BeginPhase(game, GamePhase.CupidCloseEyes);
+                break;
+
+            case GamePhase.CupidCloseEyes:
                 BeginDaySequence(game);
                 break;
 
@@ -625,15 +640,22 @@ public class GameService : IGameService
                 break;
 
             case GamePhase.WerewolvesTurn:
-                game.NightKillTargetId = ResolveNightVote(game);
-                TransitionToNextAfterWerewolves(game);
+                BeginPhase(game, GamePhase.WolvesCloseEyes);
                 break;
 
             case GamePhase.SeerTurn:
+                BeginPhase(game, GamePhase.SeerCloseEyes);
+                break;
+
+            case GamePhase.SeerCloseEyes:
                 TransitionToNextAfterSeer(game);
                 break;
 
             case GamePhase.WitchTurn:
+                BeginPhase(game, GamePhase.WitchCloseEyes);
+                break;
+
+            case GamePhase.WitchCloseEyes:
                 ResolveNightDeaths(game);
                 EvaluateWinCondition(game);
                 BeginDaySequence(game);

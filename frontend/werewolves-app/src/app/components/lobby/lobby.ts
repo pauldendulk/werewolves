@@ -19,6 +19,7 @@ import { MenuItem } from 'primeng/api';
 import { GameService } from '../../services/game.service';
 import { PollingService } from '../../services/polling.service';
 import { AudioService } from '../../services/audio.service';
+import { ClockSyncService } from '../../services/clock-sync.service';
 import { LobbyState, PlayerState } from '../../models/game.models';
 
 @Component({
@@ -74,7 +75,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private sanitizer: DomSanitizer,
-    private audioService: AudioService
+    private audioService: AudioService,
+    private clockSyncService: ClockSyncService
   ) {}
 
   ngOnInit(): void {
@@ -91,6 +93,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
       this.messageService.add({ severity: 'warn', summary: 'Cancelled', detail: 'Payment was cancelled. You can try again when ready.' });
     }
 
+    this.clockSyncService.start();
     this.loadLobbyState();
     this.startPolling();
   }

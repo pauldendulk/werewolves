@@ -1,6 +1,6 @@
 <div class="session-container" *ngIf="lobbyState"
-     [class.night-theme]="phase === 'NightAnnouncement' || phase === 'WerewolvesMeeting' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'SeerTurn' || phase === 'WitchTurn'"
-     [class.day-theme]="phase !== 'NightAnnouncement' && phase !== 'WerewolvesMeeting' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'SeerTurn' && phase !== 'WitchTurn'">
+     [class.night-theme]="phase === 'NightAnnouncement' || phase === 'WerewolvesMeeting' || phase === 'WolvesCloseEyes' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'CupidCloseEyes' || phase === 'SeerTurn' || phase === 'SeerCloseEyes' || phase === 'WitchTurn' || phase === 'WitchCloseEyes'"
+     [class.day-theme]="phase !== 'NightAnnouncement' && phase !== 'WerewolvesMeeting' && phase !== 'WolvesCloseEyes' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'CupidCloseEyes' && phase !== 'SeerTurn' && phase !== 'SeerCloseEyes' && phase !== 'WitchTurn' && phase !== 'WitchCloseEyes' && phase !== 'FinalScoresReveal'">
   <p-toast></p-toast>
 
   <!-- Header -->
@@ -74,7 +74,10 @@
     <h2 class="phase-title night-title">🌙 Night</h2>
 
     <div class="night-instructions">
-      <p>Werewolves, open your eyes and look around.</p>
+      <p *ngIf="roleDto?.role !== 'Werewolf'">Close your eyes! You are not a werewolf.</p>
+      <p *ngIf="roleDto?.role === 'Werewolf' && !roleDto?.fellowWerewolves?.length">Werewolf, open your eyes. You are alone.</p>
+      <p *ngIf="roleDto?.role === 'Werewolf' && roleDto?.fellowWerewolves?.length === 1">Werewolves, open your eyes. Look at your fellow werewolf.</p>
+      <p *ngIf="roleDto?.role === 'Werewolf' && (roleDto?.fellowWerewolves?.length ?? 0) > 1">Werewolves, open your eyes. Look at your fellow werewolves.</p>
       <p *ngIf="roleDto?.role === 'Werewolf' && roleDto?.fellowWerewolves?.length">
         Your fellow werewolves: <strong>{{ roleDto!.fellowWerewolves.join(', ') }}</strong>
       </p>
@@ -190,6 +193,7 @@
     </div>
 
     <div class="seer-result" *ngIf="seerResult">
+      <p class="seer-player-name" *ngIf="seerTargetName">{{ seerTargetName }}</p>
       <p class="seer-verdict" [class.wolf]="seerResult.isWerewolf" [class.villager]="!seerResult.isWerewolf">
         {{ seerResult.isWerewolf ? '🐺 Werewolf!' : '🧑‍🌾 Villager' }}
         <span *ngIf="seerResult.skill"> ({{ seerResult.skill }})</span>

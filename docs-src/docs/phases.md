@@ -24,11 +24,15 @@ Phase durations and eligible-for-done player sets are the authoritative source o
 | **`RoleReveal`** | ☀️ Day | All players | Press-and-hold card to peek at role; confirm ready | None | — |
 | **`NightAnnouncement`** | 🌑 Night | Passive | Night begins; everyone closes their eyes; auto-advances | 8 s | No |
 | **`WerewolvesMeeting`** | 🌑 Night | Werewolves | Wolves identify each other; others wait with eyes closed | None | — |
+| **`WolvesCloseEyes`** | 🌑 Night | Passive | Wolves close eyes before night continues; auto-advances | 6 s | No |
 | **`CupidTurn`** | 🌑 Night | Cupid | Cupid links two players as lovers | None | — |
+| **`CupidCloseEyes`** | 🌑 Night | Passive | Cupid closes eyes before night continues; auto-advances | 6 s | No |
 | **`LoverReveal`** | ☀️ Day | Passive | Everyone checks role card for lover name; auto-advances | 20 s | No |
 | **`WerewolvesTurn`** | 🌑 Night | Werewolves | Wolves pick a victim; others wait | None | — |
 | **`SeerTurn`** | 🌑 Night | Seer | Seer inspects one player's alignment | None | — |
+| **`SeerCloseEyes`** | 🌑 Night | Passive | Seer closes eyes before night continues; auto-advances | 6 s | No |
 | **`WitchTurn`** | 🌑 Night | Witch | Save the victim, poison a target, or pass | None | — |
+| **`WitchCloseEyes`** | 🌑 Night | Passive | Witch closes eyes before night ends; auto-advances | 6 s | No |
 | **`DayAnnouncement`** | ☀️ Day | Passive | Dawn; everyone opens their eyes; auto-advances | 8 s | No |
 | **`NightEliminationReveal`** | ☀️ Day | Passive | Dawn reveal: who died in the night; auto-advances | 10 s | No |
 | **`HunterTurn`** | ☀️ Day | Hunter | Eliminated Hunter shoots one player | None | — |
@@ -82,21 +86,27 @@ stateDiagram-v2
     NightAnnouncement --> WerewolvesMeeting : round 1
     NightAnnouncement --> WerewolvesTurn : round 2+
 
-    WerewolvesMeeting --> CupidTurn : Cupid in game
-    WerewolvesMeeting --> DayAnnouncement : no Cupid
+    WerewolvesMeeting --> WolvesCloseEyes
 
-    CupidTurn --> DayAnnouncement
+    WolvesCloseEyes --> CupidTurn : round 1, Cupid in game
+    WolvesCloseEyes --> DayAnnouncement : round 1, no Cupid
+    WolvesCloseEyes --> SeerTurn : round 2+, Seer alive
+    WolvesCloseEyes --> WitchTurn : round 2+, Witch alive (no Seer)
+    WolvesCloseEyes --> DayAnnouncement : round 2+, no night skills
+
+    CupidTurn --> CupidCloseEyes
+    CupidCloseEyes --> DayAnnouncement
 
     LoverReveal --> Discussion
 
-    WerewolvesTurn --> SeerTurn : Seer alive
-    WerewolvesTurn --> WitchTurn : Witch alive (no Seer)
-    WerewolvesTurn --> DayAnnouncement : no night skills
+    WerewolvesTurn --> WolvesCloseEyes
 
-    SeerTurn --> WitchTurn : Witch alive
-    SeerTurn --> DayAnnouncement : no Witch
+    SeerTurn --> SeerCloseEyes
+    SeerCloseEyes --> WitchTurn : Witch alive
+    SeerCloseEyes --> DayAnnouncement : no Witch
 
-    WitchTurn --> DayAnnouncement
+    WitchTurn --> WitchCloseEyes
+    WitchCloseEyes --> DayAnnouncement
 
     DayAnnouncement --> LoverReveal : round 1, Cupid in game
     DayAnnouncement --> NightEliminationReveal : round 2+
@@ -130,14 +140,17 @@ stateDiagram-v2
 |---|---|---|---|
 | `role-reveal` | `RoleReveal` | Start | — |
 | `werewolves-meeting-close-eyes` | `WerewolvesMeeting` | Start | — |
+| `wolves-close-eyes` | `WolvesCloseEyes` | Start | — |
 | `night-announcement` | `NightAnnouncement` | Start | — |
 | `cupid-turn` | `CupidTurn` | Start | — |
+| `cupid-close-eyes` | `CupidCloseEyes` | Start | — |
 | `day-announcement` | `DayAnnouncement` | Start | — |
 | `lover-reveal` | `LoverReveal` | Start | — |
 | `werewolves-turn` | `WerewolvesTurn` | Start | — |
-| `night-warning` | `WerewolvesMeeting` / `WerewolvesTurn` | During (≤ 3 s remaining) | — |
 | `seer-turn` | `SeerTurn` | Start | — |
+| `seer-close-eyes` | `SeerCloseEyes` | Start | — |
 | `witch-turn` | `WitchTurn` | Start | — |
+| `witch-close-eyes` | `WitchCloseEyes` | Start | — |
 | `night-end-no-deaths` | `NightEliminationReveal` | Start | 0 night eliminations |
 | `night-end-one-death` | `NightEliminationReveal` | Start | 1 night elimination |
 | `night-end-many-deaths` | `NightEliminationReveal` | Start | 2+ night eliminations |

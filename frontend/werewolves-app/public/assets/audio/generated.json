@@ -1,76 +1,73 @@
 {
   "en-US": {
     "role-reveal": {
-      "version": 8,
-      "durationMs": 7176
+      "version": 10
     },
     "werewolves-meeting-close-eyes": {
-      "version": 4,
-      "durationMs": 13152
+      "version": 7
     },
     "werewolves-turn": {
-      "version": 5,
-      "durationMs": 8424
+      "version": 8
     },
     "cupid-turn": {
-      "version": 3,
-      "durationMs": 7152
+      "version": 6
     },
     "lover-reveal": {
-      "version": 4,
-      "durationMs": 6864
+      "version": 8
     },
     "seer-turn": {
-      "version": 4,
-      "durationMs": 7320
+      "version": 6
     },
     "witch-turn": {
-      "version": 3,
-      "durationMs": 6264
+      "version": 5
     },
     "hunter-turn": {
-      "version": 3,
-      "durationMs": 7392
+      "version": 5
     },
     "night-end-no-deaths": {
-      "version": 3,
-      "durationMs": 8352
+      "version": 7
     },
     "night-end-one-death": {
-      "version": 4,
-      "durationMs": 8832
+      "version": 8
     },
     "night-end-many-deaths": {
-      "version": 4,
-      "durationMs": 8928
+      "version": 8
     },
     "discussion": {
-      "version": 4,
-      "durationMs": 9600
+      "version": 8
     },
     "tiebreak-discussion": {
-      "version": 3,
-      "durationMs": 5448
+      "version": 5
     },
     "day-elimination-tie": {
-      "version": 2,
-      "durationMs": 4872
+      "version": 4
     },
     "day-elimination": {
-      "version": 2,
-      "durationMs": 5376
+      "version": 4
     },
     "game-over-villagers": {
-      "version": 2,
-      "durationMs": 4968
+      "version": 4
     },
     "game-over-werewolves": {
-      "version": 2,
-      "durationMs": 7512
+      "version": 5
     },
-    "night-warning": {
-      "version": 3,
-      "durationMs": 9912
+    "night-announcement": {
+      "version": 3
+    },
+    "day-announcement": {
+      "version": 3
+    },
+    "wolves-close-eyes": {
+      "version": 7
+    },
+    "cupid-close-eyes": {
+      "version": 1
+    },
+    "seer-close-eyes": {
+      "version": 1
+    },
+    "witch-close-eyes": {
+      "version": 1
     }
   }
 }
