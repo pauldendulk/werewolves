@@ -32,3 +32,9 @@ variable "stripe_price_id" {
   description = "Stripe Price ID for the tournament pass product"
   type        = string
 }
+
+variable "tournament_bypass_code" {
+  description = "Cheat code to unlock tournament premium mode without payment (SKIPPY)"
+  type        = string
+  sensitive   = true
+}

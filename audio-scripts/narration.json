@@ -11,9 +11,9 @@
         "style": "narration"
       },
       "werewolves-meeting-close-eyes": {
-        "version": 7,
-        "description": "WerewolvesMeeting phase opens: instructs werewolves to open their eyes and recognize each other",
-        "text": "Werewolves, open your eyes. Recognize your fellow werewolves.",
+        "version": 9,
+        "description": "WerewolvesMeeting phase opens: instructs werewolves to open their eyes and look at each other",
+        "text": "Werewolves, open your eyes. Look at the other werewolves, if there are any.",
         "style": "whispering",
         "forCreatorOnly": true
       },

@@ -223,6 +223,10 @@ export class SessionComponent implements OnInit, OnDestroy {
     return this.lobbyState?.game.phase ?? '';
   }
 
+  get winner(): string | null {
+    return this.lobbyState?.game.winner ?? null;
+  }
+
   get alivePlayers(): PlayerState[] {
     return this.lobbyState?.players.filter(p =>
       !p.isEliminated && p.participationStatus === 'Participating'

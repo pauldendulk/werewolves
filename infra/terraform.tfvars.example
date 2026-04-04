@@ -3,4 +3,5 @@
 db_password           = "replace-with-a-strong-password"
 stripe_secret_key     = "sk_live_..."
 stripe_webhook_secret = "whsec_..."
-stripe_price_id       = "price_..."
+stripe_price_id           = "price_..."
+tournament_bypass_code    = "SKIPPY"

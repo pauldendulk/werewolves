@@ -129,6 +129,16 @@ resource "google_cloud_run_v2_service" "api" {
         }
       }
 
+      env {
+        name = "Tournament__BypassCode"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.tournament_bypass_code.secret_id
+            version = "latest"
+          }
+        }
+      }
+
       volume_mounts {
         name       = "cloudsql"
         mount_path = "/cloudsql"
@@ -153,6 +163,7 @@ resource "google_cloud_run_v2_service" "api" {
     google_secret_manager_secret_iam_member.cloud_run_stripe_secret_key,
     google_secret_manager_secret_iam_member.cloud_run_stripe_webhook_secret,
     google_secret_manager_secret_iam_member.cloud_run_stripe_price_id,
+    google_secret_manager_secret_iam_member.cloud_run_tournament_bypass_code,
     google_project_iam_member.cloud_run_sql_client,
   ]
 }
@@ -261,6 +272,21 @@ resource "google_secret_manager_secret_version" "stripe_price_id" {
   secret_data = var.stripe_price_id
 }
 
+resource "google_secret_manager_secret" "tournament_bypass_code" {
+  secret_id = "werewolves-tournament-bypass-code"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "tournament_bypass_code" {
+  secret      = google_secret_manager_secret.tournament_bypass_code.id
+  secret_data = var.tournament_bypass_code
+}
+
 # ── IAM — let Cloud Run read the secret and connect to Cloud SQL ──────────────
 
 # Dedicated service account for the Cloud Run service
@@ -291,6 +317,12 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_stripe_webhook_sec
 
 resource "google_secret_manager_secret_iam_member" "cloud_run_stripe_price_id" {
   secret_id = google_secret_manager_secret.stripe_price_id.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "cloud_run_tournament_bypass_code" {
+  secret_id = google_secret_manager_secret.tournament_bypass_code.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.cloud_run.email}"
 }

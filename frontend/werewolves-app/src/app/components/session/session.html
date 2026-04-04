@@ -1,6 +1,9 @@
+<!-- FinalScoresReveal is treated as a day phase for all overviews/logic, but its background
+     depends on the winner: werewolf wins use night-theme (dark, whispered audio), villager wins
+     use day-theme. This is the one place where winner drives the theme rather than the phase name. -->
 <div class="session-container" *ngIf="lobbyState"
-     [class.night-theme]="phase === 'NightAnnouncement' || phase === 'WerewolvesMeeting' || phase === 'WolvesCloseEyes' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'CupidCloseEyes' || phase === 'SeerTurn' || phase === 'SeerCloseEyes' || phase === 'WitchTurn' || phase === 'WitchCloseEyes'"
-     [class.day-theme]="phase !== 'NightAnnouncement' && phase !== 'WerewolvesMeeting' && phase !== 'WolvesCloseEyes' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'CupidCloseEyes' && phase !== 'SeerTurn' && phase !== 'SeerCloseEyes' && phase !== 'WitchTurn' && phase !== 'WitchCloseEyes' && phase !== 'FinalScoresReveal'">
+     [class.night-theme]="phase === 'NightAnnouncement' || phase === 'WerewolvesMeeting' || phase === 'WolvesCloseEyes' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'CupidCloseEyes' || phase === 'SeerTurn' || phase === 'SeerCloseEyes' || phase === 'WitchTurn' || phase === 'WitchCloseEyes' || (phase === 'FinalScoresReveal' && winner === 'Werewolves')"
+     [class.day-theme]="phase !== 'NightAnnouncement' && phase !== 'WerewolvesMeeting' && phase !== 'WolvesCloseEyes' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'CupidCloseEyes' && phase !== 'SeerTurn' && phase !== 'SeerCloseEyes' && phase !== 'WitchTurn' && phase !== 'WitchCloseEyes' && !(phase === 'FinalScoresReveal' && winner === 'Werewolves')">
   <p-toast></p-toast>
 
   <!-- Header -->

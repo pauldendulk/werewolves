@@ -46,6 +46,9 @@ if (!string.IsNullOrEmpty(connectionString))
     await app.Services.GetRequiredService<IGameService>().InitializeAsync();
 }
 
+// Must be first so it wraps CORS, ensuring error responses also carry CORS headers.
+app.UseExceptionHandler("/error");
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -54,5 +57,14 @@ app.UseCors("AllowAngular");
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.Map("/error", (HttpContext httpContext) =>
+{
+    var feature = httpContext.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+    var ex = feature?.Error;
+    var logger = httpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "Unhandled exception");
+    return Results.Problem(statusCode: 500, detail: "An unexpected error occurred.");
+});
 
 app.Run();
