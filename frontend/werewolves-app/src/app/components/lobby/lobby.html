@@ -102,12 +102,12 @@
                 styleClass="p-button-lg w-full p-button-outlined"
               ></p-button>
               <div class="unlock-code-toggle">
-                <a href="#" (click)="$event.preventDefault(); showCodeInput = !showCodeInput">I have a cheat code</a>
+                <a href="#" (click)="$event.preventDefault(); showCodeInput = !showCodeInput">Have a promo code? Redeem it here.</a>
               </div>
               @if (showCodeInput) {
                 <div class="unlock-form">
-                  <input pInputText id="unlockCode" [(ngModel)]="unlockCode" (keydown.enter)="submitUnlockCode()" placeholder="Enter code" />
-                  <p-button label="Unlock" (onClick)="submitUnlockCode()" [loading]="unlocking" [disabled]="!unlockCode.trim()"></p-button>
+                  <input pInputText id="unlockCode" [(ngModel)]="unlockCode" (keydown.enter)="submitUnlockCode()" placeholder="Enter promo code" />
+                  <p-button label="Redeem" (onClick)="submitUnlockCode()" [loading]="unlocking" [disabled]="!unlockCode.trim()"></p-button>
                 </div>
               }
             </div>
