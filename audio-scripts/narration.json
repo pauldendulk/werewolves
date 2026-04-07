@@ -17,6 +17,27 @@
         "style": "whispering",
         "forCreatorOnly": true
       },
+      "werewolves-meeting-solo": {
+        "version": 1,
+        "description": "WerewolvesMeeting phase opens: exactly 1 werewolf in game — tells the lone werewolf to open their eyes",
+        "text": "Werewolf, open your eyes. You are the only werewolf. Press Ready.",
+        "style": "whispering",
+        "forCreatorOnly": true
+      },
+      "werewolves-meeting-duo": {
+        "version": 1,
+        "description": "WerewolvesMeeting phase opens: exactly 2 werewolves in game — tells both werewolves to open their eyes and identify each other",
+        "text": "Werewolves, open your eyes. Look at the other werewolf and press Ready.",
+        "style": "whispering",
+        "forCreatorOnly": true
+      },
+      "werewolves-meeting-group": {
+        "version": 1,
+        "description": "WerewolvesMeeting phase opens: 3 or more werewolves in game — tells the pack to open their eyes and look at each other",
+        "text": "Werewolves, open your eyes. Look at the other werewolves and press Ready.",
+        "style": "whispering",
+        "forCreatorOnly": true
+      },
       "night-announcement": {
         "version": 3,
         "description": "NightAnnouncement phase opens: instructs everyone to close their eyes; the night is beginning",

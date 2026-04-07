@@ -131,6 +131,16 @@ export class SessionComponent implements OnInit, OnDestroy {
     }
 
     switch (phase) {
+      case 'WerewolvesMeeting': {
+        if (this.isModerator) {
+          const wolfCount = this.lobbyState?.game.numberOfWerewolves ?? 1;
+          const key = wolfCount === 1 ? AudioKey.WerewolvesMeetingSolo
+                    : wolfCount === 2 ? AudioKey.WerewolvesMeetingDuo
+                                      : AudioKey.WerewolvesMeetingGroup;
+          this.audioService.schedulePlay(key, playAt);
+        }
+        break;
+      }
       case 'NightEliminationReveal': {
         if (this.isModerator) {
           const deaths = this.lobbyState?.game.nightDeaths ?? [];
