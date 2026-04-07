@@ -56,6 +56,18 @@
         "text": "Werewolves, open your eyes. Silently decide who to eliminate.",
         "style": "whispering"
       },
+      "werewolves-turn-solo": {
+        "version": 1,
+        "description": "WerewolvesTurn phase opens: exactly 1 werewolf in game — tells the lone werewolf to open their eyes and pick a victim",
+        "text": "Werewolf, open your eyes. Silently decide who to eliminate.",
+        "style": "whispering"
+      },
+      "werewolves-turn-group": {
+        "version": 1,
+        "description": "WerewolvesTurn phase opens: 2 or more werewolves in game — tells the pack to open their eyes and pick a victim",
+        "text": "Werewolves, open your eyes. Silently decide who to eliminate.",
+        "style": "whispering"
+      },
       "cupid-turn": {
         "version": 6,
         "description": "CupidTurn phase opens: instructs Cupid to open their eyes and point to two players to link as lovers",

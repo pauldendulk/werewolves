@@ -6,6 +6,8 @@ export const AudioKey = {
   WerewolvesMeetingDuo:             'werewolves-meeting-duo',
   WerewolvesMeetingGroup:           'werewolves-meeting-group',
   WerewolvesTurn:                   'werewolves-turn',
+  WerewolvesTurnSolo:               'werewolves-turn-solo',
+  WerewolvesTurnGroup:              'werewolves-turn-group',
   CupidTurn:                        'cupid-turn',
   CupidCloseEyes:                   'cupid-close-eyes',
   LoverReveal:                      'lover-reveal',
@@ -40,9 +42,6 @@ export const PhaseAudio: { [phase: string]: AudioClipConfig[] } = {
   ],
   NightAnnouncement: [
     { key: AudioKey.NightAnnouncement, forCreatorOnly: false },
-  ],
-  WerewolvesTurn: [
-    { key: AudioKey.WerewolvesTurn, forCreatorOnly: true },
   ],
   CupidTurn: [
     { key: AudioKey.CupidTurn, forCreatorOnly: true },
