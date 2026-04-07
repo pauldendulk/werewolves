@@ -4,7 +4,7 @@
       "version": 10
     },
     "werewolves-meeting-close-eyes": {
-      "version": 7
+      "version": 9
     },
     "werewolves-turn": {
       "version": 8
@@ -67,6 +67,21 @@
       "version": 1
     },
     "witch-close-eyes": {
+      "version": 1
+    },
+    "werewolves-meeting-solo": {
+      "version": 1
+    },
+    "werewolves-meeting-duo": {
+      "version": 1
+    },
+    "werewolves-meeting-group": {
+      "version": 1
+    },
+    "werewolves-turn-solo": {
+      "version": 1
+    },
+    "werewolves-turn-group": {
       "version": 1
     }
   }
