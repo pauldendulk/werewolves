@@ -124,7 +124,7 @@ test.describe('Seer skill', () => {
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
       // ── 7. DayEliminationReveal: no one eliminated (tied/empty votes) ─────────
-      await waitForPhase(creator.page, 'Village Verdict');
+      await waitForPhase(creator.page, 'Verdict');
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
       // ── 8. WerewolvesTurn (round 2): wolf votes for the plain villager ──
@@ -147,7 +147,7 @@ test.describe('Seer skill', () => {
 
       // ── 11. Seer marks done → NightEliminationReveal shows the victim ────────
       await seer.page.getByRole('button', { name: 'Done' }).click();
-      for (const { page } of players) await waitForPhase(page, 'Dawn', 20_000);
+      for (const { page } of players) await waitForPhase(page, 'Victims', 20_000);
       await expect(creator.page.getByText(other.name)).toBeVisible({ timeout: 5_000 });
 
       // ── Cleanup ────────────────────────────────────────────────────────
@@ -206,7 +206,7 @@ test.describe('Seer skill', () => {
       for (const { page } of players) await waitForPhase(page, 'Discussion');
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
-      for (const { page } of players) await waitForPhase(page, 'Village Verdict');
+      for (const { page } of players) await waitForPhase(page, 'Verdict');
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
       // ── 5. WerewolvesTurn: wolf votes ───────────────────────────────────

@@ -404,4 +404,14 @@ export class SessionComponent implements OnInit, OnDestroy {
   goHome(): void {
     this.router.navigate(['/']);
   }
+
+  skillLabel(skill: string | null | undefined): string {
+    switch (skill) {
+      case 'Seer':   return '🔮 Seer';
+      case 'Cupid':  return '💘 Cupid';
+      case 'Witch':  return '🧪 Witch';
+      case 'Hunter': return '🏹 Hunter';
+      default:       return '';
+    }
+  }
 }

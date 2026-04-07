@@ -147,7 +147,7 @@ test.describe('Full 6-player game – werewolves win', () => {
       for (const { page } of votingPlayers1) await dayVote(page, V0.name);
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
-      for (const { page } of allPlayers) await waitForPhase(page, 'Village Verdict');
+      for (const { page } of allPlayers) await waitForPhase(page, 'Verdict');
       await expect(creator.page.getByText(V0.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
@@ -158,7 +158,7 @@ test.describe('Full 6-player game – werewolves win', () => {
       await nightVote(W1.page, V1.name);
       await creator.page.getByRole('button', { name: 'Skip night' }).click();
 
-      for (const { page } of allPlayers) await waitForPhase(page, 'Dawn');
+      for (const { page } of allPlayers) await waitForPhase(page, 'Victims');
       await expect(creator.page.getByText(V1.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
@@ -170,7 +170,7 @@ test.describe('Full 6-player game – werewolves win', () => {
       await dayVote(V3.page, W0.name);
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
-      for (const { page } of allPlayers) await waitForPhase(page, 'Village Verdict');
+      for (const { page } of allPlayers) await waitForPhase(page, 'Verdict');
       await expect(creator.page.getByText(W0.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
@@ -180,7 +180,7 @@ test.describe('Full 6-player game – werewolves win', () => {
       await nightVote(W1.page, V2.name);
       await creator.page.getByRole('button', { name: 'Skip night' }).click();
 
-      for (const { page } of allPlayers) await waitForPhase(page, 'Dawn');
+      for (const { page } of allPlayers) await waitForPhase(page, 'Victims');
       await expect(creator.page.getByText(V2.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
@@ -197,7 +197,7 @@ test.describe('Full 6-player game – werewolves win', () => {
       await dayVote(V3.page, W1.name);
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
-      for (const { page } of allPlayers) await waitForPhase(page, 'Village Verdict');
+      for (const { page } of allPlayers) await waitForPhase(page, 'Verdict');
       // No one should be eliminated
       await expect(creator.page.getByText('could not agree')).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
@@ -208,7 +208,7 @@ test.describe('Full 6-player game – werewolves win', () => {
       await nightVote(W1.page, V3.name);
       await creator.page.getByRole('button', { name: 'Skip night' }).click();
 
-      for (const { page } of allPlayers) await waitForPhase(page, 'Dawn');
+      for (const { page } of allPlayers) await waitForPhase(page, 'Victims');
       await expect(creator.page.getByText(V3.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 

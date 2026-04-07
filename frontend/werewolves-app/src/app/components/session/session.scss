@@ -78,6 +78,9 @@
   50% { opacity: 0.5; }
 }
 
+// Base layout for every phase. Content always starts at the top.
+// Phase modifier classes must NEVER add flex:1 or justify-content:center —
+// that would vertically center the content and break the uniform top-aligned layout.
 .phase-content {
   display: flex;
   flex-direction: column;
@@ -281,8 +284,6 @@
 // Elimination phase
 .elimination-phase {
   align-items: center;
-  justify-content: center;
-  flex: 1;
 
   .elimination-text {
     font-size: 1.3rem;

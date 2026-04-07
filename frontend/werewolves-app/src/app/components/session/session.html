@@ -33,10 +33,10 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
+        <span class="skill-name">{{ skillLabel(roleDto?.skill) }}</span>
         <span class="role-name">
           {{ roleDto?.role ?? '...' }}
         </span>
-        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
         <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
       </div>
@@ -61,13 +61,8 @@
   <!-- NIGHT ANNOUNCEMENT phase                                 -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content announcement-phase" *ngIf="phase === 'NightAnnouncement'">
-    <div class="announcement-icon">🌙</div>
-    <h2 class="phase-title night-title">The Night Has Fallen</h2>
+    <h2 class="phase-title night-title">🌙 The Night Has Fallen</h2>
     <p class="phase-subtitle">Close your eyes. The night is beginning.</p>
-    <div class="phase-countdown" *ngIf="secondsRemaining > 0">{{ secondsRemaining }}</div>
-    <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
-      <i class="pi pi-spin pi-spinner"></i> Continuing...
-    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -170,8 +165,8 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
+        <span class="skill-name">{{ skillLabel(roleDto?.skill) }}</span>
         <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
-        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
         <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
       </div>
@@ -254,32 +249,23 @@
   <!-- DAY ANNOUNCEMENT phase                                   -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content announcement-phase" *ngIf="phase === 'DayAnnouncement'">
-    <div class="announcement-icon">🌅</div>
-    <h2 class="phase-title">The Night Has Ended</h2>
+    <h2 class="phase-title">☀️ The Night Has Ended</h2>
     <p class="phase-subtitle">Open your eyes.</p>
-    <div class="phase-countdown" *ngIf="secondsRemaining > 0">{{ secondsRemaining }}</div>
-    <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
-      <i class="pi pi-spin pi-spinner"></i> Continuing...
-    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- NIGHT ELIMINATION phase                                  -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content elimination-phase" *ngIf="phase === 'NightEliminationReveal'">
-    <h2 class="phase-title">🌅 Dawn</h2>
+    <h2 class="phase-title">🩸 Victims</h2>
     <ng-container *ngIf="lobbyState.game.nightDeaths.length > 0; else noNightKill">
       <p class="elimination-text" *ngFor="let d of lobbyState.game.nightDeaths">
-        <strong>{{ d.playerName }}</strong> was taken in the night.
+        <strong>{{ d.playerName }}</strong> was eliminated in the night.
       </p>
     </ng-container>
     <ng-template #noNightKill>
-      <p class="elimination-text">The village wakes safe. No one was taken last night.</p>
+      <p class="elimination-text">The village wakes safe. No one was eliminated last night.</p>
     </ng-template>
-    <div class="phase-countdown" *ngIf="secondsRemaining > 0">{{ secondsRemaining }}</div>
-    <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
-      <i class="pi pi-spin pi-spinner"></i> Continuing...
-    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -355,8 +341,8 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
+        <span class="skill-name">{{ skillLabel(roleDto?.skill) }}</span>
         <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
-        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
         <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
       </div>
@@ -367,7 +353,7 @@
   <!-- DAY ELIMINATION phase                                    -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content elimination-phase" *ngIf="phase === 'DayEliminationReveal'">
-    <h2 class="phase-title">⚖️ Village Verdict</h2>
+    <h2 class="phase-title">⚖️ Verdict</h2>
     <ng-container *ngIf="lobbyState.game.dayDeaths.length > 0; else noKill">
       <p class="elimination-text">
         <strong>{{ lobbyState.game.dayDeaths[0].playerName }}</strong> was eliminated by the village.
@@ -379,10 +365,6 @@
     <ng-template #noKill>
       <p class="elimination-text">The village could not agree. No one was eliminated.</p>
     </ng-template>
-    <div class="phase-countdown" *ngIf="secondsRemaining > 0">{{ secondsRemaining }}</div>
-    <div class="phase-transitioning" *ngIf="secondsRemaining === 0">
-      <i class="pi pi-spin pi-spinner"></i> Continuing...
-    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->

@@ -40,7 +40,15 @@ Werewolves see the names of all fellow werewolves on their card. When everyone c
 
 ---
 
-### 4. Night — Werewolves Meeting *(Round 1 only)*
+### 4. Night Announcement
+
+Once Role Reveal ends, the app transitions into night with a brief full-screen announcement. The screen dims to the night theme and a countdown runs while the narration plays, giving everyone a moment to settle before the first night action begins.
+
+![Night Announcement](screenshots/27-the-night-has-fallen.png)
+
+---
+
+### 5. Night — Werewolves Meeting *(Round 1 only)*
 
 On the very first night, before anything else happens, the werewolves open their eyes and identify each other silently. Villagers see a generic waiting screen.
 
@@ -53,7 +61,7 @@ The werewolf screen shows the names of all pack members and a "I'm ready" button
 
 ---
 
-### 5. Night — Cupid Turn *(Round 1 only, if enabled)*
+### 6. Night — Cupid Turn *(Round 1 only, if enabled)*
 
 Cupid wakes up and secretly links two players as lovers. Everyone else sees a waiting screen.
 
@@ -66,7 +74,7 @@ Cupid selects two players from the alive-players list and confirms. The lovers a
 
 ---
 
-### 6. Lover Reveal *(Round 1 only, if Cupid is enabled)*
+### 7. Lover Reveal *(Round 1 only, if Cupid is enabled)*
 
 Everyone opens their eyes and checks their role card to see if they are one of the lovers.
 
@@ -76,9 +84,9 @@ If a player is a lover, their partner's name appears on the card when held down.
 
 ---
 
-### 7. Day — Discussion & Voting *(Round 1: follows directly after the first night)*
+### 8. Day — Discussion & Voting *(Round 1: follows directly after the first night)*
 
-After the first night — once the Lover Reveal has concluded (or the Werewolves Meeting if Cupid is not enabled) — the first day discussion begins immediately. No one has been killed yet, so there is no dawn announcement. Players discuss freely, sharing suspicions and defending themselves. Every player — including those already eliminated — casts one vote for who they believe is a werewolf. A countdown timer governs the discussion period.
+After the first night — once the Lover Reveal has concluded (or the Werewolves Meeting if Cupid is not enabled) — the first day discussion begins immediately. No one has been killed yet, so there is no victims announcement. Players discuss freely, sharing suspicions and defending themselves. Every player — including those already eliminated — casts one vote for who they believe is a werewolf. A countdown timer governs the discussion period.
 
 Each player's current vote is shown live on their chip as an arrow (e.g. **Alice → Bob**), making alliances and suspicions immediately visible and fuelling the discussion.
 
@@ -93,7 +101,7 @@ Eliminated players see a notice explaining they have been eliminated but can sti
 
 ---
 
-### 8. Day — Tiebreak Discussion *(if a tie occurs)*
+### 9. Day — Tiebreak Discussion *(if a tie occurs)*
 
 If two or more players are tied for most votes, a second short discussion round takes place. Only the tied candidates can be voted for this time.
 
@@ -103,7 +111,7 @@ If the tiebreak vote is also tied, no elimination occurs and the game moves stra
 
 ---
 
-### 9. Day Elimination
+### 10. Day Elimination
 
 The player with the most votes is eliminated and their role is publicly revealed to everyone.
 
@@ -113,7 +121,15 @@ Win conditions are checked immediately after each elimination. If the Hunter was
 
 ---
 
-### 10. Night — Werewolves Turn *(Round 2 onwards)*
+### 11. Day Announcement
+
+After the day's elimination (or after the first night directly into day from Round 1), a brief full-screen transition announces the new day. Players open their eyes and the app switches back to the day theme while the narration plays.
+
+![Day Announcement](screenshots/28-the-night-has-ended.png)
+
+---
+
+### 12. Night — Werewolves Turn *(Round 2 onwards)*
 
 The app narrates "close your eyes". Villagers see a waiting screen. Werewolves silently agree on a victim and confirm their vote.
 
@@ -126,7 +142,7 @@ The werewolf screen shows a dropdown of all living non-wolf players. Once every 
 
 ---
 
-### 11. Night — Seer Turn *(if alive and enabled)*
+### 13. Night — Seer Turn *(if alive and enabled)*
 
 The Seer wakes up and inspects one player. The result reveals whether that player is a Werewolf or a Villager, and shows their skill if they have one.
 
@@ -139,7 +155,7 @@ The Seer receives the result immediately on their screen. This information is th
 
 ---
 
-### 12. Night — Witch Turn *(if alive and enabled)*
+### 14. Night — Witch Turn *(if alive and enabled)*
 
 The Witch wakes up last. She is shown tonight's werewolf victim and can use either, both, or none of her potions.
 
@@ -159,7 +175,7 @@ Once a potion is used it is gone for the rest of the game. The "Do nothing" opti
 
 ---
 
-### 13. Night — Hunter Turn *(triggered on elimination)*
+### 15. Night — Hunter Turn *(triggered on elimination)*
 
 The Hunter phase activates whenever the Hunter is eliminated — either by werewolves at night or by the village vote during the day. The Hunter gets one last action: shooting a player of their choice.
 
@@ -172,11 +188,11 @@ The selected player is immediately eliminated. Win conditions are then re-checke
 
 ---
 
-### 14. Dawn — Night Elimination *(Round 2 onwards)*
+### 16. Victims — Night Elimination *(Round 2 onwards)*
 
 The app reveals what happened overnight. Everyone "opens their eyes" and sees the night's outcome.
 
-![Dawn — night elimination revealed](screenshots/18-dawn-night-elimination.png)
+![Victims — night elimination revealed](screenshots/18-victims.png)
 
 Possible outcomes:
 
@@ -188,7 +204,7 @@ After the announcement, the day discussion phase begins automatically.
 
 ---
 
-### 15. Final Scores Reveal
+### 17. Final Scores Reveal
 
 The game ends when a win condition is met. All roles are revealed in a summary table, sorted by score. From the second game onwards a running **total** column appears alongside each player's per-game score, so everyone can see the tournament standings at a glance.
 
@@ -207,7 +223,7 @@ Players return to the lobby and can start a new game.
 
 ---
 
-### 16. Tournament — Unlock Pass
+### 18. Tournament — Unlock Pass
 
 Starting a second (or later) game requires a tournament pass. When the host presses **Start Game** from game 2 onwards, a modal appears asking for the pass code.
 

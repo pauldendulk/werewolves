@@ -26,7 +26,7 @@ The core purpose is to facilitate and manage a complete Werewolf game without ne
    - A countdown timer governs the night duration
 
 4. **Day phase - Night elimination**
-   - The app announces who was taken in the night (or that no one was)
+   - The app announces who was eliminated in the night (or that no one was)
 
 5. **Day phase - Discussion and voting**
    - Players discuss who they suspect is a werewolf

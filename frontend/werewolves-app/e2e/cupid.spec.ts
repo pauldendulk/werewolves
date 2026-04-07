@@ -187,7 +187,7 @@ test.describe('Cupid skill', () => {
   );
 
   test(
-    'Wolves kill a lover → their partner cascade-dies at Dawn',
+    'Wolves kill a lover → their partner cascade-dies at night',
     { tag: '@cupid' },
     async ({ browser }) => {
       // ── 1. Create game with Cupid only (3 players) ──────────────────────
@@ -245,7 +245,7 @@ test.describe('Cupid skill', () => {
       for (const p of allPages) await waitForPhase(p, 'Discussion');
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
-      for (const p of allPages) await waitForPhase(p, 'Village Verdict');
+      for (const p of allPages) await waitForPhase(p, 'Verdict');
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
       // ── 6. WerewolvesTurn: wolf kills their lover (the plain villager) ───
@@ -254,9 +254,9 @@ test.describe('Cupid skill', () => {
       await wolf.page.getByRole('button', { name: 'Confirm kill' }).click();
       await creator.page.getByRole('button', { name: 'Skip night' }).click();
 
-      // ── 7. Dawn: BOTH lovers appear as killed ────────────────────────────
+      // ── 7. Victims: BOTH lovers appear as killed ────────────────────────────
       // plain-villager dies from wolf kill; wolf cascade-dies as the other lover
-      for (const p of allPages) await waitForPhase(p, 'Dawn', 20_000);
+      for (const p of allPages) await waitForPhase(p, 'Victims', 20_000);
       await expect(creator.page.locator('.elimination-text')).toHaveCount(2, { timeout: 10_000 });
       await expect(creator.page.locator('.elimination-text').filter({ hasText: plainVillager.name })).toBeVisible();
       await expect(creator.page.locator('.elimination-text').filter({ hasText: wolf.name })).toBeVisible();
@@ -335,7 +335,7 @@ test.describe('Cupid skill', () => {
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
       // ── 7. Village Verdict: plain villager is eliminated by day vote ─────
-      for (const p of allPages) await waitForPhase(p, 'Village Verdict');
+      for (const p of allPages) await waitForPhase(p, 'Verdict');
       await expect(creator.page.locator('.elimination-text')).toContainText(plainVillager.name, { timeout: 10_000 });
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 

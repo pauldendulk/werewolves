@@ -85,8 +85,8 @@
       },
       "night-end-no-deaths": {
         "version": 7,
-        "description": "NightEliminationReveal phase opens, nightDeaths is empty: announces no one was taken during the night",
-        "text": "No one was taken.",
+        "description": "NightEliminationReveal phase opens, nightDeaths is empty: announces no one was eliminated during the night",
+        "text": "No one was eliminated.",
         "style": "narration"
       },
       "night-end-one-death": {

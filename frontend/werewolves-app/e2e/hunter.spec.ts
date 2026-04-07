@@ -63,7 +63,7 @@ async function skipRound1(creatorPage: Page, allPages: Page[]): Promise<void> {
   for (const p of allPages) await waitForPhase(p, 'Discussion');
   await creatorPage.getByRole('button', { name: 'Force end discussion' }).click();
 
-  for (const p of allPages) await waitForPhase(p, 'Village Verdict');
+  for (const p of allPages) await waitForPhase(p, 'Verdict');
   await creatorPage.getByRole('button', { name: 'Continue' }).click();
 }
 
@@ -127,7 +127,7 @@ test.describe('Hunter skill', () => {
       await creator.page.getByRole('button', { name: 'Skip night' }).click();
 
       // ── 6. NightEliminationReveal: Hunter is shown as eliminated ───────────────
-      for (const p of allPages) await waitForPhase(p, 'Dawn', 20_000);
+      for (const p of allPages) await waitForPhase(p, 'Victims', 20_000);
       await expect(creator.page.getByText(hunter.name)).toBeVisible({ timeout: 5_000 });
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
@@ -209,7 +209,7 @@ test.describe('Hunter skill', () => {
       await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
 
       // ── 5. DayEliminationReveal: Hunter is eliminated ─────────────────────────
-      await waitForPhase(creator.page, 'Village Verdict');
+      await waitForPhase(creator.page, 'Verdict');
       await expect(creator.page.getByText(hunter.name)).toBeVisible({ timeout: 5_000 });
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 

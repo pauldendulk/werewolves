@@ -431,8 +431,8 @@ test('17-night-hunter-turn-hunter', async ({ page }) => {
   await shot(page, '17-night-hunter-turn-hunter');
 });
 
-// ── 18 · Dawn — someone was taken in the night ───────────────────────────────
-test('18-dawn-night-elimination', async ({ page }) => {
+// ── 18 · Victims — someone was eliminated in the night ───────────────────────────
+test('18-victims', async ({ page }) => {
   const state = makeGameState('NightEliminationReveal', 2, {
     nightDeaths: [{ playerId: ALICE, playerName: 'Alice', cause: 'WerewolfKill' }],
     phaseEndsAt: new Date(Date.now() + 7 * 1000).toISOString(),
@@ -441,8 +441,8 @@ test('18-dawn-night-elimination', async ({ page }) => {
   await setupMocks(page, state, role);
   await setViewer(page, BOB);
   await page.goto(`/game/${GAME_ID}/session`);
-  await page.waitForSelector('h2:has-text("Dawn")');
-  await shot(page, '18-dawn-night-elimination');
+  await page.waitForSelector('h2:has-text("Victims")');
+  await shot(page, '18-victims');
 });
 
 // ── 19 · Discussion — alive player with vote selector ────────────────────────
@@ -506,7 +506,7 @@ test('21-day-elimination', async ({ page }) => {
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
-  await page.waitForSelector('h2:has-text("Village Verdict")');
+  await page.waitForSelector('h2:has-text("Verdict")');
   await shot(page, '21-day-elimination');
 });
 
@@ -614,4 +614,30 @@ test('24-tournament-unlock', async ({ page }) => {
   await page.waitForSelector('.p-dialog-header:has-text("Tournament Pass")');
   await page.waitForTimeout(400); // allow PrimeNG backdrop animation to settle
   await shot(page, '24-tournament-unlock');
+});
+
+// ── 27 · Night Announcement — "The Night Has Fallen" ─────────────────────────
+test('27-the-night-has-fallen', async ({ page }) => {
+  const state = makeGameState('NightAnnouncement', 2, {
+    phaseEndsAt: new Date(Date.now() + 5 * 1000).toISOString(),
+  });
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('h2:has-text("The Night Has Fallen")');
+  await shot(page, '27-the-night-has-fallen');
+});
+
+// ── 28 · Day Announcement — "The Night Has Ended" ───────────────────────────
+test('28-the-night-has-ended', async ({ page }) => {
+  const state = makeGameState('DayAnnouncement', 2, {
+    phaseEndsAt: new Date(Date.now() + 5 * 1000).toISOString(),
+  });
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('h2:has-text("The Night Has Ended")');
+  await shot(page, '28-the-night-has-ended');
 });

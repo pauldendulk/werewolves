@@ -64,7 +64,7 @@ async function skipRound1(creatorPage: Page, allPages: Page[]): Promise<void> {
   for (const p of allPages) await waitForPhase(p, 'Discussion');
   await creatorPage.getByRole('button', { name: 'Force end discussion' }).click();
 
-  for (const p of allPages) await waitForPhase(p, 'Village Verdict');
+  for (const p of allPages) await waitForPhase(p, 'Verdict');
   await creatorPage.getByRole('button', { name: 'Continue' }).click();
 }
 
@@ -72,7 +72,7 @@ async function skipRound1(creatorPage: Page, allPages: Page[]): Promise<void> {
 
 test.describe('Witch skill', () => {
   test(
-    'Witch can save the nightly victim and nobody is eliminated at Dawn',
+    'Witch can save the nightly victim and nobody is eliminated at night',
     { tag: '@witch' },
     async ({ browser }) => {
       // ── 1. Create game with Witch only ──────────────────────────────────
@@ -140,15 +140,15 @@ test.describe('Witch skill', () => {
       await witch.page.getByRole('button', { name: '🧴 Save victim' }).click();
 
       // ── 7. NightEliminationReveal: nobody was taken ────────────────────────────
-      for (const p of allPages) await waitForPhase(p, 'Dawn', 20_000);
-      await expect(creator.page.getByText('No one was taken last night')).toBeVisible({ timeout: 5_000 });
+      for (const p of allPages) await waitForPhase(p, 'Victims', 20_000);
+      await expect(creator.page.getByText('No one was eliminated last night')).toBeVisible({ timeout: 5_000 });
 
       for (const { context } of players) await context.close();
     },
   );
 
   test(
-    'Witch can poison a player who is then eliminated at Dawn',
+    'Witch can poison a player who is then eliminated at night',
     { tag: '@witch' },
     async ({ browser }) => {
       // ── 1. Create game with Witch only ──────────────────────────────────
@@ -211,7 +211,7 @@ test.describe('Witch skill', () => {
       await witch.page.getByRole('button', { name: '☠️ Poison' }).click();
 
       // ── 6. NightEliminationReveal: both poison target AND wolf victim appear ────
-      for (const p of allPages) await waitForPhase(p, 'Dawn', 20_000);
+      for (const p of allPages) await waitForPhase(p, 'Victims', 20_000);
       await expect(creator.page.getByText(poisonTarget.name)).toBeVisible({ timeout: 5_000 });
       await expect(creator.page.getByText(wolfVictim.name)).toBeVisible({ timeout: 5_000 });
 

@@ -33,8 +33,8 @@ Phase durations and eligible-for-done player sets are the authoritative source o
 | **`SeerCloseEyes`** | 🌑 Night | Passive | Seer closes eyes before night continues; auto-advances | 6 s | No |
 | **`WitchTurn`** | 🌑 Night | Witch | Save the victim, poison a target, or pass | None | — |
 | **`WitchCloseEyes`** | 🌑 Night | Passive | Witch closes eyes before night ends; auto-advances | 6 s | No |
-| **`DayAnnouncement`** | ☀️ Day | Passive | Dawn; everyone opens their eyes; auto-advances | 8 s | No |
-| **`NightEliminationReveal`** | ☀️ Day | Passive | Dawn reveal: who died in the night; auto-advances | 10 s | No |
+| **`DayAnnouncement`** | ☀️ Day | Passive | Everyone opens their eyes; auto-advances | 8 s | No |
+| **`NightEliminationReveal`** | ☀️ Day | Passive | Victims reveal: who died in the night; auto-advances | 10 s | No |
 | **`HunterTurn`** | ☀️ Day | Hunter | Eliminated Hunter shoots one player | None | — |
 | **`Discussion`** | ☀️ Day | All living | Players debate and cast votes | 5 min (configurable) | No |
 | **`TiebreakDiscussion`** | ☀️ Day | All living | Same as Discussion; votes restricted to tied candidates | 60 s (configurable) | No |
