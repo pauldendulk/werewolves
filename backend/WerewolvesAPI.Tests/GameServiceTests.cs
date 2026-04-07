@@ -85,6 +85,7 @@ public class GameServiceTests
 
         var leftPlayer = _gameService.GetGame(game.TournamentCode)!.Players.First(p => p.PlayerId == player.PlayerId);
         leftPlayer.ParticipationStatus.Should().Be(Models.ParticipationStatus.Left);
+        leftPlayer.IsConnected.Should().BeFalse();
     }
 
     [Fact]
@@ -95,8 +96,9 @@ public class GameServiceTests
 
         _gameService.RemovePlayer(game.TournamentCode, player!.PlayerId, game.CreatorId);
 
-        _gameService.GetGame(game.TournamentCode)!.Players.First(p => p.PlayerId == player.PlayerId)
-            .ParticipationStatus.Should().Be(Models.ParticipationStatus.Removed);
+        var removedPlayer = _gameService.GetGame(game.TournamentCode)!.Players.First(p => p.PlayerId == player.PlayerId);
+        removedPlayer.ParticipationStatus.Should().Be(Models.ParticipationStatus.Removed);
+        removedPlayer.IsConnected.Should().BeFalse();
     }
 
     [Fact]

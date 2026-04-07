@@ -74,7 +74,7 @@
   <!-- WEREWOLVES MEETING phase (round 1 – wolves look, no kill) -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content" *ngIf="phase === 'WerewolvesMeeting'">
-    <h2 class="phase-title night-title">🌙 Night</h2>
+    <h2 class="phase-title night-title">🐺 Werewolves</h2>
 
     <div class="night-instructions">
       <p *ngIf="roleDto?.role !== 'Werewolf'">Close your eyes! You are not a werewolf.</p>
@@ -105,10 +105,10 @@
   <!-- WEREWOLVES TURN phase (round 2+ – wolves choose victim)  -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content" *ngIf="phase === 'WerewolvesTurn'">
-    <h2 class="phase-title night-title">🌙 Night</h2>
+    <h2 class="phase-title night-title">🐺 Werewolves</h2>
 
-    <div class="night-instructions">
-      <p>Close your eyes.</p>
+    <div class="night-instructions" *ngIf="!canVoteNight">
+      <p>Keep your eyes closed.</p>
       <p>The werewolves are choosing their victim.</p>
     </div>
 
@@ -136,7 +136,8 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content" *ngIf="phase === 'CupidTurn'">
     <h2 class="phase-title night-title">💘 Cupid</h2>
-    <p class="phase-subtitle">Cupid, wake up and choose two players to link as lovers.</p>
+    <p class="phase-subtitle" *ngIf="canActAsCupid">Wake up. Choose two players to link as lovers.</p>
+    <p class="phase-subtitle" *ngIf="!canActAsCupid">Keep your eyes closed. Cupid is choosing the lovers.</p>
 
     <div class="skill-action" *ngIf="canActAsCupid">
       <div class="action-row">
@@ -152,7 +153,6 @@
       <p-button label="Link lovers" (onClick)="submitCupidAction()"
         [disabled]="!cupidLover1 || !cupidLover2" styleClass="mt-2 w-full"></p-button>
     </div>
-    <p class="no-action-text" *ngIf="!canActAsCupid && !currentPlayer?.isEliminated">Cupid is choosing the lovers...</p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -184,7 +184,8 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content" *ngIf="phase === 'SeerTurn'">
     <h2 class="phase-title night-title">🔮 The Seer</h2>
-    <p class="phase-subtitle">Seer, wake up and choose a player to reveal their true nature.</p>
+    <p class="phase-subtitle" *ngIf="canActAsSeer">Wake up. Pick a player to reveal their true nature.</p>
+    <p class="phase-subtitle" *ngIf="!canActAsSeer">Keep your eyes closed. The Seer is looking.</p>
 
     <div class="skill-action" *ngIf="canActAsSeer && !seerResult">
       <div class="action-row">
@@ -203,8 +204,6 @@
       </p>
       <p-button label="Done" (onClick)="markDone()" [disabled]="currentPlayer?.isDone" styleClass="mt-2 w-full"></p-button>
     </div>
-
-    <p class="no-action-text" *ngIf="!canActAsSeer && !currentPlayer?.isEliminated">The Seer is looking...</p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -212,7 +211,8 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content" *ngIf="phase === 'WitchTurn'">
     <h2 class="phase-title night-title">🧪 The Witch</h2>
-    <p class="phase-subtitle">Witch, wake up. You may use a potion.</p>
+    <p class="phase-subtitle" *ngIf="canActAsWitch">Wake up. You may save the victim or poison someone.</p>
+    <p class="phase-subtitle" *ngIf="!canActAsWitch">Keep your eyes closed. The Witch is deciding.</p>
 
     <div class="skill-action" *ngIf="canActAsWitch">
       <p *ngIf="roleDto?.nightKillTargetName && !roleDto?.witchHealUsed" class="elimination-text">
@@ -230,8 +230,6 @@
         <p-button label="Do nothing" (onClick)="submitWitchAction('skip')" styleClass="p-button-text mt-2 w-full"></p-button>
       </div>
     </div>
-
-    <p class="no-action-text" *ngIf="!canActAsWitch && !currentPlayer?.isEliminated">The Witch is deciding...</p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -239,7 +237,8 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content" *ngIf="phase === 'HunterTurn'">
     <h2 class="phase-title night-title">🏹 The Hunter</h2>
-    <p class="phase-subtitle">Hunter, you have been eliminated. Choose one player to take with you.</p>
+    <p class="phase-subtitle" *ngIf="canActAsHunter">You have been eliminated. Choose one player to take with you.</p>
+    <p class="phase-subtitle" *ngIf="!canActAsHunter">Waiting for the Hunter to take their final shot.</p>
 
     <div class="skill-action" *ngIf="canActAsHunter">
       <div class="action-row">
@@ -249,7 +248,6 @@
       </div>
       <p-button label="🏹 Shoot" (onClick)="submitHunterAction()" [disabled]="!hunterTarget" styleClass="p-button-danger mt-2 w-full"></p-button>
     </div>
-    <p class="no-action-text" *ngIf="!canActAsHunter">The Hunter is taking their final shot...</p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -303,10 +301,11 @@
     <div class="player-chips">
       <div *ngFor="let p of participatingPlayers" class="player-chip"
            [class.me]="p.playerId === playerId"
-           [class.eliminated]="p.isEliminated">
+           [class.eliminated]="p.isEliminated"
+           [class.has-voted]="p.currentVoteTargetId">
         <span>{{ p.displayName }}</span>
         <span class="eliminated-badge" *ngIf="p.isEliminated">💀</span>
-        <span class="done-indicator" *ngIf="p.isDone && !p.isEliminated">✓</span>
+        <span class="vote-arrow" *ngIf="p.currentVoteTargetId">→ {{ playerNameById(p.currentVoteTargetId) }}</span>
       </div>
     </div>
 
@@ -322,7 +321,7 @@
         appendTo="body">
       </p-select>
       <p-button
-        label="Cast vote"
+        label="Vote"
         (onClick)="submitVote()"
         [disabled]="!selectedVoteTarget"
         styleClass="mt-2">
@@ -331,14 +330,17 @@
 
     <!-- Done / ready -->
     <div class="ready-section">
-      <div class="done-count">{{ doneCount }} / {{ alivePlayers.length }} done</div>
-      <p-button
-        *ngIf="showDoneButton"
-        label="Done"
-        (onClick)="markDone()"
-        [disabled]="canVoteDay && !hasVotedThisPhase"
-        styleClass="p-button-outlined w-full mt-2">
-      </p-button>
+      <p class="end-discussion-hint" *ngIf="showDoneButton">Made up your mind? Let's end the discussion.</p>
+      <div class="end-discussion-row">
+        <p-button
+          *ngIf="showDoneButton"
+          label="End discussion"
+          (onClick)="markDone()"
+          [disabled]="canVoteDay && !hasVotedThisPhase"
+          styleClass="p-button-outlined">
+        </p-button>
+        <span class="done-count" *ngIf="doneCount > 0">{{ doneCount }} / {{ alivePlayers.length }}</span>
+      </div>
       <div class="done-badge" *ngIf="currentPlayer?.isDone">
         <i class="pi pi-check-circle"></i> Waiting...
       </div>

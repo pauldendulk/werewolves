@@ -44,6 +44,7 @@ nav:
       - Concept & Rules: game-concept.md
       - Phases: phases.md
       - Tournament Mode: tournament.md
+      - UX Guidelines: ux-guidelines.md
   - Technical:
       - Technology Overview: tech-overview.md
       - Architecture: architecture.md

@@ -109,6 +109,10 @@ If a player is a lover, their partner's name appears on the card when held down.
 
 After the first night — once the Lover Reveal has concluded (or the Werewolves Meeting if Cupid is not enabled) — the first day discussion begins immediately. No one has been killed yet, so there is no dawn announcement. Players discuss freely, sharing suspicions and defending themselves. Every player — including those already eliminated — casts one vote for who they believe is a werewolf. A countdown timer governs the discussion period.
 
+Each player's current vote is shown live on their chip as an arrow (e.g. **Alice → Bob**), making alliances and suspicions immediately visible and fuelling the discussion.
+
+When a player has made up their mind and wants to wrap up early, they can press **End discussion**. How many players have pressed this is shown next to the button (e.g. `3 / 8`), but only once at least one player has done so — the counter stays hidden otherwise so it does not invite premature use.
+
 <div style="display:flex;gap:1rem;align-items:flex-start">
   <figure style="flex:1;margin:0"><figcaption><strong>Alive player</strong></figcaption><img src="../screenshots/19-discussion.png" alt="Discussion — alive player with vote controls"></figure>
   <figure style="flex:1;margin:0"><figcaption><strong>Eliminated player</strong></figcaption><img src="../screenshots/19b-discussion-eliminated.png" alt="Discussion — eliminated player can still vote"></figure>

@@ -43,6 +43,7 @@ interface PlayerOverride {
   skill?: string | null;
   isEliminated?: boolean;
   isDone?: boolean;
+  currentVoteTargetId?: string | null;
   score?: number;
   totalScore?: number;
 }
@@ -64,6 +65,7 @@ function makePlayer(
     skill: overrides.skill ?? null,
     isEliminated: overrides.isEliminated ?? false,
     isDone: overrides.isDone ?? false,
+    currentVoteTargetId: overrides.currentVoteTargetId ?? null,
     score: overrides.score ?? 0,
     totalScore: overrides.totalScore ?? 0,
     joinedAt: '2026-03-17T10:00:00Z',
@@ -288,7 +290,7 @@ test('05-night-werewolves-meeting-villager', async ({ page }) => {
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
-  await page.waitForSelector('h2:has-text("Night")');
+  await page.waitForSelector('h2:has-text("Werewolves")');
   await shot(page, '05-night-werewolves-meeting-villager');
 });
 
@@ -299,7 +301,7 @@ test('06-night-werewolves-meeting-werewolf', async ({ page }) => {
   await setupMocks(page, state, role);
   await setViewer(page, BOB);
   await page.goto(`/game/${GAME_ID}/session`);
-  await page.waitForSelector('h2:has-text("Night")');
+  await page.waitForSelector('h2:has-text("Werewolves")');
   await shot(page, '06-night-werewolves-meeting-werewolf');
 });
 
@@ -310,7 +312,7 @@ test('07-night-werewolves-turn-villager', async ({ page }) => {
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
-  await page.waitForSelector('h2:has-text("Night")');
+  await page.waitForSelector('h2:has-text("Werewolves")');
   await shot(page, '07-night-werewolves-turn-villager');
 });
 
@@ -445,7 +447,13 @@ test('18-dawn-night-elimination', async ({ page }) => {
 
 // ── 19 · Discussion — alive player with vote selector ────────────────────────
 test('19-discussion', async ({ page }) => {
-  const state = makeGameState('Discussion', 2, { phaseEndsAt: new Date(Date.now() + 154 * 1000).toISOString() });
+  const players = BASE_PLAYERS.map(p => {
+    if (p.playerId === BOB)   return { ...p, currentVoteTargetId: DAVE };
+    if (p.playerId === CAROL) return { ...p, currentVoteTargetId: BOB };
+    if (p.playerId === EVE)   return { ...p, currentVoteTargetId: BOB };
+    return p;
+  });
+  const state = makeGameState('Discussion', 2, { phaseEndsAt: new Date(Date.now() + 154 * 1000).toISOString() }, players);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);

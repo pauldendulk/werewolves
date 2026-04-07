@@ -388,6 +388,10 @@ export class SessionComponent implements OnInit, OnDestroy {
     return this.lobbyState?.players.find(p => p.playerId === playerId)?.role ?? '?';
   }
 
+  playerNameById(playerId: string): string {
+    return this.lobbyState?.players.find(p => p.playerId === playerId)?.displayName ?? '?';
+  }
+
   goToLobby(): void {
     this.router.navigate(['/game', this.gameId, 'lobby']);
   }

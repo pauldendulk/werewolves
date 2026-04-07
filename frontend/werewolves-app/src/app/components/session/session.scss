@@ -229,9 +229,24 @@
   align-items: center;
   gap: 0.5rem;
 
+  .end-discussion-hint {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    text-align: left;
+    margin: 0;
+    align-self: flex-start;
+  }
+
+  .end-discussion-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    align-self: flex-start;
+  }
+
   .done-count {
     font-size: 0.9rem;
-    color: #64748b;
+    color: #94a3b8;
   }
 
   .done-badge {
@@ -327,6 +342,14 @@
     .eliminated-badge { font-size: 0.85rem; }
 
     .done-indicator { color: #22c55e; font-size: 0.8rem; }
+
+    .vote-arrow {
+      font-size: 0.78rem;
+      color: #f59e0b;
+      font-weight: 500;
+    }
+
+    &.has-voted { border-color: #f59e0b44; }
   }
 }
 

@@ -123,6 +123,7 @@ public class GameController : ControllerBase
                 Skill = p.Skill == PlayerSkill.None ? null : p.Skill.ToString(),
                 IsEliminated = p.IsEliminated,
                 IsDone = p.IsDone,
+                CurrentVoteTargetId = game.DayVotes.TryGetValue(p.PlayerId, out var voteTargetId) ? voteTargetId : null,
                 Score = p.Score,
                 TotalScore = p.TotalScore,
                 JoinedAt = p.JoinedAt

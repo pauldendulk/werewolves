@@ -55,6 +55,7 @@ describe('LobbyComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
+        currentVoteTargetId: null,
         score: 0,
         totalScore: 0,
         joinedAt: new Date().toISOString()
@@ -70,6 +71,7 @@ describe('LobbyComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
+        currentVoteTargetId: null,
         score: 0,
         totalScore: 0,
         joinedAt: new Date().toISOString()
@@ -85,6 +87,7 @@ describe('LobbyComponent', () => {
         skill: null,
         isEliminated: false,
         isDone: false,
+        currentVoteTargetId: null,
         score: 0,
         totalScore: 0,
         joinedAt: new Date().toISOString()
