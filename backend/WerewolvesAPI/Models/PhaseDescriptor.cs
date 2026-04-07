@@ -17,7 +17,7 @@ public record PhaseDescriptor(
                 Alive),
 
             new(GamePhase.NightAnnouncement,
-                _ => TimeSpan.FromSeconds(8),
+                _ => TimeSpan.FromSeconds(12),
                 _ => []),
 
             new(GamePhase.WerewolvesMeeting,
@@ -61,7 +61,7 @@ public record PhaseDescriptor(
                 _ => []),
 
             new(GamePhase.DayAnnouncement,
-                _ => TimeSpan.FromSeconds(8),
+                _ => TimeSpan.FromSeconds(12),
                 _ => []),
 
             new(GamePhase.HunterTurn,
