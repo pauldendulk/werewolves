@@ -16,7 +16,12 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     providePrimeNG({
       theme: {
-        preset: Aura
+        preset: Aura,
+        options: {
+          // The app controls its own day/night theming based on the game phase.
+          // Never let the OS dark-mode setting bleed into PrimeNG component colours.
+          darkModeSelector: false
+        }
       }
     })
   ]
