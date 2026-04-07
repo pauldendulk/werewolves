@@ -42,6 +42,7 @@ nav:
   - Game Design:
       - Terminology: terminology.md
       - Concept & Rules: game-concept.md
+      - Screens: screens.md
       - Phases: phases.md
       - Tournament Mode: tournament.md
       - UX Guidelines: ux-guidelines.md
