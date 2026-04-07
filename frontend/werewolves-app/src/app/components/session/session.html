@@ -309,7 +309,7 @@
       <p-button
         label="Vote"
         (onClick)="submitVote()"
-        [disabled]="!selectedVoteTarget"
+        [disabled]="selectedVoteTarget === null"
         styleClass="mt-2">
       </p-button>
     </div>

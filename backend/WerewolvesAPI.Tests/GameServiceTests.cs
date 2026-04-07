@@ -420,6 +420,27 @@ public class GameServiceTests
     }
 
     [Fact]
+    public void CastVote_WithEmptyTargetId_DuringDiscussion_ShouldRetractVote()
+    {
+        var game = CreateReadyGame();
+        _gameService.StartGame(game.TournamentCode, game.CreatorId);
+        MarkAllAliveDone(game.TournamentCode); // → WerewolvesMeeting
+        MarkAliveWolvesDone(game.TournamentCode); // → Discussion
+
+        var voter  = game.Players.First(p => p.PlayerId != game.CreatorId);
+        var target = game.Players.First(p => p.PlayerId != voter.PlayerId);
+
+        _gameService.CastVote(game.TournamentCode, voter.PlayerId, target.PlayerId);
+        _gameService.GetGame(game.TournamentCode)!.DayVotes.ContainsKey(voter.PlayerId).Should().BeTrue();
+
+        var (success, error) = _gameService.CastVote(game.TournamentCode, voter.PlayerId, string.Empty);
+
+        success.Should().BeTrue();
+        error.Should().BeNull();
+        _gameService.GetGame(game.TournamentCode)!.DayVotes.ContainsKey(voter.PlayerId).Should().BeFalse();
+    }
+
+    [Fact]
     public void CastVote_DuringWerewolvesTurn_AllWolvesVote_AutoAdvancesPhase()
     {
         // This test intentionally does NOT call ForceAdvancePhase after CastVote.

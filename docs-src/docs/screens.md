@@ -74,7 +74,15 @@ Cupid selects two players from the alive-players list and confirms. The lovers a
 
 ---
 
-### 7. Lover Reveal *(Round 1 only, if Cupid is enabled)*
+### 7. Day Announcement
+
+Once the night phase ends, the app transitions to day with a brief full-screen announcement. Everyone opens their eyes and the app switches to the day theme while the narration plays.
+
+![Day Announcement](screenshots/28-the-night-has-ended.png)
+
+---
+
+### 8. Lover Reveal *(Round 1 only, if Cupid is enabled)*
 
 Everyone opens their eyes and checks their role card to see if they are one of the lovers.
 
@@ -84,9 +92,9 @@ If a player is a lover, their partner's name appears on the card when held down.
 
 ---
 
-### 8. Day — Discussion & Voting *(Round 1: follows directly after the first night)*
+### 9. Day — Discussion & Voting
 
-After the first night — once the Lover Reveal has concluded (or the Werewolves Meeting if Cupid is not enabled) — the first day discussion begins immediately. No one has been killed yet, so there is no victims announcement. Players discuss freely, sharing suspicions and defending themselves. Every player — including those already eliminated — casts one vote for who they believe is a werewolf. A countdown timer governs the discussion period.
+Players discuss freely, sharing suspicions and defending themselves. Every player — including those already eliminated — casts one vote for who they believe is a werewolf. A countdown timer governs the discussion period.
 
 Each player's current vote is shown live on their chip as an arrow (e.g. **Alice → Bob**), making alliances and suspicions immediately visible and fuelling the discussion.
 
@@ -101,7 +109,7 @@ Eliminated players see a notice explaining they have been eliminated but can sti
 
 ---
 
-### 9. Day — Tiebreak Discussion *(if a tie occurs)*
+### 10. Day — Tiebreak Discussion *(if a tie occurs)*
 
 If two or more players are tied for most votes, a second short discussion round takes place. Only the tied candidates can be voted for this time.
 
@@ -111,7 +119,7 @@ If the tiebreak vote is also tied, no elimination occurs and the game moves stra
 
 ---
 
-### 10. Day Elimination
+### 11. Day Elimination
 
 The player with the most votes is eliminated and their role is publicly revealed to everyone.
 
@@ -121,15 +129,20 @@ Win conditions are checked immediately after each elimination. If the Hunter was
 
 ---
 
-### 11. Day Announcement
+### 12. Hunter Turn *(triggered on elimination)*
 
-After the day's elimination (or after the first night directly into day from Round 1), a brief full-screen transition announces the new day. Players open their eyes and the app switches back to the day theme while the narration plays.
+The Hunter phase activates whenever the Hunter is eliminated — either by werewolves at night or by the village vote during the day. The Hunter gets one last action: shooting a player of their choice.
 
-![Day Announcement](screenshots/28-the-night-has-ended.png)
+<div style="display:flex;gap:1rem;align-items:flex-start">
+  <figure style="flex:1;margin:0"><figcaption><strong>Non-Hunter view</strong></figcaption><img src="../screenshots/16-night-hunter-turn-non-hunter.png" alt="Hunter Turn — waiting"></figure>
+  <figure style="flex:1;margin:0"><figcaption><strong>Hunter view</strong></figcaption><img src="../screenshots/17-night-hunter-turn-hunter.png" alt="Hunter Turn — Hunter"></figure>
+</div>
+
+The selected player is immediately eliminated. Win conditions are then re-checked.
 
 ---
 
-### 12. Night — Werewolves Turn *(Round 2 onwards)*
+### 13. Night — Werewolves Turn *(Round 2 onwards)*
 
 The app narrates "close your eyes". Villagers see a waiting screen. Werewolves silently agree on a victim and confirm their vote.
 
@@ -142,7 +155,7 @@ The werewolf screen shows a dropdown of all living non-wolf players. Once every 
 
 ---
 
-### 13. Night — Seer Turn *(if alive and enabled)*
+### 14. Night — Seer Turn *(Round 2 onwards, if alive and enabled)*
 
 The Seer wakes up and inspects one player. The result reveals whether that player is a Werewolf or a Villager, and shows their skill if they have one.
 
@@ -155,7 +168,7 @@ The Seer receives the result immediately on their screen. This information is th
 
 ---
 
-### 14. Night — Witch Turn *(if alive and enabled)*
+### 15. Night — Witch Turn *(Round 2 onwards, if alive and enabled)*
 
 The Witch wakes up last. She is shown tonight's werewolf victim and can use either, both, or none of her potions.
 
@@ -172,19 +185,6 @@ The Witch wakes up last. She is shown tonight's werewolf victim and can use eith
 | ☠️ Poison | Eliminates any living player of the Witch's choice |
 
 Once a potion is used it is gone for the rest of the game. The "Do nothing" option advances the phase without using either.
-
----
-
-### 15. Night — Hunter Turn *(triggered on elimination)*
-
-The Hunter phase activates whenever the Hunter is eliminated — either by werewolves at night or by the village vote during the day. The Hunter gets one last action: shooting a player of their choice.
-
-<div style="display:flex;gap:1rem;align-items:flex-start">
-  <figure style="flex:1;margin:0"><figcaption><strong>Non-Hunter view</strong></figcaption><img src="../screenshots/16-night-hunter-turn-non-hunter.png" alt="Hunter Turn — waiting"></figure>
-  <figure style="flex:1;margin:0"><figcaption><strong>Hunter view</strong></figcaption><img src="../screenshots/17-night-hunter-turn-hunter.png" alt="Hunter Turn — Hunter"></figure>
-</div>
-
-The selected player is immediately eliminated. Win conditions are then re-checked.
 
 ---
 

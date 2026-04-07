@@ -274,9 +274,10 @@ export class SessionComponent implements OnInit, OnDestroy {
         .map(p => ({ label: p.displayName, value: p.playerId }));
     }
 
-    return this.alivePlayers
+    const playerOptions = this.alivePlayers
       .filter(p => p.playerId !== this.playerId && (!candidates || candidates.includes(p.playerId)))
       .map(p => ({ label: p.displayName, value: p.playerId }));
+    return [{ label: '— No vote —', value: '' }, ...playerOptions];
   }
 
   get doneCount(): number {
@@ -375,7 +376,7 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   submitVote(): void {
-    if (!this.selectedVoteTarget) return;
+    if (this.selectedVoteTarget === null) return;
     this.gameService.castVote(this.gameId, this.playerId, this.selectedVoteTarget).subscribe({
       next: () => {
         this.hasVotedThisPhase = true;

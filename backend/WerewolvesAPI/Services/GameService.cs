@@ -314,6 +314,10 @@ public class GameService : IGameService
 
         var voter = game.Players.FirstOrDefault(p => p.PlayerId == voterId);
         if (voter == null) return (false, "Voter not found");
+
+        if (string.IsNullOrEmpty(targetId))
+            return RetractVote(game, voterId);
+
         var target = game.Players.FirstOrDefault(p => p.PlayerId == targetId);
         if (target == null) return (false, "Target not found");
 
@@ -351,6 +355,19 @@ public class GameService : IGameService
         {
             return (false, "Voting is not open in this phase");
         }
+
+        BumpVersion(game);
+        return (true, null);
+    }
+
+    private (bool Success, string? Error) RetractVote(GameState game, string voterId)
+    {
+        if (game.Phase == GamePhase.Discussion || game.Phase == GamePhase.TiebreakDiscussion)
+            game.DayVotes.TryRemove(voterId, out _);
+        else if (game.Phase == GamePhase.WerewolvesTurn)
+            game.NightVotes.TryRemove(voterId, out _);
+        else
+            return (false, "Voting is not open in this phase");
 
         BumpVersion(game);
         return (true, null);

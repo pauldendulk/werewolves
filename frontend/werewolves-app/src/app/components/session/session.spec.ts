@@ -283,7 +283,8 @@ describe('SessionComponent', () => {
 
       const targets = component.voteTargets;
 
-      expect(targets.length).toBe(2, 'Alice should see exactly 2 options (Bob and Carol)');
+      expect(targets.length).toBe(3, 'Alice should see exactly 3 options (No vote, Bob, Carol)');
+      expect(targets.map(t => t.value)).toContain('');
       expect(targets.map(t => t.value)).toContain('player2');
       expect(targets.map(t => t.value)).toContain('player3');
       expect(targets.map(t => t.value)).not.toContain('player1', 'a player cannot vote for themselves');
@@ -302,7 +303,8 @@ describe('SessionComponent', () => {
 
       const targets = component.voteTargets;
 
-      expect(targets.length).toBe(3, 'non-tied Alice should see all 3 tied candidates');
+      expect(targets.length).toBe(4, 'non-tied Alice should see all 3 tied candidates plus No vote');
+      expect(targets.map(t => t.value)).toContain('');
       expect(targets.map(t => t.value)).toContain('player2');
       expect(targets.map(t => t.value)).toContain('player3');
       expect(targets.map(t => t.value)).toContain('player4');

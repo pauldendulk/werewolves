@@ -38,7 +38,7 @@ export interface AudioClipConfig {
 
 export const PhaseAudio: { [phase: string]: AudioClipConfig[] } = {
   RoleReveal: [
-    { key: AudioKey.RoleReveal, forCreatorOnly: false },
+    { key: AudioKey.RoleReveal, forCreatorOnly: true },
   ],
   NightAnnouncement: [
     { key: AudioKey.NightAnnouncement, forCreatorOnly: false },
@@ -50,7 +50,7 @@ export const PhaseAudio: { [phase: string]: AudioClipConfig[] } = {
     { key: AudioKey.CupidCloseEyes, forCreatorOnly: true },
   ],
   LoverReveal: [
-    { key: AudioKey.LoverReveal, forCreatorOnly: false },
+    { key: AudioKey.LoverReveal, forCreatorOnly: true },
   ],
   SeerTurn: [
     { key: AudioKey.SeerTurn, forCreatorOnly: true },

@@ -161,7 +161,7 @@
   background: #1e293b;
   border: 2px solid #334155;
   border-radius: 16px;
-  min-height: 220px;
+  min-height: 170px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -196,7 +196,7 @@
   }
 
   .role-name {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     font-weight: 800;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -205,7 +205,7 @@
   }
 
   .skill-name {
-    font-size: 1rem;
+    font-size: 1.25rem;
     color: #a78bfa;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -222,8 +222,9 @@
 }
 
 .role-card-compact {
-  min-height: 120px;
   margin-top: 1.5rem;
+  margin-left: 1rem;
+  margin-right: 1rem;
 }
 
 .ready-section {
