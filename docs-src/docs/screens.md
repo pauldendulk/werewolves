@@ -17,15 +17,6 @@ All players wait in the lobby while the host configures the game. Non-host playe
 
 ![Lobby screen (non-host view)](screenshots/03-lobby.png)
 
-**Configurable settings:**
-
-| Setting | Description |
-|---|---|
-| Min / Max players | Lobby won't start below the minimum; capped at the maximum |
-| Number of werewolves | How many Werewolf roles are assigned |
-| Discussion duration | Minutes allotted for each day discussion phase |
-| Skills (toggles) | Enable or disable Seer, Cupid, Witch, Hunter individually |
-
 The Start Game button is only visible to the host and is disabled until sufficient players have joined and all skill/werewolf counts are consistent with the player count.
 
 ---
