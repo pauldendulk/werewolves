@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Configuration;
 using QRCoder;
 using WerewolvesAPI.DTOs;
 using WerewolvesAPI.Models;
@@ -17,16 +16,16 @@ public class GameService : IGameService
     private readonly ILogger<GameService> _logger;
     private readonly IGameRepository _gameRepository;
     private readonly ITournamentRepository _tournamentRepository;
-    private readonly string _tournamentBypassCode;
+    private readonly IPromoCodeRepository _promoCodeRepository;
 
     private object GetPhaseLock(string gameId) => _phaseLocks.GetOrAdd(gameId, _ => new object());
 
-    public GameService(ILogger<GameService> logger, IGameRepository gameRepository, ITournamentRepository tournamentRepository, IConfiguration configuration)
+    public GameService(ILogger<GameService> logger, IGameRepository gameRepository, ITournamentRepository tournamentRepository, IPromoCodeRepository promoCodeRepository)
     {
         _logger = logger;
         _gameRepository = gameRepository;
         _tournamentRepository = tournamentRepository;
-        _tournamentBypassCode = configuration["Tournament:BypassCode"] ?? string.Empty;
+        _promoCodeRepository = promoCodeRepository;
     }
 
     // ── Lobby management ─────────────────────────────────────────────────────
@@ -518,10 +517,10 @@ public class GameService : IGameService
         return (true, null);
     }
 
-    public (bool Success, string? Error) UnlockTournament(string tournamentCode, string code)
+    public async Task<(bool Success, string? Error)> UnlockTournamentAsync(string tournamentCode, string code)
     {
         if (!_games.TryGetValue(tournamentCode, out var game)) return (false, "Game not found");
-        if (string.IsNullOrEmpty(_tournamentBypassCode) || code != _tournamentBypassCode)
+        if (!await _promoCodeRepository.RedeemAsync(code))
             return (false, "Invalid code");
 
         game.IsPremium = true;
@@ -573,14 +572,14 @@ public class GameService : IGameService
         }
     }
 
-    public (string Role, string Skill, List<string> FellowWerewolves, string? LoverName, string? NightKillTargetName, bool WitchHealUsed, bool WitchPoisonUsed) GetPlayerRole(string gameId, string playerId)
+    public (string Role, string? Skill, List<string> FellowWerewolves, string? LoverName, string? NightKillTargetName, bool WitchHealUsed, bool WitchPoisonUsed) GetPlayerRole(string gameId, string playerId)
     {
         if (!_games.TryGetValue(gameId, out var game))
-            return ("Unknown", "None", new(), null, null, false, false);
+            return ("Unknown", null, new(), null, null, false, false);
 
         var player = game.Players.FirstOrDefault(p => p.PlayerId == playerId);
         if (player?.Role == null)
-            return ("Unknown", "None", new(), null, null, false, false);
+            return ("Unknown", null, new(), null, null, false, false);
 
         // Fellow werewolves visible during werewolf phases
         var fellows = new List<string>();
@@ -608,7 +607,7 @@ public class GameService : IGameService
         if (player.Skill == PlayerSkill.Witch && game.Phase == GamePhase.WitchTurn)
             nightKillTargetName = game.Players.FirstOrDefault(p => p.PlayerId == game.NightKillTargetId)?.DisplayName;
 
-        return (player.Role.ToString()!, player.Skill.ToString(), fellows, loverName, nightKillTargetName, game.WitchHealUsed, game.WitchPoisonUsed);
+        return (player.Role.ToString()!, player.Skill == PlayerSkill.None ? null : player.Skill.ToString(), fellows, loverName, nightKillTargetName, game.WitchHealUsed, game.WitchPoisonUsed);
     }
 
     // ── Private phase engine ─────────────────────────────────────────────────

@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using WerewolvesAPI.Repositories;
@@ -11,14 +10,15 @@ public class GameServiceTests
 {
     private readonly GameService _gameService;
     private readonly Mock<ILogger<GameService>> _loggerMock;
+    private readonly Mock<IPromoCodeRepository> _promoCodeRepositoryMock;
 
     public GameServiceTests()
     {
         _loggerMock = new Mock<ILogger<GameService>>();
         var gameRepositoryMock = new Mock<IGameRepository>();
         var tournamentRepositoryMock = new Mock<ITournamentRepository>();
-        var configurationMock = new Mock<IConfiguration>();
-        _gameService = new GameService(_loggerMock.Object, gameRepositoryMock.Object, tournamentRepositoryMock.Object, configurationMock.Object);
+        _promoCodeRepositoryMock = new Mock<IPromoCodeRepository>();
+        _gameService = new GameService(_loggerMock.Object, gameRepositoryMock.Object, tournamentRepositoryMock.Object, _promoCodeRepositoryMock.Object);
     }
 
     [Fact]
@@ -1744,6 +1744,34 @@ public class GameServiceTests
         final.NightDeaths.Should().Contain(e => e.PlayerId == loverVillager2.PlayerId &&
             e.Cause == Models.EliminationCause.LoverDeath);
         final.Players.First(p => p.PlayerId == loverVillager2.PlayerId).IsEliminated.Should().BeTrue();
+    }
+
+    // ── Promo code tests ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task UnlockTournamentAsync_WithValidCode_ShouldSetIsPremium()
+    {
+        _promoCodeRepositoryMock.Setup(r => r.RedeemAsync("WOLF-TEST-GOOD")).ReturnsAsync(true);
+        var game = _gameService.CreateGame("Host", 40, "http://localhost");
+
+        var (success, error) = await _gameService.UnlockTournamentAsync(game.TournamentCode, "WOLF-TEST-GOOD");
+
+        success.Should().BeTrue();
+        error.Should().BeNull();
+        _gameService.GetGame(game.TournamentCode)!.IsPremium.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UnlockTournamentAsync_WithInvalidCode_ShouldReturnError()
+    {
+        _promoCodeRepositoryMock.Setup(r => r.RedeemAsync("WOLF-XXXX-XXXX")).ReturnsAsync(false);
+        var game = _gameService.CreateGame("Host", 40, "http://localhost");
+
+        var (success, error) = await _gameService.UnlockTournamentAsync(game.TournamentCode, "WOLF-XXXX-XXXX");
+
+        success.Should().BeFalse();
+        error.Should().NotBeNullOrEmpty();
+        _gameService.GetGame(game.TournamentCode)!.IsPremium.Should().BeFalse();
     }
 }
 

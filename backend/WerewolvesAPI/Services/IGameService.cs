@@ -29,7 +29,7 @@ public interface IGameService
     (bool Success, string? Error) ForceAdvancePhase(string tournamentCode, string moderatorId);
     (bool Success, string? Error) ExtendDiscussion(string tournamentCode, string moderatorId);
     void TryAdvancePhaseIfExpired(string tournamentCode);
-    (bool Success, string? Error) UnlockTournament(string tournamentCode, string code);
+    Task<(bool Success, string? Error)> UnlockTournamentAsync(string tournamentCode, string code);
     bool SetPremium(string tournamentCode);
-    (string Role, string Skill, List<string> FellowWerewolves, string? LoverName, string? NightKillTargetName, bool WitchHealUsed, bool WitchPoisonUsed) GetPlayerRole(string tournamentCode, string playerId);
+    (string Role, string? Skill, List<string> FellowWerewolves, string? LoverName, string? NightKillTargetName, bool WitchHealUsed, bool WitchPoisonUsed) GetPlayerRole(string tournamentCode, string playerId);
 }

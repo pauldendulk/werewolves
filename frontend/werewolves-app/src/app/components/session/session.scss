@@ -161,7 +161,9 @@
   background: #1e293b;
   border: 2px solid #334155;
   border-radius: 16px;
-  min-height: 170px;
+  width: 234px;
+  height: 234px;
+  align-self: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -188,6 +190,7 @@
   .card-hint {
     color: #64748b;
     font-size: 1.1rem;
+    text-align: center;
   }
 
   .pi-eye-slash {

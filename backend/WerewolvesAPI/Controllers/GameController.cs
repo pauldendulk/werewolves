@@ -246,9 +246,9 @@ public class GameController : ControllerBase
     }
 
     [HttpPost("{tournamentCode}/unlock")]
-    public ActionResult UnlockTournament(string tournamentCode, [FromBody] UnlockTournamentRequest request)
+    public async Task<ActionResult> UnlockTournament(string tournamentCode, [FromBody] UnlockTournamentRequest request)
     {
-        var (success, error) = _gameService.UnlockTournament(tournamentCode, request.Code);
+        var (success, error) = await _gameService.UnlockTournamentAsync(tournamentCode, request.Code);
         if (!success) return BadRequest(new { message = error });
         return Ok();
     }
