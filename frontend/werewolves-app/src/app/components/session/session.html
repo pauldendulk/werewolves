@@ -33,12 +33,11 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
-        <span class="skill-name">{{ skillLabel(roleDto?.skill) }}</span>
         <span class="role-name">
-          {{ roleDto?.role ?? '...' }}
+          {{ roleDisplayName(roleDto?.skill, roleDto?.role) }}
         </span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
-        <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
+        <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
       </div>
     </div>
 
@@ -69,7 +68,7 @@
   <!-- WEREWOLVES MEETING phase (round 1 – wolves look, no kill) -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="phase-content" *ngIf="phase === 'WerewolvesMeeting'">
-    <h2 class="phase-title night-title">🐺 Werewolves</h2>
+    <h2 class="phase-title night-title">🐺 Werewolves Meeting</h2>
 
     <div class="night-instructions">
       <p *ngIf="roleDto?.role !== 'Werewolf'">Close your eyes! You are not a werewolf.</p>
@@ -165,10 +164,9 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
-        <span class="skill-name">{{ skillLabel(roleDto?.skill) }}</span>
-        <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
+        <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
-        <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
+        <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
       </div>
     </div>
 
@@ -341,10 +339,9 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
-        <span class="skill-name">{{ skillLabel(roleDto?.skill) }}</span>
-        <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
+        <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
-        <span class="role-icon">{{ roleDto?.role === 'Werewolf' ? '🐺' : '🧑‍🌾' }}</span>
+        <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
       </div>
     </div>
   </div>

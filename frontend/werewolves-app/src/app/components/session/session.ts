@@ -424,13 +424,18 @@ export class SessionComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
-  skillLabel(skill: string | null | undefined): string {
-    switch (skill) {
-      case 'Seer':   return '🔮 Seer';
-      case 'Cupid':  return '💘 Cupid';
-      case 'Witch':  return '🧪 Witch';
-      case 'Hunter': return '🏹 Hunter';
-      default:       return '';
+  roleDisplayName(skill: string | null | undefined, role: string | null | undefined): string {
+    return skill ?? role ?? '...';
+  }
+
+  roleDisplayIcon(skill: string | null | undefined, role: string | null | undefined): string {
+    switch (skill ?? role) {
+      case 'Seer':     return '🔮';
+      case 'Cupid':    return '💘';
+      case 'Witch':    return '🧪';
+      case 'Hunter':   return '🏹';
+      case 'Werewolf': return '🐺';
+      default:         return '🧑‍🌾';
     }
   }
 }
