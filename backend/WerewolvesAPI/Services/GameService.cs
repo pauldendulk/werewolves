@@ -960,7 +960,8 @@ public class GameService : IGameService
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "Skipping unrestorable live state (incompatible schema)");
+                var preview = json.Length > 200 ? json[..200] + "…" : json;
+                _logger.LogError(ex, "Skipping unrestorable live state (incompatible schema): {Preview}", preview);
             }
         }
     }
