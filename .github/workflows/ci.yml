@@ -52,6 +52,20 @@ jobs:
   e2e-tests:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: werewolves
+          POSTGRES_USER: werewolves
+          POSTGRES_PASSWORD: werewolves
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U werewolves"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -78,7 +92,7 @@ jobs:
       - name: Install MkDocs
         run: pip install mkdocs-material
 
-      - name: Start backend (no DB — in-memory mode)
+      - name: Start backend
         run: |
           cd backend/WerewolvesAPI
           dotnet run --urls "http://localhost:5000" &
@@ -87,6 +101,9 @@ jobs:
             curl -sf http://localhost:5000/swagger/index.html > /dev/null && break
             sleep 2
           done
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=werewolves;Username=werewolves;Password=werewolves"
 
       - name: Start Angular dev server
         run: |
