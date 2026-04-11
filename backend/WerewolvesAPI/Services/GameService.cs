@@ -949,12 +949,19 @@ public class GameService : IGameService
         var stateJsons = await _gameRepository.LoadAllLiveStatesAsync();
         foreach (var json in stateJsons)
         {
-            var game = JsonSerializer.Deserialize<GameState>(json, _jsonOptions)!;
-            _games[game.TournamentCode] = game;
-            // Ensure results are persisted for any game that ended before the server restarted.
-            if (game.Phase == GamePhase.FinalScoresReveal)
-                await PersistGameResultsAsync(game);
-            _logger.LogInformation("Restored game {TournamentCode} from live state (phase {Phase})", game.TournamentCode, game.Phase);
+            try
+            {
+                var game = JsonSerializer.Deserialize<GameState>(json, _jsonOptions)!;
+                _games[game.TournamentCode] = game;
+                // Ensure results are persisted for any game that ended before the server restarted.
+                if (game.Phase == GamePhase.FinalScoresReveal)
+                    await PersistGameResultsAsync(game);
+                _logger.LogInformation("Restored game {TournamentCode} from live state (phase {Phase})", game.TournamentCode, game.Phase);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Skipping unrestorable live state (incompatible schema)");
+            }
         }
     }
 
