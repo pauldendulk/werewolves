@@ -5,10 +5,12 @@ namespace WerewolvesAPI.Repositories;
 
 public class GameRepository(string connectionString) : IGameRepository
 {
+    private bool HasDatabase => !string.IsNullOrEmpty(connectionString);
     private NpgsqlConnection Open() => new(connectionString);
 
     public async Task SaveGameAsync(GameRecord game)
     {
+        if (!HasDatabase) return;
         using var conn = Open();
         await conn.ExecuteAsync("""
             INSERT INTO games (id, tournament_id, join_code, status, winner, settings, created_at, ended_at)
@@ -22,6 +24,7 @@ public class GameRepository(string connectionString) : IGameRepository
 
     public async Task SaveGamePlayersAsync(IEnumerable<GamePlayerRecord> players)
     {
+        if (!HasDatabase) return;
         using var conn = Open();
         await conn.ExecuteAsync("""
             INSERT INTO game_players
@@ -44,6 +47,7 @@ public class GameRepository(string connectionString) : IGameRepository
 
     public async Task UpsertLiveStateAsync(string tournamentCode, string stateJson)
     {
+        if (!HasDatabase) return;
         using var conn = Open();
         await conn.ExecuteAsync("""
             INSERT INTO game_live_state (tournament_code, state, saved_at)
@@ -56,6 +60,7 @@ public class GameRepository(string connectionString) : IGameRepository
 
     public async Task<IEnumerable<string>> LoadAllLiveStatesAsync()
     {
+        if (!HasDatabase) return [];
         using var conn = Open();
         return await conn.QueryAsync<string>("SELECT state FROM game_live_state");
     }

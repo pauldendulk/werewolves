@@ -10,11 +10,13 @@ public class PromoCodeRepository(string connectionString) : IPromoCodeRepository
     // Excludes ambiguous characters: 0/O, 1/I/L
     private static readonly char[] _alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789".ToCharArray();
 
+    private bool HasDatabase => !string.IsNullOrEmpty(connectionString);
     private NpgsqlConnection Open() => new(connectionString);
 
     public async Task<string> GenerateAsync()
     {
         var code = GenerateCode();
+        if (!HasDatabase) return code;
         using var conn = Open();
         await conn.ExecuteAsync(
             "INSERT INTO promo_codes (code) VALUES (@code)",
@@ -24,6 +26,7 @@ public class PromoCodeRepository(string connectionString) : IPromoCodeRepository
 
     public async Task<bool> RedeemAsync(string code)
     {
+        if (!HasDatabase) return true;
         using var conn = Open();
         var affected = await conn.ExecuteAsync("""
             UPDATE promo_codes
@@ -35,6 +38,7 @@ public class PromoCodeRepository(string connectionString) : IPromoCodeRepository
 
     public async Task<IEnumerable<PromoCodeRecord>> GetRecentAsync(int count)
     {
+        if (!HasDatabase) return [];
         using var conn = Open();
         return await conn.QueryAsync<PromoCodeRecord>(
             "SELECT code, created_at AS \"CreatedAt\", redeemed_at AS \"RedeemedAt\" FROM promo_codes ORDER BY created_at DESC LIMIT @count",
