@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using Dapper;
@@ -13,10 +14,17 @@ public class PromoCodeRepository(string connectionString) : IPromoCodeRepository
     private bool HasDatabase => !string.IsNullOrEmpty(connectionString);
     private NpgsqlConnection Open() => new(connectionString);
 
+    // In-memory store used when no database is configured (e.g. CI).
+    private readonly ConcurrentDictionary<string, PromoCodeRecord> _inMemoryCodes = new();
+
     public async Task<string> GenerateAsync()
     {
         var code = GenerateCode();
-        if (!HasDatabase) return code;
+        if (!HasDatabase)
+        {
+            _inMemoryCodes[code] = new PromoCodeRecord(code, DateTime.UtcNow, null);
+            return code;
+        }
         using var conn = Open();
         await conn.ExecuteAsync(
             "INSERT INTO promo_codes (code) VALUES (@code)",
@@ -26,7 +34,12 @@ public class PromoCodeRepository(string connectionString) : IPromoCodeRepository
 
     public async Task<bool> RedeemAsync(string code)
     {
-        if (!HasDatabase) return true;
+        if (!HasDatabase)
+        {
+            return _inMemoryCodes.TryGetValue(code, out var record)
+                && record.RedeemedAt == null
+                && _inMemoryCodes.TryUpdate(code, record with { RedeemedAt = DateTime.UtcNow }, record);
+        }
         using var conn = Open();
         var affected = await conn.ExecuteAsync("""
             UPDATE promo_codes
@@ -38,7 +51,8 @@ public class PromoCodeRepository(string connectionString) : IPromoCodeRepository
 
     public async Task<IEnumerable<PromoCodeRecord>> GetRecentAsync(int count)
     {
-        if (!HasDatabase) return [];
+        if (!HasDatabase)
+            return _inMemoryCodes.Values.OrderByDescending(c => c.CreatedAt).Take(count);
         using var conn = Open();
         return await conn.QueryAsync<PromoCodeRecord>(
             "SELECT code, created_at AS \"CreatedAt\", redeemed_at AS \"RedeemedAt\" FROM promo_codes ORDER BY created_at DESC LIMIT @count",

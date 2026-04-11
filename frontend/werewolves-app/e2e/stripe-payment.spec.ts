@@ -32,6 +32,7 @@ import { test, expect } from '@playwright/test';
 const API = 'http://localhost:5000/api';
 
 test('Stripe payment marks game as premium', async ({ page, request }) => {
+  test.skip(!!process.env['CI'], 'Stripe API key not available in CI');
   test.setTimeout(90_000);
   // ── 1. Create a game via the real backend API ─────────────────────────────
   const createRes = await request.post(`${API}/game/create`, {
