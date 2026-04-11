@@ -38,7 +38,7 @@ describe('JoinGameComponent', () => {
       winner: null,
       tiebreakCandidates: [] as string[],
       gameIndex: 1,
-      isPremium: false
+      isTournamentModeUnlocked: false
     },
     players: [
       {

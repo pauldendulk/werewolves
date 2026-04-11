@@ -6,7 +6,7 @@ public record TournamentRecord(
     string? JoinCode,
     string HostPlayerId,
     DateTime CreatedAt,
-    bool IsPremium);
+    bool IsTournamentModeUnlocked);
 
 public record TournamentParticipantRecord(
     Guid TournamentId,

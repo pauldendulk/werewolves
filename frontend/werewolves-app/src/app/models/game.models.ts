@@ -29,7 +29,7 @@ export interface GameState {
   winner: string | null;
   tiebreakCandidates: string[];
   gameIndex: number;
-  isPremium: boolean;
+  isTournamentModeUnlocked: boolean;
 }
 
 export interface PlayerState {

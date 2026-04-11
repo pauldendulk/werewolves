@@ -2,8 +2,8 @@
      depends on the winner: werewolf wins use night-theme (dark, whispered audio), villager wins
      use day-theme. This is the one place where winner drives the theme rather than the phase name. -->
 <div class="session-container" *ngIf="lobbyState"
-     [class.night-theme]="phase === 'NightAnnouncement' || phase === 'WerewolvesMeeting' || phase === 'WolvesCloseEyes' || phase === 'WerewolvesTurn' || phase === 'CupidTurn' || phase === 'CupidCloseEyes' || phase === 'SeerTurn' || phase === 'SeerCloseEyes' || phase === 'WitchTurn' || phase === 'WitchCloseEyes' || (phase === 'FinalScoresReveal' && winner === 'Werewolves')"
-     [class.day-theme]="phase !== 'NightAnnouncement' && phase !== 'WerewolvesMeeting' && phase !== 'WolvesCloseEyes' && phase !== 'WerewolvesTurn' && phase !== 'CupidTurn' && phase !== 'CupidCloseEyes' && phase !== 'SeerTurn' && phase !== 'SeerCloseEyes' && phase !== 'WitchTurn' && phase !== 'WitchCloseEyes' && !(phase === 'FinalScoresReveal' && winner === 'Werewolves')">
+     [class.night-theme]="phase === 'NightAnnouncement' || phase === 'WerewolvesMeeting' || phase === 'WerewolvesCloseEyes' || phase === 'Werewolves' || phase === 'Cupid' || phase === 'CupidCloseEyes' || phase === 'Seer' || phase === 'SeerCloseEyes' || phase === 'Witch' || phase === 'WitchCloseEyes' || (phase === 'FinalScoresReveal' && winner === 'Werewolves')"
+     [class.day-theme]="phase !== 'NightAnnouncement' && phase !== 'WerewolvesMeeting' && phase !== 'WerewolvesCloseEyes' && phase !== 'Werewolves' && phase !== 'Cupid' && phase !== 'CupidCloseEyes' && phase !== 'Seer' && phase !== 'SeerCloseEyes' && phase !== 'Witch' && phase !== 'WitchCloseEyes' && !(phase === 'FinalScoresReveal' && winner === 'Werewolves')">
   <p-toast></p-toast>
 
   <!-- Header -->
@@ -33,9 +33,8 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
-        <span class="role-name">
-          {{ roleDisplayName(roleDto?.skill, roleDto?.role) }}
-        </span>
+        <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
+        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
         <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
       </div>
@@ -98,7 +97,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- WEREWOLVES TURN phase (round 2+ – wolves choose victim)  -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content" *ngIf="phase === 'WerewolvesTurn'">
+  <div class="phase-content" *ngIf="phase === 'Werewolves'">
     <h2 class="phase-title night-title">🐺 Werewolves</h2>
 
     <div class="night-instructions" *ngIf="!canVoteNight">
@@ -128,7 +127,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- CUPID TURN phase                                         -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content" *ngIf="phase === 'CupidTurn'">
+  <div class="phase-content" *ngIf="phase === 'Cupid'">
     <h2 class="phase-title night-title">💘 Cupid</h2>
     <p class="phase-subtitle" *ngIf="canActAsCupid">Wake up. Choose two players to link as lovers.</p>
     <p class="phase-subtitle" *ngIf="!canActAsCupid">Keep your eyes closed. Cupid is choosing the lovers.</p>
@@ -152,7 +151,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- LOVER REVEAL phase                                       -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content" *ngIf="phase === 'LoverReveal'">
+  <div class="phase-content" *ngIf="phase === 'LoversReveal'">
     <h2 class="phase-title">💞 The Lovers</h2>
     <p class="phase-subtitle">Everyone, open your eyes. Check your role card to find out if you are one of the lovers.</p>
 
@@ -164,7 +163,8 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
-        <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
+        <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
+        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
         <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
       </div>
@@ -175,7 +175,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- SEER TURN phase                                          -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content" *ngIf="phase === 'SeerTurn'">
+  <div class="phase-content" *ngIf="phase === 'Seer'">
     <h2 class="phase-title night-title">🔮 The Seer</h2>
     <p class="phase-subtitle" *ngIf="canActAsSeer">Wake up. Pick a player to reveal their true nature.</p>
     <p class="phase-subtitle" *ngIf="!canActAsSeer">Keep your eyes closed. The Seer is looking.</p>
@@ -202,7 +202,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- WITCH TURN phase                                         -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content" *ngIf="phase === 'WitchTurn'">
+  <div class="phase-content" *ngIf="phase === 'Witch'">
     <h2 class="phase-title night-title">🧪 The Witch</h2>
     <p class="phase-subtitle" *ngIf="canActAsWitch">Wake up. You may save the victim or poison someone.</p>
     <p class="phase-subtitle" *ngIf="!canActAsWitch">Keep your eyes closed. The Witch is deciding.</p>
@@ -228,7 +228,7 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- HUNTER TURN phase                                        -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div class="phase-content" *ngIf="phase === 'HunterTurn'">
+  <div class="phase-content" *ngIf="phase === 'Hunter'">
     <h2 class="phase-title night-title">🏹 The Hunter</h2>
     <p class="phase-subtitle" *ngIf="canActAsHunter">You have been eliminated. Choose one player to take with you.</p>
     <p class="phase-subtitle" *ngIf="!canActAsHunter">Waiting for the Hunter to take their final shot.</p>

@@ -30,6 +30,6 @@ public interface IGameService
     (bool Success, string? Error) ExtendDiscussion(string tournamentCode, string moderatorId);
     void TryAdvancePhaseIfExpired(string tournamentCode);
     Task<(bool Success, string? Error)> UnlockTournamentAsync(string tournamentCode, string code);
-    bool SetPremium(string tournamentCode);
+    bool UnlockTournamentMode(string tournamentCode);
     (string Role, string? Skill, List<string> FellowWerewolves, string? LoverName, string? NightKillTargetName, bool WitchHealUsed, bool WitchPoisonUsed) GetPlayerRole(string tournamentCode, string playerId);
 }

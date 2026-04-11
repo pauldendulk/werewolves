@@ -75,8 +75,8 @@ test.describe('Audio assets', () => {
     await page.getByRole('button', { name: 'Start Game' }).click();
     await expect(page).toHaveURL(/\/game\/.*\/session/);
 
-    // Wait briefly for audio requests to complete
-    await page.waitForTimeout(2000);
+    // Wait for all network requests (including audio) to settle
+    await page.waitForLoadState('networkidle');
 
     for (const { context: ctx } of players) await ctx.close();
     await context.close();

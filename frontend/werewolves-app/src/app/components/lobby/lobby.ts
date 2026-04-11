@@ -222,12 +222,12 @@ export class LobbyComponent implements OnInit, OnDestroy {
   }
 
   get needsTournamentPass(): boolean {
-    return !!this.lobbyState && this.lobbyState.game.gameIndex >= 2 && !this.lobbyState.game.isPremium;
+    return !!this.lobbyState && this.lobbyState.game.gameIndex >= 2 && !this.lobbyState.game.isTournamentModeUnlocked;
   }
 
   get startGameIcon(): string {
     if (this.needsTournamentPass) return 'pi pi-lock';
-    if (this.lobbyState?.game.isPremium) return 'pi pi-star-fill';
+    if (this.lobbyState?.game.isTournamentModeUnlocked) return 'pi pi-star-fill';
     return '';
   }
 

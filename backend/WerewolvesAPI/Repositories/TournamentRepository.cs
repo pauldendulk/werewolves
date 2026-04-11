@@ -11,7 +11,7 @@ public class TournamentRepository(string connectionString) : ITournamentReposito
     {
         using var conn = Open();
         return await conn.QuerySingleOrDefaultAsync<TournamentRecord>(
-            "SELECT id, name, host_player_id, created_at, is_premium FROM tournaments WHERE id = @tournamentId",
+            "SELECT id, name, host_player_id, created_at, is_tournament_mode_unlocked FROM tournaments WHERE id = @tournamentId",
             new { tournamentId });
     }
 
@@ -19,12 +19,12 @@ public class TournamentRepository(string connectionString) : ITournamentReposito
     {
         using var conn = Open();
         await conn.ExecuteAsync("""
-            INSERT INTO tournaments (id, name, join_code, host_player_id, created_at, is_premium)
-            VALUES (@Id, @Name, @JoinCode, @HostPlayerId, @CreatedAt, @IsPremium)
+            INSERT INTO tournaments (id, name, join_code, host_player_id, created_at, is_tournament_mode_unlocked)
+            VALUES (@Id, @Name, @JoinCode, @HostPlayerId, @CreatedAt, @IsTournamentModeUnlocked)
             ON CONFLICT (id) DO UPDATE SET
                 name       = EXCLUDED.name,
                 join_code  = COALESCE(tournaments.join_code, EXCLUDED.join_code),
-                is_premium = EXCLUDED.is_premium
+                is_tournament_mode_unlocked = EXCLUDED.is_tournament_mode_unlocked
             """, tournament);
     }
 

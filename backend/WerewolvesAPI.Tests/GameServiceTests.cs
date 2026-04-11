@@ -462,13 +462,13 @@ public class GameServiceTests
         SkipAnnouncementPhases(game.TournamentCode); // → WerewolvesTurn (round 2)
 
         var before = _gameService.GetGame(game.TournamentCode)!;
-        before.Phase.Should().Be(Models.GamePhase.WerewolvesTurn);
+        before.Phase.Should().Be(Models.GamePhase.Werewolves);
 
         // Single wolf votes — no ForceAdvancePhase
         _gameService.CastVote(game.TournamentCode, werewolf.PlayerId, villagers[1].PlayerId);
 
         var after = _gameService.GetGame(game.TournamentCode)!;
-        after.Phase.Should().NotBe(Models.GamePhase.WerewolvesTurn,
+        after.Phase.Should().NotBe(Models.GamePhase.Werewolves,
             "phase must advance automatically once all werewolves have voted");
     }
 
@@ -493,7 +493,7 @@ public class GameServiceTests
         SkipAnnouncementPhases(game.TournamentCode); // → WerewolvesTurn (round 2)
 
         var state = _gameService.GetGame(game.TournamentCode)!;
-        state.Phase.Should().Be(Models.GamePhase.WerewolvesTurn);
+        state.Phase.Should().Be(Models.GamePhase.Werewolves);
 
         var villager = state.Players.First(p => p.Role == Models.PlayerRole.Villager && !p.IsEliminated);
         var target   = state.Players.First(p => p.PlayerId != villager.PlayerId && !p.IsEliminated);
@@ -1032,7 +1032,7 @@ public class GameServiceTests
         });
 
         // ── GAME 2 ──────────────────────────────────────────────────────────
-        lobby.IsPremium = true; // bypass premium gate in test
+        lobby.IsTournamentModeUnlocked = true; // bypass tournament gate in test
         _gameService.StartGame(tc, game.CreatorId);
 
         var g2 = _gameService.GetGame(tc)!;
@@ -1212,7 +1212,7 @@ public class GameServiceTests
         _gameService.TryAdvancePhaseIfExpired(tc);
 
         // ── GAME 2 ──────────────────────────────────────────────────────────
-        _gameService.GetGame(tc)!.IsPremium = true; // bypass premium gate in test
+        _gameService.GetGame(tc)!.IsTournamentModeUnlocked = true; // bypass tournament gate in test
         _gameService.StartGame(tc, game.CreatorId);
         var g2 = _gameService.GetGame(tc)!;
         var wolf2 = g2.Players.First(p => p.Role == Models.PlayerRole.Werewolf);
@@ -1394,7 +1394,7 @@ public class GameServiceTests
     {
         var game = _gameService.GetGame(gameId)!;
         var moderatorId = game.Players.First(p => p.IsModerator).PlayerId;
-        while (_gameService.GetGame(gameId)!.Phase is Models.GamePhase.NightAnnouncement or Models.GamePhase.DayAnnouncement or Models.GamePhase.WolvesCloseEyes or Models.GamePhase.CupidCloseEyes or Models.GamePhase.SeerCloseEyes or Models.GamePhase.WitchCloseEyes)
+        while (_gameService.GetGame(gameId)!.Phase is Models.GamePhase.NightAnnouncement or Models.GamePhase.DayAnnouncement or Models.GamePhase.WerewolvesCloseEyes or Models.GamePhase.CupidCloseEyes or Models.GamePhase.SeerCloseEyes or Models.GamePhase.WitchCloseEyes)
             _gameService.ForceAdvancePhase(gameId, moderatorId);
     }
 
@@ -1454,7 +1454,7 @@ public class GameServiceTests
         MarkAllAliveDone(game.TournamentCode); // RoleReveal → WerewolvesMeeting
         MarkAliveWolvesDone(game.TournamentCode); // WerewolvesMeeting → CupidTurn
         state = _gameService.GetGame(game.TournamentCode)!;
-        state.Phase.Should().Be(Models.GamePhase.CupidTurn);
+        state.Phase.Should().Be(Models.GamePhase.Cupid);
 
         var cupid = state.Players.First(p => p.Skill == Models.PlayerSkill.Cupid);
         var others = state.Players.Where(p => p.PlayerId != cupid.PlayerId).Take(2).ToList();
@@ -1495,7 +1495,7 @@ public class GameServiceTests
         SkipAnnouncementPhases(game.TournamentCode);                          // DayAnnouncement → LoverReveal
 
         // No lovers chosen → still goes to LoverReveal so everyone checks their card
-        _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.LoverReveal);
+        _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.LoversReveal);
     }
 
     [Fact]
@@ -1526,7 +1526,7 @@ public class GameServiceTests
         // CastVote auto-advances to DayAnnouncement when all wolves have voted
         SkipAnnouncementPhases(game.TournamentCode);                          // DayAnnouncement → SeerTurn
 
-        _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.SeerTurn);
+        _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.Seer);
 
         // Seer inspects the wolf
         var (success, error, result) = _gameService.SeerAction(game.TournamentCode, seer.PlayerId, wolf.PlayerId);
@@ -1562,7 +1562,7 @@ public class GameServiceTests
         // CastVote auto-advances to WolvesCloseEyes when all wolves have voted
         SkipAnnouncementPhases(game.TournamentCode); // WolvesCloseEyes → WitchTurn
 
-        _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.WitchTurn);
+        _gameService.GetGame(game.TournamentCode)!.Phase.Should().Be(Models.GamePhase.Witch);
         _gameService.GetGame(game.TournamentCode)!.NightKillTargetId.Should().Be(victim.PlayerId);
 
         // Witch saves the victim
@@ -1648,7 +1648,7 @@ public class GameServiceTests
         _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // → HunterTurn
 
         var inHunterTurn = _gameService.GetGame(game.TournamentCode)!;
-        inHunterTurn.Phase.Should().Be(Models.GamePhase.HunterTurn);
+        inHunterTurn.Phase.Should().Be(Models.GamePhase.Hunter);
 
         // Hunter shoots the bystander
         var (success, error) = _gameService.HunterAction(game.TournamentCode, hunter.PlayerId, bystander.PlayerId);
@@ -1698,7 +1698,7 @@ public class GameServiceTests
             SkipAnnouncementPhases(game.TournamentCode);                          // NightAnnouncement → WerewolvesTurn or Discussion
             // If we hit WerewolvesTurn, advance past it
             var g2 = _gameService.GetGame(game.TournamentCode)!;
-            if (g2.Phase == Models.GamePhase.WerewolvesTurn)
+            if (g2.Phase == Models.GamePhase.Werewolves)
             {
                 _gameService.ForceAdvancePhase(game.TournamentCode, game.CreatorId); // WerewolvesTurn → DayAnnouncement (no kill)
                 SkipAnnouncementPhases(game.TournamentCode);                          // DayAnnouncement → NightEliminationReveal
@@ -1749,7 +1749,7 @@ public class GameServiceTests
     // ── Promo code tests ──────────────────────────────────────────────────
 
     [Fact]
-    public async Task UnlockTournamentAsync_WithValidCode_ShouldSetIsPremium()
+    public async Task UnlockTournamentAsync_WithValidCode_ShouldSetIsTournamentModeUnlocked()
     {
         _promoCodeRepositoryMock.Setup(r => r.RedeemAsync("WOLF-TEST-GOOD")).ReturnsAsync(true);
         var game = _gameService.CreateGame("Host", 40, "http://localhost");
@@ -1758,7 +1758,7 @@ public class GameServiceTests
 
         success.Should().BeTrue();
         error.Should().BeNull();
-        _gameService.GetGame(game.TournamentCode)!.IsPremium.Should().BeTrue();
+        _gameService.GetGame(game.TournamentCode)!.IsTournamentModeUnlocked.Should().BeTrue();
     }
 
     [Fact]
@@ -1771,7 +1771,7 @@ public class GameServiceTests
 
         success.Should().BeFalse();
         error.Should().NotBeNullOrEmpty();
-        _gameService.GetGame(game.TournamentCode)!.IsPremium.Should().BeFalse();
+        _gameService.GetGame(game.TournamentCode)!.IsTournamentModeUnlocked.Should().BeFalse();
     }
 }
 

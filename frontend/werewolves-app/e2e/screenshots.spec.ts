@@ -123,7 +123,7 @@ function makeGameState(
       winner: null,
       tiebreakCandidates: [],
       gameIndex: 1,
-      isPremium: false,
+      isTournamentModeUnlocked: false,
       ...extra,
     },
     players,
@@ -156,7 +156,7 @@ function makeLobbyState(players = BASE_PLAYERS) {
       winner: null,
       tiebreakCandidates: [],
       gameIndex: 1,
-      isPremium: false,
+      isTournamentModeUnlocked: false,
     },
     players,
     hasDuplicateNames: false,
@@ -244,114 +244,136 @@ test.beforeAll(() => {
 });
 
 // ── 01 · Create Game ──────────────────────────────────────────────────────────
-test('01-create-game', async ({ page }) => {
+test('create-game', async ({ page }) => {
   await clearViewer(page);
   await page.goto('/');
   await page.waitForSelector('.create-game-container');
-  await shot(page, '01-create-game');
+  await shot(page, 'create-game');
 });
 
 // ── 02 · Join Game ────────────────────────────────────────────────────────────
-test('02-join-game', async ({ page }) => {
+test('join-game', async ({ page }) => {
   // Clear any stored player ID so the component shows the join form
   await clearViewer(page);
   const state = makeLobbyState();
   await setupMocks(page, state, {});
   await page.goto(`/game/${GAME_ID}`);
   await page.waitForSelector('h2:has-text("Join Game")');
-  await shot(page, '02-join-game');
+  await shot(page, 'join-game');
 });
 
 // ── 03 · Lobby (non-host view) ────────────────────────────────────────────────
-test('03-lobby', async ({ page }) => {
+test('lobby', async ({ page }) => {
   const state = makeLobbyState();
   await setupMocks(page, state, {});
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/lobby`);
   await page.waitForSelector('.lobby-container');
-  await shot(page, '03-lobby');
+  await shot(page, 'lobby');
 });
 
 // ── 04 · Role Reveal — card hidden ───────────────────────────────────────────
-test('04-role-reveal', async ({ page }) => {
+test('role-reveal', async ({ page }) => {
   const state = makeGameState('RoleReveal', 1);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Your Role")');
-  await shot(page, '04-role-reveal');
+  await shot(page, 'role-reveal');
 });
 
 // ── 05 · Werewolves Meeting — Villager (eyes-closed / waiting) ───────────────
-test('05-night-werewolves-meeting-villager', async ({ page }) => {
+test('werewolves-meeting-others', async ({ page }) => {
   const state = makeGameState('WerewolvesMeeting', 1);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Werewolves")');
-  await shot(page, '05-night-werewolves-meeting-villager');
+  await shot(page, 'werewolves-meeting-others');
 });
 
 // ── 06 · Werewolves Meeting — Werewolf (sees fellow wolves + Ready button) ───
-test('06-night-werewolves-meeting-werewolf', async ({ page }) => {
+test('werewolves-meeting', async ({ page }) => {
   const state = makeGameState('WerewolvesMeeting', 1);
   const role = makeRoleDto('Werewolf', null, { fellowWerewolves: ['Grace'] });
   await setupMocks(page, state, role);
   await setViewer(page, BOB);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Werewolves")');
-  await shot(page, '06-night-werewolves-meeting-werewolf');
+  await shot(page, 'werewolves-meeting');
+});
+
+// ── Werewolves Close Eyes — blank night screen (auto-advance) ───────────────
+test('werewolves-close-eyes', async ({ page }) => {
+  const state = makeGameState('WerewolvesCloseEyes', 1);
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('.session-container');
+  await shot(page, 'werewolves-close-eyes');
 });
 
 // ── 07 · Werewolves Turn — Villager (passive / eyes closed) ──────────────────
-test('07-night-werewolves-turn-villager', async ({ page }) => {
-  const state = makeGameState('WerewolvesTurn', 2);
+test('werewolves-others', async ({ page }) => {
+  const state = makeGameState('Werewolves', 2);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Werewolves")');
-  await shot(page, '07-night-werewolves-turn-villager');
+  await shot(page, 'werewolves-others');
 });
 
 // ── 08 · Werewolves Turn — Werewolf (victim selector + Confirm Kill) ─────────
-test('08-night-werewolves-turn-werewolf', async ({ page }) => {
-  const state = makeGameState('WerewolvesTurn', 2);
+test('werewolves', async ({ page }) => {
+  const state = makeGameState('Werewolves', 2);
   const role = makeRoleDto('Werewolf', null, { fellowWerewolves: ['Grace'] });
   await setupMocks(page, state, role);
   await setViewer(page, BOB);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.wolf-vote');
-  await shot(page, '08-night-werewolves-turn-werewolf');
+  await shot(page, 'werewolves');
 });
 
 // ── 09 · Cupid Turn — non-Cupid (waiting text) ───────────────────────────────
-test('09-night-cupid-turn-non-cupid', async ({ page }) => {
-  const state = makeGameState('CupidTurn', 1);
+test('cupid-others', async ({ page }) => {
+  const state = makeGameState('Cupid', 1);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Cupid")');
-  await shot(page, '09-night-cupid-turn-non-cupid');
+  await shot(page, 'cupid-others');
 });
 
 // ── 10 · Cupid Turn — Cupid (two selectors + Link Lovers) ────────────────────
-test('10-night-cupid-turn-cupid', async ({ page }) => {
-  const state = makeGameState('CupidTurn', 1);
+test('cupid', async ({ page }) => {
+  const state = makeGameState('Cupid', 1);
   const role = makeRoleDto('Villager', 'Cupid');
   await setupMocks(page, state, role);
   await setViewer(page, DAVE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.skill-action');
-  await shot(page, '10-night-cupid-turn-cupid');
+  await shot(page, 'cupid');
+});
+
+// ── Cupid Close Eyes — blank night screen (auto-advance) ────────────────────
+test('cupid-close-eyes', async ({ page }) => {
+  const state = makeGameState('CupidCloseEyes', 1);
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('.session-container');
+  await shot(page, 'cupid-close-eyes');
 });
 
 // ── 11 · Lover Reveal — card revealed with lover name ────────────────────────
-test('11-lover-reveal', async ({ page }) => {
-  const state = makeGameState('LoverReveal', 1, { phaseEndsAt: new Date(Date.now() + 15 * 1000).toISOString() });
+test('lovers-reveal', async ({ page }) => {
+  const state = makeGameState('LoversReveal', 1, { phaseEndsAt: new Date(Date.now() + 15 * 1000).toISOString() });
   const role = makeRoleDto('Villager', null, { loverName: 'Dave' });
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
@@ -361,78 +383,100 @@ test('11-lover-reveal', async ({ page }) => {
   const card = page.locator('.role-card');
   await card.dispatchEvent('mousedown');
   await page.waitForSelector('.lover-name');
-  await shot(page, '11-lover-reveal');
+  await shot(page, 'lovers-reveal');
   await card.dispatchEvent('mouseup');
 });
 
 // ── 12 · Seer Turn — non-Seer (waiting text) ─────────────────────────────────
-test('12-night-seer-turn-non-seer', async ({ page }) => {
-  const state = makeGameState('SeerTurn', 2);
+test('seer-others', async ({ page }) => {
+  const state = makeGameState('Seer', 2);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Seer")');
-  await shot(page, '12-night-seer-turn-non-seer');
+  await shot(page, 'seer-others');
 });
 
 // ── 13 · Seer Turn — Seer (player selector + Reveal button) ──────────────────
-test('13-night-seer-turn-seer', async ({ page }) => {
-  const state = makeGameState('SeerTurn', 2);
+test('seer', async ({ page }) => {
+  const state = makeGameState('Seer', 2);
   const role = makeRoleDto('Villager', 'Seer');
   await setupMocks(page, state, role);
   await setViewer(page, CAROL);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.skill-action');
-  await shot(page, '13-night-seer-turn-seer');
+  await shot(page, 'seer');
+});
+
+// ── Seer Close Eyes — blank night screen (auto-advance) ─────────────────────
+test('seer-close-eyes', async ({ page }) => {
+  const state = makeGameState('SeerCloseEyes', 2);
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('.session-container');
+  await shot(page, 'seer-close-eyes');
 });
 
 // ── 14 · Witch Turn — non-Witch (waiting text) ───────────────────────────────
-test('14-night-witch-turn-non-witch', async ({ page }) => {
-  const state = makeGameState('WitchTurn', 2);
+test('witch-others', async ({ page }) => {
+  const state = makeGameState('Witch', 2);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Witch")');
-  await shot(page, '14-night-witch-turn-non-witch');
+  await shot(page, 'witch-others');
 });
 
 // ── 15 · Witch Turn — Witch (victim shown + both potions available) ───────────
-test('15-night-witch-turn-witch', async ({ page }) => {
-  const state = makeGameState('WitchTurn', 2);
+test('witch', async ({ page }) => {
+  const state = makeGameState('Witch', 2);
   const role = makeRoleDto('Villager', 'Witch', { nightKillTargetName: 'Alice' });
   await setupMocks(page, state, role);
   await setViewer(page, EVE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.witch-buttons');
-  await shot(page, '15-night-witch-turn-witch');
+  await shot(page, 'witch');
+});
+
+// ── Witch Close Eyes — blank night screen (auto-advance) ────────────────────
+test('witch-close-eyes', async ({ page }) => {
+  const state = makeGameState('WitchCloseEyes', 2);
+  const role = makeRoleDto('Villager');
+  await setupMocks(page, state, role);
+  await setViewer(page, ALICE);
+  await page.goto(`/game/${GAME_ID}/session`);
+  await page.waitForSelector('.session-container');
+  await shot(page, 'witch-close-eyes');
 });
 
 // ── 16 · Hunter Turn — non-Hunter (waiting text) ─────────────────────────────
-test('16-night-hunter-turn-non-hunter', async ({ page }) => {
-  const state = makeGameState('HunterTurn', 2);
+test('hunter-others', async ({ page }) => {
+  const state = makeGameState('Hunter', 2);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Hunter")');
-  await shot(page, '16-night-hunter-turn-non-hunter');
+  await shot(page, 'hunter-others');
 });
 
 // ── 17 · Hunter Turn — Hunter (player selector + Shoot button) ───────────────
-test('17-night-hunter-turn-hunter', async ({ page }) => {
-  const state = makeGameState('HunterTurn', 2);
+test('hunter', async ({ page }) => {
+  const state = makeGameState('Hunter', 2);
   const role = makeRoleDto('Villager', 'Hunter');
   await setupMocks(page, state, role);
   await setViewer(page, FRANK);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.skill-action');
-  await shot(page, '17-night-hunter-turn-hunter');
+  await shot(page, 'hunter');
 });
 
 // ── 18 · Victims — someone was eliminated in the night ───────────────────────────
-test('18-victims', async ({ page }) => {
+test('night-elimination-reveal', async ({ page }) => {
   const state = makeGameState('NightEliminationReveal', 2, {
     nightDeaths: [{ playerId: ALICE, playerName: 'Alice', cause: 'WerewolfKill' }],
     phaseEndsAt: new Date(Date.now() + 7 * 1000).toISOString(),
@@ -442,11 +486,11 @@ test('18-victims', async ({ page }) => {
   await setViewer(page, BOB);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Victims")');
-  await shot(page, '18-victims');
+  await shot(page, 'night-elimination-reveal');
 });
 
 // ── 19 · Discussion — alive player with vote selector ────────────────────────
-test('19-discussion', async ({ page }) => {
+test('discussion', async ({ page }) => {
   const players = BASE_PLAYERS.map(p => {
     if (p.playerId === BOB)   return { ...p, currentVoteTargetId: DAVE };
     if (p.playerId === CAROL) return { ...p, currentVoteTargetId: BOB };
@@ -459,11 +503,11 @@ test('19-discussion', async ({ page }) => {
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.vote-section');
-  await shot(page, '19-discussion');
+  await shot(page, 'discussion');
 });
 
 // ── 19b · Discussion — eliminated player (sees notice + vote controls) ───────
-test('19b-discussion-eliminated', async ({ page }) => {
+test('discussion-eliminated', async ({ page }) => {
   const players = BASE_PLAYERS.map(p =>
     p.playerId === ALICE ? { ...p, isEliminated: true } : p
   );
@@ -473,11 +517,11 @@ test('19b-discussion-eliminated', async ({ page }) => {
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.vote-section');
-  await shot(page, '19b-discussion-eliminated');
+  await shot(page, 'discussion-eliminated');
 });
 
 // ── 20 · Tiebreak Discussion ─────────────────────────────────────────────────
-test('20-tiebreak-discussion', async ({ page }) => {
+test('tiebreak-discussion', async ({ page }) => {
   const state = makeGameState('TiebreakDiscussion', 2, {
     tiebreakCandidates: [BOB, CAROL],
     phaseEndsAt: new Date(Date.now() + 42 * 1000).toISOString(),
@@ -487,11 +531,11 @@ test('20-tiebreak-discussion', async ({ page }) => {
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Tiebreak Vote")');
-  await shot(page, '20-tiebreak-discussion');
+  await shot(page, 'tiebreak-discussion');
 });
 
 // ── 21 · Day Elimination — player eliminated by village ──────────────────────
-test('21-day-elimination', async ({ page }) => {
+test('day-elimination-reveal', async ({ page }) => {
   // Pass role in players so getEliminatedRole() shows it
   const players = BASE_PLAYERS.map(p =>
     p.playerId === BOB ? { ...p, role: 'Werewolf', isEliminated: true } : p
@@ -507,11 +551,11 @@ test('21-day-elimination', async ({ page }) => {
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Verdict")');
-  await shot(page, '21-day-elimination');
+  await shot(page, 'day-elimination-reveal');
 });
 
 // ── 22 · Final Scores Reveal — Villagers win ────────────────────────────────
-test('22-game-over', async ({ page }) => {
+test('final-scores-reveal', async ({ page }) => {
   const players = [
     makePlayer(HOST,  'Host',  true,  { role: 'Villager', isEliminated: false, score: 11 }),
     makePlayer(ALICE, 'Alice', false, { role: 'Villager', isEliminated: false, score: 9 }),
@@ -528,11 +572,11 @@ test('22-game-over', async ({ page }) => {
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Final Scores Reveal")');
-  await shot(page, '22-game-over');
+  await shot(page, 'final-scores-reveal');
 });
 
 // ── 23 · Final Scores Reveal — after game 2, showing running totals ──────────
-test('23-game-over-game2', async ({ page }) => {
+test('final-scores-reveal-game2', async ({ page }) => {
   const players = [
     makePlayer(HOST,  'Host',  true,  { role: 'Villager', isEliminated: false, score: 9,  totalScore: 20 }),
     makePlayer(ALICE, 'Alice', false, { role: 'Villager', isEliminated: false, score: 11, totalScore: 20 }),
@@ -549,33 +593,33 @@ test('23-game-over-game2', async ({ page }) => {
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("Final Scores Reveal")');
-  await shot(page, '23-game-over-game2');
+  await shot(page, 'final-scores-reveal-game2');
 });
 
 // ── 25 · Moderator panel — night theme (Werewolves Turn, "Skip night") ────────
-test('25-moderator-night', async ({ page }) => {
-  const state = makeGameState('WerewolvesTurn', 2, {}, MODERATOR_PLAYERS);
+test('moderator-night', async ({ page }) => {
+  const state = makeGameState('Werewolves', 2, {}, MODERATOR_PLAYERS);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.moderator-panel');
-  await shot(page, '25-moderator-night');
+  await shot(page, 'moderator-night');
 });
 
 // ── 26 · Moderator panel — day theme (Discussion, "Force end discussion") ─────
-test('26-moderator-day', async ({ page }) => {
+test('moderator-day', async ({ page }) => {
   const state = makeGameState('Discussion', 2, { phaseEndsAt: new Date(Date.now() + 154 * 1000).toISOString() }, MODERATOR_PLAYERS);
   const role = makeRoleDto('Villager');
   await setupMocks(page, state, role);
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('.moderator-panel');
-  await shot(page, '26-moderator-day');
+  await shot(page, 'moderator-day');
 });
 
 // ── 24 · Tournament Unlock — pass code dialog ─────────────────────────────────
-test('24-tournament-unlock', async ({ page }) => {
+test('tournament-unlock', async ({ page }) => {
   const state = {
     game: {
       gameId: GAME_ID,
@@ -601,23 +645,20 @@ test('24-tournament-unlock', async ({ page }) => {
       winner: null,
       tiebreakCandidates: [],
       gameIndex: 2,
-      isPremium: false,
+      isTournamentModeUnlocked: false,
     },
-    players: BASE_PLAYERS,
+    players: BASE_PLAYERS.map(p => p.playerId === HOST ? { ...p, isModerator: true } : p),
     hasDuplicateNames: false,
   };
   await setupMocks(page, state, {});
   await setViewer(page, HOST);
   await page.goto(`/game/${GAME_ID}/lobby`);
-  await page.waitForSelector('.lobby-container');
-  await page.click('button:has-text("Start Game")');
-  await page.waitForSelector('.p-dialog-header:has-text("Tournament Pass")');
-  await page.waitForTimeout(400); // allow PrimeNG backdrop animation to settle
-  await shot(page, '24-tournament-unlock');
+  await page.waitForSelector('.tournament-gate');
+  await shot(page, 'tournament-unlock');
 });
 
 // ── 27 · Night Announcement — "The Night Has Fallen" ─────────────────────────
-test('27-the-night-has-fallen', async ({ page }) => {
+test('night-announcement', async ({ page }) => {
   const state = makeGameState('NightAnnouncement', 2, {
     phaseEndsAt: new Date(Date.now() + 5 * 1000).toISOString(),
   });
@@ -626,11 +667,11 @@ test('27-the-night-has-fallen', async ({ page }) => {
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("The Night Has Fallen")');
-  await shot(page, '27-the-night-has-fallen');
+  await shot(page, 'night-announcement');
 });
 
 // ── 28 · Day Announcement — "The Night Has Ended" ───────────────────────────
-test('28-the-night-has-ended', async ({ page }) => {
+test('day-announcement', async ({ page }) => {
   const state = makeGameState('DayAnnouncement', 2, {
     phaseEndsAt: new Date(Date.now() + 5 * 1000).toISOString(),
   });
@@ -639,5 +680,5 @@ test('28-the-night-has-ended', async ({ page }) => {
   await setViewer(page, ALICE);
   await page.goto(`/game/${GAME_ID}/session`);
   await page.waitForSelector('h2:has-text("The Night Has Ended")');
-  await shot(page, '28-the-night-has-ended');
+  await shot(page, 'day-announcement');
 });

@@ -1,62 +1,8 @@
-import { test, expect, Browser, BrowserContext, Page } from '@playwright/test';
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-async function newPlayer(browser: Browser): Promise<{ context: BrowserContext; page: Page }> {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  return { context, page };
-}
-
-async function joinGame(page: Page, gameId: string, name: string): Promise<void> {
-  await page.goto(`/game/${gameId}`);
-  await expect(page.getByRole('heading', { name: 'Join Game' })).toBeVisible({ timeout: 10_000 });
-  await page.getByLabel('Your Name').fill(name);
-  await page.getByRole('button', { name: 'Join Game' }).click();
-  await expect(page).toHaveURL(/\/game\/.*\/lobby/, { timeout: 10_000 });
-}
-
-/** Peek role card and return the role text, leaving the card flipped back. */
-async function peekRole(page: Page): Promise<string> {
-  const card = page.locator('.role-card');
-  await expect(card).toBeVisible({ timeout: 10_000 });
-  await card.dispatchEvent('mousedown');
-  const roleNameEl = page.locator('.role-name');
-  await expect(roleNameEl).toBeVisible({ timeout: 5_000 });
-  const text = (await roleNameEl.textContent()) ?? '';
-  await card.dispatchEvent('mouseup');
-  return text.trim();
-}
-
-/** Peek role AND mark ready. */
-async function peekAndReady(page: Page): Promise<string> {
-  const role = await peekRole(page);
-  await page.getByRole('button', { name: "I've seen my role" }).click();
-  return role;
-}
-
-/** Wait until the phase heading contains the given text (case-insensitive partial match). */
-async function waitForPhase(page: Page, headingText: string, timeout = 30_000): Promise<void> {
-  await expect(page.getByRole('heading', { level: 2 })).toContainText(headingText, { timeout });
-}
-
-/** Open a p-select dropdown on the page (by container class) and pick an option by name. */
-async function selectOption(page: Page, containerSelector: string, optionText: string): Promise<void> {
-  await page.locator(containerSelector).locator('.p-select').click();
-  await page.getByRole('option', { name: optionText, exact: true }).click();
-}
-
-/** Cast a night vote (only visible to werewolves). */
-async function nightVote(page: Page, targetName: string): Promise<void> {
-  await selectOption(page, '.wolf-vote', targetName);
-  await page.getByRole('button', { name: 'Confirm kill' }).click();
-}
-
-/** Cast a day vote (Discussion / TiebreakDiscussion phase). */
-async function dayVote(page: Page, targetName: string): Promise<void> {
-  await selectOption(page, '.vote-section', targetName);
-  await page.getByRole('button', { name: 'Cast vote' }).click();
-}
+import { test, expect } from '@playwright/test';
+import {
+  newPlayer, joinGame, revealAllRoles,
+  waitForPhase, nightVote, dayVote, endDiscussion, skipDayAnnouncementAndWaitForVictims,
+} from './helpers';
 
 // ─── Test ────────────────────────────────────────────────────────────────────
 
@@ -68,7 +14,7 @@ test.describe('Full 6-player game – werewolves win', () => {
       test.setTimeout(180_000); // 6-player, 4-round game needs more than 30 s
 
       // ── 1. Create game ────────────────────────────────────────────────────
-      const creator = await newPlayer(browser);
+      const creator = await newPlayer(browser, 'PlayerName');
       await creator.page.goto('/');
       await creator.page.getByLabel('Your Name').fill('PlayerName');
       await creator.page.getByRole('button', { name: 'Organize Game' }).click();
@@ -76,11 +22,11 @@ test.describe('Full 6-player game – werewolves win', () => {
       const gameId = creator.page.url().match(/\/game\/([^/]+)\/lobby/)![1];
 
       // ── 2. Five players join ──────────────────────────────────────────────
-      const alice   = await newPlayer(browser);
-      const bob     = await newPlayer(browser);
-      const charlie = await newPlayer(browser);
-      const dave    = await newPlayer(browser);
-      const eve     = await newPlayer(browser);
+      const alice   = await newPlayer(browser, 'Alice');
+      const bob     = await newPlayer(browser, 'Bob');
+      const charlie = await newPlayer(browser, 'Charlie');
+      const dave    = await newPlayer(browser, 'Dave');
+      const eve     = await newPlayer(browser, 'Eve');
 
       await joinGame(alice.page,   gameId, 'Alice');
       await joinGame(bob.page,     gameId, 'Bob');
@@ -96,10 +42,10 @@ test.describe('Full 6-player game – werewolves win', () => {
       // fill/keyboard don't reliably trigger ngModelChange.
       // UpdateNumberOfWerewolves validates count < activeCount, so all 6 players
       // must be present before this call.
-      const creatorId = await creator.page.evaluate(() => localStorage.getItem('playerId'));
+      const moderatorId = await creator.page.evaluate(() => localStorage.getItem('playerId'));
       const settingsResp = await creator.page.request.post(
         `http://localhost:5000/api/game/${gameId}/settings`,
-        { data: { creatorId, minPlayers: 3, maxPlayers: 20, discussionDurationMinutes: 5, tiebreakDiscussionDurationSeconds: 60, numberOfWerewolves: 2, enabledSkills: [] } },
+        { data: { moderatorId, minPlayers: 3, maxPlayers: 20, discussionDurationMinutes: 5, tiebreakDiscussionDurationSeconds: 60, numberOfWerewolves: 2, enabledSkills: [] } },
       );
       expect(settingsResp.ok()).toBeTruthy();
       // Wait for lobby poll to reflect the change before starting
@@ -109,43 +55,40 @@ test.describe('Full 6-player game – werewolves win', () => {
       await creator.page.getByRole('button', { name: 'Start Game' }).click();
 
       const allPlayers = [creator, alice, bob, charlie, dave, eve];
-      const names = ['PlayerName', 'Alice', 'Bob', 'Charlie', 'Dave', 'Eve'];
 
       for (const { page } of allPlayers) {
         await expect(page).toHaveURL(/\/game\/.*\/session/, { timeout: 15_000 });
       }
 
       // ── 4. Role Reveal: everyone peeks and marks ready ───────────────────
-      const roles: Record<string, string> = {};
-      for (let i = 0; i < allPlayers.length; i++) {
-        roles[names[i]] = await peekAndReady(allPlayers[i].page);
-      }
+      await revealAllRoles(allPlayers);
 
       // Separate into werewolves and villagers
-      type PlayerEntry = { page: Page; name: string };
-      const wolves:   PlayerEntry[] = [];
-      const villagers: PlayerEntry[] = [];
-      for (let i = 0; i < allPlayers.length; i++) {
-        const entry: PlayerEntry = { page: allPlayers[i].page, name: names[i] };
-        if (roles[names[i]] === 'Werewolf') wolves.push(entry);
-        else                                 villagers.push(entry);
-      }
+      const wolves    = allPlayers.filter(p => p.role === 'Werewolf');
+      const villagers = allPlayers.filter(p => p.role !== 'Werewolf');
       expect(wolves).toHaveLength(2);
       expect(villagers).toHaveLength(4);
       // Convenient aliases
       const [W0, W1] = wolves;
       const [V0, V1, V2, V3] = villagers;
 
+      const allPages = allPlayers.map(p => p.page);
+
       // ── ROUND 1 ──────────────────────────────────────────────────────────
-      // Night 1: no kills – creator skips
-      for (const { page } of allPlayers) await waitForPhase(page, 'Night');
-      await creator.page.getByRole('button', { name: 'Skip night' }).click();
+      // Night 1: no kills — wolves click Ready, then DayAnnouncement is skipped
+      await waitForPhase(creator.page, 'The Night Has Fallen');
+      await creator.page.getByRole('button', { name: 'Skip' }).click();
+      await waitForPhase(creator.page, 'Werewolves Meeting');
+      for (const wolf of wolves) await wolf.page.getByRole('button', { name: 'Ready' }).click();
+      await waitForPhase(creator.page, 'The Night Has Ended');
+      await creator.page.getByRole('button', { name: 'Skip' }).click();
 
       // Day 1: everyone votes V[0] → V[0] eliminated, state: 2W + 3V
       for (const { page } of allPlayers) await waitForPhase(page, 'Discussion');
-      const votingPlayers1 = allPlayers.filter((_, i) => names[i] !== V0.name);
+      const votingPlayers1 = allPlayers.filter(p => p.name !== V0.name);
       for (const { page } of votingPlayers1) await dayVote(page, V0.name);
-      await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
+      await dayVote(V0.page, V1.name); // V0 must also vote to enable End discussion
+      await endDiscussion(allPlayers);
 
       for (const { page } of allPlayers) await waitForPhase(page, 'Verdict');
       await expect(creator.page.getByText(V0.name)).toBeVisible();
@@ -153,22 +96,24 @@ test.describe('Full 6-player game – werewolves win', () => {
 
       // ── ROUND 2 ──────────────────────────────────────────────────────────
       // Night 2: both wolves vote V[1] → V[1] eliminated, state: 2W + 2V
-      for (const { page } of allPlayers) await waitForPhase(page, 'Night');
+      await waitForPhase(creator.page, 'The Night Has Fallen');
+      await creator.page.getByRole('button', { name: 'Skip' }).click();
+      // Playwright auto-waits for .wolf-vote to appear (Werewolves phase after NightAnnouncement)
       await nightVote(W0.page, V1.name);
       await nightVote(W1.page, V1.name);
-      await creator.page.getByRole('button', { name: 'Skip night' }).click();
-
-      for (const { page } of allPlayers) await waitForPhase(page, 'Victims');
+      await skipDayAnnouncementAndWaitForVictims(creator.page, allPages);
       await expect(creator.page.getByText(V1.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
       // Day 2: wolves split; surviving villagers V[2] and V[3] agree on W[0]
+      // Alive: W0, W1, V2, V3
+      const aliveRound2 = [W0, W1, V2, V3];
       for (const { page } of allPlayers) await waitForPhase(page, 'Discussion');
       await dayVote(W0.page, V2.name);
       await dayVote(W1.page, V3.name);
       await dayVote(V2.page, W0.name);
       await dayVote(V3.page, W0.name);
-      await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
+      await endDiscussion(aliveRound2);
 
       for (const { page } of allPlayers) await waitForPhase(page, 'Verdict');
       await expect(creator.page.getByText(W0.name)).toBeVisible();
@@ -176,26 +121,27 @@ test.describe('Full 6-player game – werewolves win', () => {
 
       // ── ROUND 3 ──────────────────────────────────────────────────────────
       // Night 3: W[1] kills V[2] → state: 1W + 1V
-      for (const { page } of allPlayers) await waitForPhase(page, 'Night');
+      await waitForPhase(creator.page, 'The Night Has Fallen');
+      await creator.page.getByRole('button', { name: 'Skip' }).click();
       await nightVote(W1.page, V2.name);
-      await creator.page.getByRole('button', { name: 'Skip night' }).click();
-
-      for (const { page } of allPlayers) await waitForPhase(page, 'Victims');
+      await skipDayAnnouncementAndWaitForVictims(creator.page, allPages);
       await expect(creator.page.getByText(V2.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 
       // Day 3: W[1]→V[3], V[3]→W[1] → tie → TiebreakDiscussion
+      // Alive: W1, V3
+      const aliveRound3 = [W1, V3];
       for (const { page } of allPlayers) await waitForPhase(page, 'Discussion');
       await dayVote(W1.page, V3.name);
       await dayVote(V3.page, W1.name);
-      await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
+      await endDiscussion(aliveRound3);
 
       for (const { page } of allPlayers) await waitForPhase(page, 'Tiebreak Vote');
 
       // Tiebreak: same votes → tie again → no elimination
       await dayVote(W1.page, V3.name);
       await dayVote(V3.page, W1.name);
-      await creator.page.getByRole('button', { name: 'Force end discussion' }).click();
+      await endDiscussion(aliveRound3);
 
       for (const { page } of allPlayers) await waitForPhase(page, 'Verdict');
       // No one should be eliminated
@@ -204,11 +150,10 @@ test.describe('Full 6-player game – werewolves win', () => {
 
       // ── ROUND 4 ──────────────────────────────────────────────────────────
       // Night 4: W[1] kills V[3] → 0 villagers → WEREWOLVES WIN
-      for (const { page } of allPlayers) await waitForPhase(page, 'Night');
+      await waitForPhase(creator.page, 'The Night Has Fallen');
+      await creator.page.getByRole('button', { name: 'Skip' }).click();
       await nightVote(W1.page, V3.name);
-      await creator.page.getByRole('button', { name: 'Skip night' }).click();
-
-      for (const { page } of allPlayers) await waitForPhase(page, 'Victims');
+      await skipDayAnnouncementAndWaitForVictims(creator.page, allPages);
       await expect(creator.page.getByText(V3.name)).toBeVisible();
       await creator.page.getByRole('button', { name: 'Continue' }).click();
 

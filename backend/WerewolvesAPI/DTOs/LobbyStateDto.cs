@@ -33,7 +33,7 @@ public class GameInfoDto
     public string? Winner { get; set; }
     public List<string> TiebreakCandidates { get; set; } = new();
     public int GameIndex { get; set; }
-    public bool IsPremium { get; set; }
+    public bool IsTournamentModeUnlocked { get; set; }
 }
 
 public class PlayerDto

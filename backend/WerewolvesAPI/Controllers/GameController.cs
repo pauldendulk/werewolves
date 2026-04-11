@@ -109,7 +109,7 @@ public class GameController : ControllerBase
                 Winner = game.Winner,
                 TiebreakCandidates = game.TiebreakCandidates,
                 GameIndex = game.GameIndex,
-                IsPremium = game.IsPremium
+                IsTournamentModeUnlocked = game.IsTournamentModeUnlocked
             },
             Players = game.Players.Select(p => new PlayerDto
             {

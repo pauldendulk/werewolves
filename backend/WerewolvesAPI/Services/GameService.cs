@@ -235,7 +235,7 @@ public class GameService : IGameService
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
         if (!game.Players.Any(p => p.PlayerId == moderatorId && p.IsModerator)) return (false, "Only a moderator can start the game");
         if (game.Status != GameStatus.ReadyToStart) return (false, "Not enough players to start");
-        if (game.GameIndex >= 2 && !game.IsPremium) return (false, "A tournament pass is required to continue beyond game 1");
+        if (game.GameIndex >= 2 && !game.IsTournamentModeUnlocked) return (false, "A tournament pass is required to continue beyond game 1");
 
         var activePlayers = game.Players
             .Where(p => p.ParticipationStatus == ParticipationStatus.Participating)
@@ -320,7 +320,7 @@ public class GameService : IGameService
         var target = game.Players.FirstOrDefault(p => p.PlayerId == targetId);
         if (target == null) return (false, "Target not found");
 
-        if (game.Phase == GamePhase.WerewolvesTurn)
+        if (game.Phase == GamePhase.Werewolves)
         {
             if (voter.Role != PlayerRole.Werewolf || voter.IsEliminated)
                 return (false, "Only alive werewolves can vote at night");
@@ -363,7 +363,7 @@ public class GameService : IGameService
     {
         if (game.Phase == GamePhase.Discussion || game.Phase == GamePhase.TiebreakDiscussion)
             game.DayVotes.TryRemove(voterId, out _);
-        else if (game.Phase == GamePhase.WerewolvesTurn)
+        else if (game.Phase == GamePhase.Werewolves)
             game.NightVotes.TryRemove(voterId, out _);
         else
             return (false, "Voting is not open in this phase");
@@ -375,7 +375,7 @@ public class GameService : IGameService
     public (bool Success, string? Error) CupidAction(string gameId, string cupidId, string lover1Id, string lover2Id)
     {
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
-        if (game.Phase != GamePhase.CupidTurn) return (false, "Not the Cupid turn");
+        if (game.Phase != GamePhase.Cupid) return (false, "Not the Cupid turn");
 
         var cupid = game.Players.FirstOrDefault(p => p.PlayerId == cupidId);
         if (cupid == null || cupid.Skill != PlayerSkill.Cupid) return (false, "Not the Cupid");
@@ -400,7 +400,7 @@ public class GameService : IGameService
     public (bool Success, string? Error, SeerActionResponse? Result) SeerAction(string gameId, string seerId, string targetId)
     {
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found", null);
-        if (game.Phase != GamePhase.SeerTurn) return (false, "Not the Seer turn", null);
+        if (game.Phase != GamePhase.Seer) return (false, "Not the Seer turn", null);
 
         var seer = game.Players.FirstOrDefault(p => p.PlayerId == seerId);
         if (seer == null || seer.Skill != PlayerSkill.Seer) return (false, "Not the Seer", null);
@@ -419,7 +419,7 @@ public class GameService : IGameService
     public (bool Success, string? Error) WitchAction(string gameId, string witchId, string choice, string? poisonTargetId)
     {
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
-        if (game.Phase != GamePhase.WitchTurn) return (false, "Not the Witch turn");
+        if (game.Phase != GamePhase.Witch) return (false, "Not the Witch turn");
 
         var witch = game.Players.FirstOrDefault(p => p.PlayerId == witchId);
         if (witch == null || witch.Skill != PlayerSkill.Witch) return (false, "Not the Witch");
@@ -459,7 +459,7 @@ public class GameService : IGameService
     public (bool Success, string? Error) HunterAction(string gameId, string hunterId, string targetId)
     {
         if (!_games.TryGetValue(gameId, out var game)) return (false, "Game not found");
-        if (game.Phase != GamePhase.HunterTurn) return (false, "Not the Hunter turn");
+        if (game.Phase != GamePhase.Hunter) return (false, "Not the Hunter turn");
 
         var hunter = game.Players.FirstOrDefault(p => p.PlayerId == hunterId);
         if (hunter == null || hunter.Skill != PlayerSkill.Hunter) return (false, "Not the Hunter");
@@ -523,27 +523,27 @@ public class GameService : IGameService
         if (!await _promoCodeRepository.RedeemAsync(code))
             return (false, "Invalid code");
 
-        game.IsPremium = true;
+        game.IsTournamentModeUnlocked = true;
         ThrowOnFailure(UpsertLiveStateAsync(game));
-        ThrowOnFailure(UpdateTournamentPremiumAsync(game));
+        ThrowOnFailure(UpdateTournamentModeUnlockedAsync(game));
         return (true, null);
     }
 
-    public bool SetPremium(string tournamentCode)
+    public bool UnlockTournamentMode(string tournamentCode)
     {
         if (!_games.TryGetValue(tournamentCode, out var game)) return false;
-        game.IsPremium = true;
+        game.IsTournamentModeUnlocked = true;
         ThrowOnFailure(UpsertLiveStateAsync(game));
-        ThrowOnFailure(UpdateTournamentPremiumAsync(game));
+        ThrowOnFailure(UpdateTournamentModeUnlockedAsync(game));
         return true;
     }
 
-    private async Task UpdateTournamentPremiumAsync(GameState game)
+    private async Task UpdateTournamentModeUnlockedAsync(GameState game)
     {
         if (string.IsNullOrEmpty(game.TournamentId)) return;
         var existing = await _tournamentRepository.GetByIdAsync(Guid.Parse(game.TournamentId));
         if (existing == null) return;
-        await _tournamentRepository.SaveTournamentAsync(existing with { IsPremium = true });
+        await _tournamentRepository.SaveTournamentAsync(existing with { IsTournamentModeUnlocked = true });
     }
 
     public void TryAdvancePhaseIfExpired(string gameId)
@@ -584,7 +584,7 @@ public class GameService : IGameService
         // Fellow werewolves visible during werewolf phases
         var fellows = new List<string>();
         if (player.Role == PlayerRole.Werewolf &&
-            (game.Phase == GamePhase.WerewolvesMeeting || game.Phase == GamePhase.WerewolvesTurn || game.Phase == GamePhase.WolvesCloseEyes))
+            (game.Phase == GamePhase.WerewolvesMeeting || game.Phase == GamePhase.Werewolves || game.Phase == GamePhase.WerewolvesCloseEyes))
         {
             fellows = game.Players
                 .Where(p => p.Role == PlayerRole.Werewolf && p.PlayerId != playerId && !p.IsEliminated)
@@ -594,7 +594,7 @@ public class GameService : IGameService
 
         // Lover name (always visible once revealed)
         string? loverName = null;
-        if (game.Phase != GamePhase.RoleReveal && game.Phase != GamePhase.CupidTurn && game.Phase != GamePhase.CupidCloseEyes)
+        if (game.Phase != GamePhase.RoleReveal && game.Phase != GamePhase.Cupid && game.Phase != GamePhase.CupidCloseEyes)
         {
             if (player.PlayerId == game.Lover1Id)
                 loverName = game.Players.FirstOrDefault(p => p.PlayerId == game.Lover2Id)?.DisplayName;
@@ -604,7 +604,7 @@ public class GameService : IGameService
 
         // Night kill target shown to Witch only
         string? nightKillTargetName = null;
-        if (player.Skill == PlayerSkill.Witch && game.Phase == GamePhase.WitchTurn)
+        if (player.Skill == PlayerSkill.Witch && game.Phase == GamePhase.Witch)
             nightKillTargetName = game.Players.FirstOrDefault(p => p.PlayerId == game.NightKillTargetId)?.DisplayName;
 
         return (player.Role.ToString()!, player.Skill == PlayerSkill.None ? null : player.Skill.ToString(), fellows, loverName, nightKillTargetName, game.WitchHealUsed, game.WitchPoisonUsed);
@@ -621,18 +621,18 @@ public class GameService : IGameService
                 break;
 
             case GamePhase.NightAnnouncement:
-                BeginPhase(game, game.RoundNumber == 1 ? GamePhase.WerewolvesMeeting : GamePhase.WerewolvesTurn);
+                BeginPhase(game, game.RoundNumber == 1 ? GamePhase.WerewolvesMeeting : GamePhase.Werewolves);
                 break;
 
             case GamePhase.WerewolvesMeeting:
-                BeginPhase(game, GamePhase.WolvesCloseEyes);
+                BeginPhase(game, GamePhase.WerewolvesCloseEyes);
                 break;
 
-            case GamePhase.WolvesCloseEyes:
+            case GamePhase.WerewolvesCloseEyes:
                 if (game.RoundNumber == 1)
                 {
                     if (HasLivingSkill(game, PlayerSkill.Cupid))
-                        BeginPhase(game, GamePhase.CupidTurn);
+                        BeginPhase(game, GamePhase.Cupid);
                     else
                         BeginDaySequence(game);
                 }
@@ -643,7 +643,7 @@ public class GameService : IGameService
                 }
                 break;
 
-            case GamePhase.CupidTurn:
+            case GamePhase.Cupid:
                 BeginPhase(game, GamePhase.CupidCloseEyes);
                 break;
 
@@ -651,15 +651,15 @@ public class GameService : IGameService
                 BeginDaySequence(game);
                 break;
 
-            case GamePhase.LoverReveal:
+            case GamePhase.LoversReveal:
                 TransitionToDiscussion(game);
                 break;
 
-            case GamePhase.WerewolvesTurn:
-                BeginPhase(game, GamePhase.WolvesCloseEyes);
+            case GamePhase.Werewolves:
+                BeginPhase(game, GamePhase.WerewolvesCloseEyes);
                 break;
 
-            case GamePhase.SeerTurn:
+            case GamePhase.Seer:
                 BeginPhase(game, GamePhase.SeerCloseEyes);
                 break;
 
@@ -667,7 +667,7 @@ public class GameService : IGameService
                 TransitionToNextAfterSeer(game);
                 break;
 
-            case GamePhase.WitchTurn:
+            case GamePhase.Witch:
                 BeginPhase(game, GamePhase.WitchCloseEyes);
                 break;
 
@@ -680,7 +680,7 @@ public class GameService : IGameService
             case GamePhase.DayAnnouncement:
                 // Round 1 had no wolf-kill cycle. If Cupid was in play, show LoverReveal before discussion.
                 if (game.RoundNumber == 1 && game.Players.Any(p => p.Skill == PlayerSkill.Cupid))
-                    BeginPhase(game, GamePhase.LoverReveal);
+                    BeginPhase(game, GamePhase.LoversReveal);
                 else if (game.RoundNumber == 1)
                     TransitionToDiscussion(game);
                 else
@@ -691,14 +691,14 @@ public class GameService : IGameService
                 if (game.HunterMustShoot)
                 {
                     game.HunterEliminatedAtNight = true;
-                    BeginPhase(game, GamePhase.HunterTurn);
+                    BeginPhase(game, GamePhase.Hunter);
                     break;
                 }
                 if (TransitionToFinalScoresRevealIfWon(game)) return;
                 TransitionToDiscussion(game);
                 break;
 
-            case GamePhase.HunterTurn:
+            case GamePhase.Hunter:
                 if (TransitionToFinalScoresRevealIfWon(game)) return;
                 if (game.HunterEliminatedAtNight)
                 {
@@ -740,7 +740,7 @@ public class GameService : IGameService
                 if (game.HunterMustShoot)
                 {
                     game.HunterEliminatedAtNight = false;
-                    BeginPhase(game, GamePhase.HunterTurn);
+                    BeginPhase(game, GamePhase.Hunter);
                     break;
                 }
                 game.RoundNumber++;
@@ -777,7 +777,7 @@ public class GameService : IGameService
     {
         if (HasLivingSkill(game, PlayerSkill.Seer))
         {
-            BeginPhase(game, GamePhase.SeerTurn);
+            BeginPhase(game, GamePhase.Seer);
             return;
         }
         TransitionToNextAfterSeer(game);
@@ -787,7 +787,7 @@ public class GameService : IGameService
     {
         if (HasLivingSkill(game, PlayerSkill.Witch))
         {
-            BeginPhase(game, GamePhase.WitchTurn);
+            BeginPhase(game, GamePhase.Witch);
             return;
         }
         ResolveNightDeaths(game);
@@ -1173,7 +1173,7 @@ public class GameService : IGameService
             JoinCode: joinCode,
             HostPlayerId: hostPlayerId,
             CreatedAt: DateTime.UtcNow,
-            IsPremium: false);
+            IsTournamentModeUnlocked: false);
         await _tournamentRepository.SaveTournamentAsync(record);
     }
 

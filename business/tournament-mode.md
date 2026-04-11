@@ -80,12 +80,12 @@ This reuses the same pattern described in [short-term-profits.md](short-term-pro
 - **Stripe checkout flow** (same as for role unlocks):
   1. Frontend calls the backend to create a pending tournament record; receives a `tournamentId`.
   2. Backend creates a Stripe Checkout session with the `tournamentId` in the metadata.
-  3. After payment, Stripe webhook fires; backend marks the tournament as `isPremium = true`.
+  3. After payment, Stripe webhook fires; backend marks the tournament as `isTournamentModeUnlocked = true`.
   4. Frontend polls or receives a push notification that the tournament is now active.
 
 ### Backend entities to add
 
-- `Tournament` — id, createdAt, isPremium, hostPlayerId, stripePaymentId
+- `Tournament` — id, createdAt, isTournamentModeUnlocked, hostPlayerId, stripePaymentId
 - `TournamentGame` — tournamentId, gameId, gameIndex (order within the tournament)
 - `TournamentScore` — tournamentId, playerId, totalPoints (updated after each game)
 
@@ -116,7 +116,7 @@ Neither Wolvesville nor One Night Ultimate Werewolf offers structured multi-game
 
 1. **Tournament entity** — add `Tournament`, `TournamentGame`, and `TournamentScore` to the backend data model and expose API endpoints.
 2. **Score aggregation** — after each game result is saved, compute the delta score per player and update `TournamentScore`.
-3. **Premium flag** — add `isPremium` to `Tournament`; free tournaments are capped at one game (or zero, if we want the first game to always be free outside a tournament).
-4. **Stripe integration** — Stripe Checkout session creation endpoint + webhook to set `isPremium = true`. Reuse the pattern from [short-term-profits.md](short-term-profits.md).
+3. **Tournament mode flag** — add `isTournamentModeUnlocked` to `Tournament`; free tournaments are capped at one game (or zero, if we want the first game to always be free outside a tournament).
+4. **Stripe integration** — Stripe Checkout session creation endpoint + webhook to set `isTournamentModeUnlocked = true`. Reuse the pattern from [short-term-profits.md](short-term-profits.md).
 5. **Frontend paywall** — paywall component triggered from the game-over screen when the host taps "Play another game".
 6. **Tournament lobby** — extend the existing lobby screen to show the running score table when inside a tournament.

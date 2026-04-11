@@ -47,7 +47,7 @@ public class GameState
     public List<EliminationEntry> DayDeaths { get; set; } = new();
 
     public int GameIndex { get; set; } = 1;
-    public bool IsPremium { get; set; } = false;
+    public bool IsTournamentModeUnlocked { get; set; } = false;
 
     // Add new per-game fields here alongside their property initializers above.
     public void ResetSessionState()
@@ -94,18 +94,18 @@ public enum GamePhase
     RoleReveal,
     NightAnnouncement,
     WerewolvesMeeting,
-    WolvesCloseEyes,
-    CupidTurn,
+    WerewolvesCloseEyes,
+    Cupid,
     CupidCloseEyes,
-    LoverReveal,
-    WerewolvesTurn,
-    SeerTurn,
+    LoversReveal,
+    Werewolves,
+    Seer,
     SeerCloseEyes,
-    WitchTurn,
+    Witch,
     WitchCloseEyes,
     DayAnnouncement,
     NightEliminationReveal,
-    HunterTurn,
+    Hunter,
     Discussion,
     TiebreakDiscussion,
     DayEliminationReveal,

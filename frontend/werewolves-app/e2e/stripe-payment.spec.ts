@@ -2,12 +2,15 @@
  * Stripe payment end-to-end test.
  *
  * Unlike the screenshot tests, this test hits the real backend and Stripe.
- * All of the following must be running before executing this test:
+ * The following must be running before executing this test:
  *
  *   docker compose up -d
  *   cd backend/WerewolvesAPI && dotnet run
- *   stripe listen --forward-to localhost:5000/api/stripe/webhook
  *   npm start  (Angular dev server on port 4200)
+ *
+ * The backend must have an empty Stripe:WebhookSecret in
+ * appsettings.Development.json so that signature verification is skipped
+ * and the test can POST a fake webhook payload directly.
  *
  * Run:
  *   cd frontend/werewolves-app
@@ -89,14 +92,26 @@ test('Stripe payment marks game as premium', async ({ page, request }) => {
   // ── 6. Wait for Stripe to redirect back to our lobby ─────────────────────
   await page.waitForURL(/localhost:4200.*payment=success/, { timeout: 30_000 });
 
-  // ── 7. Wait for the webhook to be processed by the backend ───────────────
-  // The Stripe CLI forwards the checkout.session.completed event to the
-  // backend, which calls SetPremium. Give it a few seconds.
-  await page.waitForTimeout(3_000);
+  // ── 7. Simulate the Stripe webhook by POSTing directly to the backend ──
+  // In development mode (empty Stripe:WebhookSecret), the backend skips
+  // signature verification, so we can send a fake checkout.session.completed
+  // event with the tournament code in the metadata.
+  const webhookRes = await request.post(`${API}/stripe/webhook`, {
+    headers: { 'Content-Type': 'application/json' },
+    data: JSON.stringify({
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          metadata: { tournamentCode: gameId },
+        },
+      },
+    }),
+  });
+  expect(webhookRes.ok()).toBeTruthy();
 
-  // ── 8. Verify the game is now in premium mode via the backend API ─────────
+  // ── 8. Verify the game is now in tournament mode via the backend API ─────────
   const stateRes = await request.get(`${API}/game/${gameId}`);
   expect(stateRes.ok()).toBeTruthy();
   const state = await stateRes.json();
-  expect(state.game.isPremium).toBe(true);
+  expect(state.game.isTournamentModeUnlocked).toBe(true);
 });

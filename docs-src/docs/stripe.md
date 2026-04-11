@@ -15,7 +15,7 @@ The flow will be:
 3. The user's browser is sent to Stripe's hosted page (your branding, Stripe's infrastructure).
 4. User pays. Stripe redirects them back to the app.
 5. Stripe simultaneously fires a **webhook** to the backend with a `checkout.session.completed` event.
-6. The backend verifies the webhook signature, sets `is_premium = true` for the tournament, and the next game unlocks.
+6. The backend verifies the webhook signature, sets `is_tournament_mode_unlocked = true` for the tournament, and the next game unlocks.
 
 The webhook (step 5–6) is the authoritative signal — the redirect URL alone is never trusted.
 
@@ -149,7 +149,7 @@ Once the Stripe account is configured the development work splits into two phase
 
 - Add the `Stripe.net` NuGet package.
 - Implement `POST /api/game/{tournamentCode}/checkout` — creates a Checkout Session and returns `{ checkoutUrl }`.
-- Implement `POST /api/stripe/webhook` — verifies the Stripe signature, handles `checkout.session.completed`, sets `is_premium = true` in the database and in-memory.
+- Implement `POST /api/stripe/webhook` — verifies the Stripe signature, handles `checkout.session.completed`, sets `is_tournament_mode_unlocked = true` in the database and in-memory.
 
 **Phase 2 — Frontend**
 

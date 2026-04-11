@@ -39,7 +39,7 @@ public class StripeController : ControllerBase
         if (tournamentCode == null)
             return Ok(); // unknown event type — ignore
 
-        _gameService.SetPremium(tournamentCode);
+        _gameService.UnlockTournamentMode(tournamentCode);
         _logger.LogInformation("Tournament {TournamentCode} unlocked via Stripe payment", tournamentCode);
 
         return Ok();

@@ -43,7 +43,7 @@ describe('SessionComponent', () => {
       tiebreakCandidates: [] as string[],
       audioPlayAt: null,
       gameIndex: 1,
-      isPremium: false,
+      isTournamentModeUnlocked: false,
       ...overrides
     },
     players: [
@@ -267,7 +267,7 @@ describe('SessionComponent', () => {
         winner: null,
         tiebreakCandidates: ['player1', 'player2', 'player3'],
         gameIndex: 1,
-        isPremium: false
+        isTournamentModeUnlocked: false
       },
       players: [
         { playerId: 'player1', displayName: 'Alice', isCreator: true, isModerator: true, isConnected: true, participationStatus: 'Participating', role: null, skill: null, isEliminated: false, isDone: false, currentVoteTargetId: null, score: 0, totalScore: 0 },

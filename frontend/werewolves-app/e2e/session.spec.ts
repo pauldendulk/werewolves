@@ -1,30 +1,10 @@
-import { test, expect, Browser, BrowserContext, Page } from '@playwright/test';
-
-/**
- * Helper: create a fresh browser context and page for a player.
- */
-async function newPlayer(browser: Browser): Promise<{ context: BrowserContext; page: Page }> {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  return { context, page };
-}
-
-/**
- * Helper: join a game as a named player. Navigates to /game/:id, fills the
- * name input and clicks Join, then waits for the lobby.
- */
-async function joinGame(page: Page, gameId: string, name: string): Promise<void> {
-  await page.goto(`/game/${gameId}`);
-  await expect(page.getByRole('heading', { name: 'Join Game' })).toBeVisible();
-  await page.getByLabel('Your Name').fill(name);
-  await page.getByRole('button', { name: 'Join Game' }).click();
-  await expect(page).toHaveURL(/\/game\/.*\/lobby/, { timeout: 10_000 });
-}
+import { test, expect } from '@playwright/test';
+import { newPlayer, joinGame } from './helpers';
 
 test.describe('Game session – role reveal', () => {
   test('three players can start a game and all see the RoleReveal screen', async ({ browser }) => {
     // ── 1. Creator creates a game ───────────────────────────────────────────
-    const creator = await newPlayer(browser);
+    const creator = await newPlayer(browser, 'PlayerName');
     await creator.page.goto('/');
     await creator.page.getByLabel('Your Name').fill('PlayerName');
     await creator.page.getByRole('button', { name: 'Organize Game' }).click();
@@ -35,8 +15,8 @@ test.describe('Game session – role reveal', () => {
     const gameId = creatorUrl.match(/\/game\/([^/]+)\/lobby/)![1];
 
     // ── 2. Two more players join ────────────────────────────────────────────
-    const alice = await newPlayer(browser);
-    const bob = await newPlayer(browser);
+    const alice = await newPlayer(browser, 'Alice');
+    const bob = await newPlayer(browser, 'Bob');
 
     await joinGame(alice.page, gameId, 'Alice');
     await joinGame(bob.page, gameId, 'Bob');
@@ -90,7 +70,7 @@ test.describe('Game session – role reveal', () => {
 
   test('all three players can mark done and transition to Night phase', async ({ browser }) => {
     // ── Setup: create game and get 3 players in ────────────────────────────
-    const creator = await newPlayer(browser);
+    const creator = await newPlayer(browser, 'PlayerName');
     await creator.page.goto('/');
     await creator.page.getByLabel('Your Name').fill('PlayerName');
     await creator.page.getByRole('button', { name: 'Organize Game' }).click();
@@ -98,8 +78,8 @@ test.describe('Game session – role reveal', () => {
 
     const gameId = creator.page.url().match(/\/game\/([^/]+)\/lobby/)![1];
 
-    const alice = await newPlayer(browser);
-    const bob = await newPlayer(browser);
+    const alice = await newPlayer(browser, 'Alice');
+    const bob = await newPlayer(browser, 'Bob');
     await joinGame(alice.page, gameId, 'Alice');
     await joinGame(bob.page, gameId, 'Bob');
 

@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Backend Tests ──────────────────────────────────────────────────────────
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Run backend tests
+        run: dotnet test backend/WerewolvesAPI.Tests/
+
+  # ── Frontend Unit Tests ────────────────────────────────────────────────────
+  frontend-tests:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/werewolves-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend/werewolves-app
+
+      - name: Run unit tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless
+        working-directory: frontend/werewolves-app
+
+  # ── E2E Tests ──────────────────────────────────────────────────────────────
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/werewolves-app/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend/werewolves-app
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend/werewolves-app
+
+      - name: Install MkDocs
+        run: pip install mkdocs-material
+
+      - name: Start backend (no DB — in-memory mode)
+        run: |
+          cd backend/WerewolvesAPI
+          dotnet run --urls "http://localhost:5000" &
+          # Wait for the backend to be ready
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5000/swagger/index.html > /dev/null && break
+            sleep 2
+          done
+
+      - name: Start Angular dev server
+        run: |
+          cd frontend/werewolves-app
+          npx ng serve --port 4200 &
+          # Wait for the dev server to be ready
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4200 > /dev/null && break
+            sleep 2
+          done
+
+      - name: Run Playwright tests
+        run: npx playwright test --reporter=list
+        working-directory: frontend/werewolves-app
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/werewolves-app/playwright-report/
+          retention-days: 14
+
+  # ── Assign Copilot on Failure ──────────────────────────────────────────────
+  copilot-fix:
+    name: Create Copilot Fix Issue
+    needs: [backend-tests, frontend-tests, e2e-tests]
+    runs-on: ubuntu-latest
+    if: ${{ failure() && github.ref == 'refs/heads/main' }}
+    permissions:
+      issues: write
+    steps:
+      - name: Create issue for Copilot
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `CI failed on ${context.sha.substring(0, 7)}`,
+              body: [
+                `CI run failed after push to \`main\`.`,
+                ``,
+                `**Run:** ${runUrl}`,
+                `**Commit:** ${context.sha}`,
+                `**Pushed by:** @${context.actor}`,
+                ``,
+                `Please investigate the failing tests and open a PR with a fix.`,
+              ].join('\n'),
+              labels: ['ci-failure'],
+              assignees: ['copilot'],
+            });
+            core.info(`Created issue #${issue.number}: ${issue.html_url}`);

@@ -109,7 +109,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       this.onPhaseEntered(state.game.phase, state.game.roundNumber, state.game.audioPlayAt);
 
       // Refresh role on any night-skill phase so loverName, nightKillTargetName, etc. stay current
-      const skillPhases = ['WerewolvesMeeting', 'WerewolvesTurn', 'LoverReveal', 'SeerTurn', 'WitchTurn', 'HunterTurn'];
+      const skillPhases = ['WerewolvesMeeting', 'Werewolves', 'LoversReveal', 'Seer', 'Witch', 'Hunter'];
       if (skillPhases.includes(state.game.phase)) {
         this.gameService.getRole(this.gameId, this.playerId).subscribe({
           next: dto => this.roleDto = dto,
@@ -141,7 +141,7 @@ export class SessionComponent implements OnInit, OnDestroy {
         }
         break;
       }
-      case 'WerewolvesTurn': {
+      case 'Werewolves': {
         if (this.isModerator) {
           const wolfCount = this.lobbyState?.game.numberOfWerewolves ?? 1;
           const key = wolfCount === 1 ? AudioKey.WerewolvesTurnSolo : AudioKey.WerewolvesTurnGroup;
@@ -218,16 +218,16 @@ export class SessionComponent implements OnInit, OnDestroy {
       case 'RoleReveal':            return 'Force start night';
       case 'NightAnnouncement':     return 'Skip';
       case 'WerewolvesMeeting':
-      case 'WerewolvesTurn':        return 'Skip night';
-      case 'WolvesCloseEyes':
-      case 'CupidTurn':
+      case 'Werewolves':        return 'Skip night';
+      case 'WerewolvesCloseEyes':
+      case 'Cupid':
       case 'CupidCloseEyes':
-      case 'LoverReveal':
-      case 'SeerTurn':
+      case 'LoversReveal':
+      case 'Seer':
       case 'SeerCloseEyes':
-      case 'WitchTurn':
+      case 'Witch':
       case 'WitchCloseEyes':
-      case 'HunterTurn':            return 'Skip';
+      case 'Hunter':            return 'Skip';
       case 'DayAnnouncement':       return 'Skip';
       case 'NightEliminationReveal':
       case 'DayEliminationReveal':  return 'Continue';
@@ -268,7 +268,7 @@ export class SessionComponent implements OnInit, OnDestroy {
       ? (this.lobbyState?.game.tiebreakCandidates ?? [])
       : null;
 
-    if (this.phase === 'WerewolvesTurn') {
+    if (this.phase === 'Werewolves') {
       return this.alivePlayers
         .filter(p => p.playerId !== this.playerId)
         .map(p => ({ label: p.displayName, value: p.playerId }));
@@ -291,7 +291,7 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   get canVoteNight(): boolean {
-    return this.phase === 'WerewolvesTurn' &&
+    return this.phase === 'Werewolves' &&
       this.roleDto?.role === 'Werewolf' &&
       !(this.currentPlayer?.isEliminated ?? false);
   }
@@ -313,19 +313,19 @@ export class SessionComponent implements OnInit, OnDestroy {
   }
 
   get canActAsCupid(): boolean {
-    return this.phase === 'CupidTurn' && this.roleDto?.skill === 'Cupid' && !(this.currentPlayer?.isEliminated ?? false);
+    return this.phase === 'Cupid' && this.roleDto?.skill === 'Cupid' && !(this.currentPlayer?.isEliminated ?? false);
   }
 
   get canActAsSeer(): boolean {
-    return this.phase === 'SeerTurn' && this.roleDto?.skill === 'Seer' && !(this.currentPlayer?.isEliminated ?? false);
+    return this.phase === 'Seer' && this.roleDto?.skill === 'Seer' && !(this.currentPlayer?.isEliminated ?? false);
   }
 
   get canActAsWitch(): boolean {
-    return this.phase === 'WitchTurn' && this.roleDto?.skill === 'Witch' && !(this.currentPlayer?.isEliminated ?? false);
+    return this.phase === 'Witch' && this.roleDto?.skill === 'Witch' && !(this.currentPlayer?.isEliminated ?? false);
   }
 
   get canActAsHunter(): boolean {
-    return this.phase === 'HunterTurn' && this.roleDto?.skill === 'Hunter';
+    return this.phase === 'Hunter' && this.roleDto?.skill === 'Hunter';
   }
 
   submitCupidAction(): void {
