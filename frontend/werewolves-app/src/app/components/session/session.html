@@ -389,7 +389,8 @@
       <span class="card-hint">{{ hint }}</span>
       <i class="pi pi-eye-slash"></i>
     </div>
-    <div class="card-back" *ngIf="roleRevealed">
+    <div class="card-back" *ngIf="roleRevealed"
+         [attr.data-role]="roleDto?.role" [attr.data-skill]="roleDto?.skill">
       <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
       <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
       <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>

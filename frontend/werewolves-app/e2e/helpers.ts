@@ -84,13 +84,12 @@ export async function peekRoleInfo(page: Page): Promise<{ role: string; skill: s
   const card = page.locator('.role-card');
   await expect(card).toBeVisible({ timeout: 10_000 });
   await card.dispatchEvent('mousedown');
-  const roleNameEl = page.locator('.role-name');
-  await expect(roleNameEl).toBeVisible({ timeout: 5_000 });
-  const role = ((await roleNameEl.textContent()) ?? '').trim();
-  const skillEl = page.locator('.skill-name');
-  const skill = (await skillEl.isVisible()) ? ((await skillEl.textContent()) ?? '').trim() || null : null;
+  const cardBack = page.locator('.card-back');
+  await expect(cardBack).toBeVisible({ timeout: 5_000 });
+  const role = (await cardBack.getAttribute('data-role')) ?? '';
+  const skill = (await cardBack.getAttribute('data-skill')) || null;
   await card.dispatchEvent('mouseup');
-  return { role, skill: skill ?? null };
+  return { role, skill };
 }
 
 /** Peek role + skill, then click "I've seen my role" to mark the player done. */
