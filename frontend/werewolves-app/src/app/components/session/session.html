@@ -25,19 +25,7 @@
     <h2 class="phase-title">Your Role</h2>
     <p class="phase-subtitle">Tap the card to reveal your role. Don't let others see!</p>
 
-    <div class="role-card" [class.revealed]="roleRevealed"
-         (mousedown)="revealRole()" (mouseup)="hideRole()" (mouseleave)="hideRole()"
-         (touchstart)="revealRole(); $event.preventDefault()" (touchend)="hideRole()" (touchcancel)="hideRole()">
-      <div class="card-front" *ngIf="!roleRevealed">
-        <span class="card-hint">Press &amp; hold to reveal</span>
-        <i class="pi pi-eye-slash"></i>
-      </div>
-      <div class="card-back" *ngIf="roleRevealed">
-        <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
-        <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
-        <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
-      </div>
-    </div>
+    <ng-container *ngTemplateOutlet="roleCardTpl; context: { hint: 'Press & hold to reveal' }"></ng-container>
 
     <div class="ready-section">
       <div class="done-count">{{ doneCount }} / {{ alivePlayers.length }} ready</div>
@@ -154,19 +142,7 @@
     <h2 class="phase-title">💞 The Lovers</h2>
     <p class="phase-subtitle">Everyone, open your eyes. Check your role card to find out if you are one of the lovers.</p>
 
-    <div class="role-card" [class.revealed]="roleRevealed"
-         (mousedown)="revealRole()" (mouseup)="hideRole()" (mouseleave)="hideRole()"
-         (touchstart)="revealRole(); $event.preventDefault()" (touchend)="hideRole()" (touchcancel)="hideRole()">
-      <div class="card-front" *ngIf="!roleRevealed">
-        <span class="card-hint">Press &amp; hold to reveal</span>
-        <i class="pi pi-eye-slash"></i>
-      </div>
-      <div class="card-back" *ngIf="roleRevealed">
-        <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
-        <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
-        <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
-      </div>
-    </div>
+    <ng-container *ngTemplateOutlet="roleCardTpl; context: { hint: 'Press & hold to reveal' }"></ng-container>
 
   </div>
 
@@ -329,19 +305,7 @@
     </div>
 
     <!-- Role card -->
-    <div class="role-card role-card-compact" [class.revealed]="roleRevealed"
-         (mousedown)="revealRole()" (mouseup)="hideRole()" (mouseleave)="hideRole()"
-         (touchstart)="revealRole(); $event.preventDefault()" (touchend)="hideRole()" (touchcancel)="hideRole()">
-      <div class="card-front" *ngIf="!roleRevealed">
-        <span class="card-hint">Press &amp; hold to see your role</span>
-        <i class="pi pi-eye-slash"></i>
-      </div>
-      <div class="card-back" *ngIf="roleRevealed">
-        <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
-        <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
-        <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
-      </div>
-    </div>
+    <ng-container *ngTemplateOutlet="roleCardTpl; context: { hint: 'Press & hold to reveal', compact: true }"></ng-container>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -415,3 +379,20 @@
 <div class="loading-container" *ngIf="!lobbyState">
   <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
 </div>
+
+<!-- Shared role-card template -->
+<ng-template #roleCardTpl let-hint="hint" let-compact="compact">
+  <div class="role-card" [class.role-card-compact]="compact" [class.revealed]="roleRevealed"
+       (mousedown)="revealRole()" (mouseup)="hideRole()" (mouseleave)="hideRole()"
+       (touchstart)="revealRole(); $event.preventDefault()" (touchend)="hideRole()" (touchcancel)="hideRole()">
+    <div class="card-front" *ngIf="!roleRevealed">
+      <span class="card-hint">{{ hint }}</span>
+      <i class="pi pi-eye-slash"></i>
+    </div>
+    <div class="card-back" *ngIf="roleRevealed">
+      <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
+      <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
+      <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
+    </div>
+  </div>
+</ng-template>
