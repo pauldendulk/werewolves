@@ -33,8 +33,7 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
-        <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
-        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
+        <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
         <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
       </div>
@@ -163,8 +162,7 @@
         <i class="pi pi-eye-slash"></i>
       </div>
       <div class="card-back" *ngIf="roleRevealed">
-        <span class="role-name">{{ roleDto?.role ?? '...' }}</span>
-        <span class="skill-name" *ngIf="roleDto?.skill">{{ roleDto?.skill }}</span>
+        <span class="role-name">{{ roleDisplayName(roleDto?.skill, roleDto?.role) }}</span>
         <span class="lover-name" *ngIf="roleDto?.loverName">💞 {{ roleDto?.loverName }}</span>
         <span class="role-icon">{{ roleDisplayIcon(roleDto?.skill, roleDto?.role) }}</span>
       </div>
