@@ -166,6 +166,13 @@ resource "google_cloud_run_v2_service" "api" {
     google_secret_manager_secret_iam_member.cloud_run_tournament_bypass_code,
     google_project_iam_member.cloud_run_sql_client,
   ]
+
+  # The container image is deployed by `gcloud run deploy` in the CI/CD pipeline,
+  # not by Terraform. Ignore image changes so Terraform doesn't create revisions
+  # that conflict with the pipeline-deployed image.
+  lifecycle {
+    ignore_changes = [template[0].containers[0].image]
+  }
 }
 
 # Allow unauthenticated (public) access to the Cloud Run service

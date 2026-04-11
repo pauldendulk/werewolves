@@ -22,8 +22,6 @@ jobs:
       - run: echo "CI passed — proceeding with deploy"
 
   # ── Build & push backend image ─────────────────────────────────────────────
-  # Must run BEFORE Terraform so that when Terraform creates a new Cloud Run
-  # revision the :latest tag already points to the freshly-built image.
   build-and-push:
     name: Build & Push Image
     needs: gate
@@ -48,10 +46,40 @@ jobs:
       - name: Push Docker image
         run: docker push ${{ env.IMAGE }}
 
+  # ── Backend ──────────────────────────────────────────────────────────────────
+  # Deploy the new image to Cloud Run BEFORE Terraform runs.
+  # This ensures the service is healthy so Terraform can modify config without
+  # hitting a stuck failed-revision state.
+  deploy-backend:
+    name: Deploy Backend
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE }} \
+            --image ${{ env.IMAGE }} \
+            --region ${{ env.REGION }} \
+            --project ${{ env.PROJECT_ID }} \
+            --quiet
+
   # ── Infrastructure ───────────────────────────────────────────────────────────
+  # Runs AFTER deploy-backend so the Cloud Run service is healthy.
+  # Terraform manages secrets, scaling, IAM — but ignores the container image
+  # (handled by deploy-backend above).
   infrastructure:
     name: Terraform Apply
-    needs: build-and-push
+    needs: deploy-backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,32 +105,6 @@ jobs:
           TF_VAR_stripe_webhook_secret:    ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           TF_VAR_stripe_price_id:          ${{ secrets.STRIPE_PRICE_ID }}
           TF_VAR_tournament_bypass_code:   "SKIPPY"
-
-  # ── Backend ──────────────────────────────────────────────────────────────────
-  # Image was already pushed by build-and-push. This step tells Cloud Run to
-  # pick up the new image (in case Terraform didn't create a new revision).
-  deploy-backend:
-    name: Deploy Backend
-    needs: infrastructure
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy ${{ env.SERVICE }} \
-            --image ${{ env.IMAGE }} \
-            --region ${{ env.REGION }} \
-            --project ${{ env.PROJECT_ID }} \
-            --quiet
 
   # ── Frontend ─────────────────────────────────────────────────────────────────
   # Runs in parallel with infrastructure/backend — only needs CI to have passed.
